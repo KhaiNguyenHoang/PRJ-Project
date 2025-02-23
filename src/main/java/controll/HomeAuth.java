@@ -1,3 +1,5 @@
+package controll;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -6,7 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
-@WebServlet(name = "HomeAuth", value = "/homeAuth")
+@WebServlet(name = "controll.HomeAuth", value = "/homeAuth")
 public class HomeAuth extends HttpServlet {
     private String message;
 
