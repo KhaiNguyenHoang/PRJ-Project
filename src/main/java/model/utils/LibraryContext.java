@@ -12,12 +12,14 @@ public class LibraryContext {
     public LibraryContext() {
         try {
             String dbURL = "jdbc:sqlserver://localhost:1433;"
-                    + "databaseName=CE182286_WS1;"
+                    + "databaseName=LibraryPRJ;"
                     + "user=sa;"
                     + "password=123456;"
                     + "encrypt=true;trustServerCertificate=true;";
             conn = DriverManager.getConnection(dbURL);
+            System.out.println("Connected to database.");
         } catch (SQLException ex) {
+            System.out.println("Error connecting to database.");
             Logger.getLogger(LibraryContext.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
