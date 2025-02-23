@@ -69,15 +69,17 @@ public class UserPermissionDAO extends LibraryContext {
         }
     }
 
-    public void searchPermission(int accountId, int permissionId) {
+    public boolean checkPermission(int accountId, int permissionId) {
         try {
             String query = "SELECT * FROM UserPermissions WHERE AccountID = ? AND PermissionID = ?";
             PreparedStatement statement = conn.prepareStatement(query);
             statement.setInt(1, accountId);
             statement.setInt(2, permissionId);
-            statement.executeQuery();
+            ResultSet resultSet = statement.executeQuery();
+            return resultSet.next();
         } catch (SQLException e) {
-            System.out.println("Cannot search permission");
+            System.out.println("Cannot check permission");
         }
+        return false;
     }
 }
