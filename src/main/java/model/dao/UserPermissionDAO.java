@@ -32,4 +32,52 @@ public class UserPermissionDAO extends LibraryContext {
         }
         return permissions;
     }
+
+    public void addPermission(int accountId, int permissionId) {
+        try {
+            String query = "INSERT INTO UserPermissions (AccountID, PermissionID) VALUES (?, ?)";
+            PreparedStatement statement = conn.prepareStatement(query);
+            statement.setInt(1, accountId);
+            statement.setInt(2, permissionId);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("Cannot add permission");
+        }
+    }
+
+    public void deletePermission(int accountId, int permissionId) {
+        try {
+            String query = "DELETE FROM UserPermissions WHERE AccountID = ? AND PermissionID = ?";
+            PreparedStatement statement = conn.prepareStatement(query);
+            statement.setInt(1, accountId);
+            statement.setInt(2, permissionId);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("Cannot delete permission");
+        }
+    }
+
+    public void updatePermission(int accountId, int permissionId) {
+        try {
+            String query = "UPDATE UserPermissions SET PermissionID = ? WHERE AccountID = ?";
+            PreparedStatement statement = conn.prepareStatement(query);
+            statement.setInt(1, permissionId);
+            statement.setInt(2, accountId);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("Cannot update permission");
+        }
+    }
+
+    public void searchPermission(int accountId, int permissionId) {
+        try {
+            String query = "SELECT * FROM UserPermissions WHERE AccountID = ? AND PermissionID = ?";
+            PreparedStatement statement = conn.prepareStatement(query);
+            statement.setInt(1, accountId);
+            statement.setInt(2, permissionId);
+            statement.executeQuery();
+        } catch (SQLException e) {
+            System.out.println("Cannot search permission");
+        }
+    }
 }
