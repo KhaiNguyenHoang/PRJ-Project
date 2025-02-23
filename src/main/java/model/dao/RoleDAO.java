@@ -16,16 +16,6 @@ public class RoleDAO extends LibraryContext {
         super();
     }
 
-    public static void main(String[] args) {
-        RoleDAO roleDAO = new RoleDAO();
-        List<Role> roles = roleDAO.getAllRoles();
-        for (Role role : roles) {
-            System.out.println("ID: " + role.getIdRole() + ", Name: " + role.getNameRole());
-        }
-        Role role = roleDAO.getRoleById(1);
-        System.out.println("ID: " + role.getIdRole() + ", Name: " + role.getNameRole());
-    }
-
     public List<Role> getAllRoles() {
         List<Role> roles = new ArrayList<>();
         try {
@@ -53,23 +43,6 @@ public class RoleDAO extends LibraryContext {
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 String nameRole = resultSet.getString("NameRole");
-                role = new Role(idRole, nameRole);
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(RoleDAO.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return role;
-    }
-
-    public Role getRoleByName(String nameRole) {
-        Role role = null;
-        try {
-            String query = "SELECT IdRole FROM Role WHERE NameRole = ?";
-            PreparedStatement statement = conn.prepareStatement(query);
-            statement.setString(1, nameRole);
-            ResultSet resultSet = statement.executeQuery();
-            if (resultSet.next()) {
-                int idRole = resultSet.getInt("IdRole");
                 role = new Role(idRole, nameRole);
             }
         } catch (SQLException ex) {
