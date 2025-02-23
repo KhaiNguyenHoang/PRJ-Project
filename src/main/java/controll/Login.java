@@ -6,9 +6,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 
-@WebServlet(name = "controll.Login", value = "/login ")
+@WebServlet(name = "controll.Login", value = "/controll.Login ")
 public class Login extends HttpServlet {
     private String message;
 
@@ -24,20 +23,17 @@ public class Login extends HttpServlet {
         }
     }
 
+    @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        response.setContentType("text/html");
-
-        // In thông điệp lên trình duyệt
-        PrintWriter out = response.getWriter();
-        out.println("<html><body>");
-        out.println("<h1>" + message + "</h1>");
-        out.println("</body></html>");
+        // Gửi thông điệp tới client.
     }
 
+    @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-
+        // Gửi thông điệp tới client.
     }
 
+    @Override
     public void destroy() {
     }
 }

@@ -10,7 +10,7 @@
         </session-timeout>
     </session-config>
     <servlet-mapping>
-        <servlet-name>HomeAuth</servlet-name>
+        <servlet-name>controll.HomeAuth</servlet-name>
         <url-pattern></url-pattern>
     </servlet-mapping>
 </web-app>
