@@ -22,7 +22,7 @@ public class RegisterServlet extends HttpServlet {
         String username = request.getParameter("usernameStaff");
         String roleIdStr = request.getParameter("roleIdStaff");
 
-        if (fullName == null || email == null || password == null || username == null || roleIdStr == null) {
+        if (fullName == "" || email == "" || password == "" || username == "" || roleIdStr == "") {
             request.setAttribute("error", "missing_fields");
             request.getRequestDispatcher("Auth/SignIn-SignUp.jsp").forward(request, response);
             return;
