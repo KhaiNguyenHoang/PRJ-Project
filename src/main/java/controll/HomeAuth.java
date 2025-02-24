@@ -10,28 +10,13 @@ import java.io.IOException;
 
 @WebServlet(name = "controll.HomeAuth", value = "/homeAuth")
 public class HomeAuth extends HttpServlet {
-    private String message;
 
-    public void init() {
-        // Lấy tham số URL và tên từ init-param trong web.xml
-        String initUrl = getServletConfig().getInitParameter("url");
-        String initName = getServletConfig().getInitParameter("name");
-
-        if (initUrl != null && initName != null) {
-            message = "Received URL: " + initUrl + " and Name: " + initName;
-        } else {
-            message = "Hello World!";
-        }
-    }
-
+    @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        request.getRequestDispatcher("/Auth/SignIn-SignUp.jsp").forward(request, response);
-    }
-
-    public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-
-    }
-
-    public void destroy() {
+        try {
+            request.getRequestDispatcher("/Auth/SignIn-SignUp.jsp").forward(request, response);
+        } catch (ServletException | IOException e) {
+            e.printStackTrace();
+        }
     }
 }

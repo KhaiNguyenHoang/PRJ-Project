@@ -1,8 +1,9 @@
 package model.entity;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class Account {
+public class Account implements Serializable {
     private int idAccount;
     private String fullName;
     private String emails;
@@ -12,6 +13,7 @@ public class Account {
     private Date createdAt;
     private Date updatedAt;
     private Date deletedAt;
+
     public Account(int idAccount, String fullName, String emails, String username, String passwordHash, int roleId, Date createdAt, Date updatedAt, Date deletedAt) {
         this.idAccount = idAccount;
         this.fullName = fullName;

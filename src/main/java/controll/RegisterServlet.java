@@ -12,6 +12,8 @@ import java.util.logging.Logger;
 
 @WebServlet(name = "RegisterServlet", value = "/RegisterServlet")
 public class RegisterServlet extends HttpServlet {
+    static final String PATHLINK = "Auth/SignIn-SignUp.jsp";
+    static final String ERROR = "error";
     private static final Logger logger = Logger.getLogger(RegisterServlet.class.getName());
 
     @Override
@@ -22,9 +24,13 @@ public class RegisterServlet extends HttpServlet {
         String username = request.getParameter("usernameStaff");
         String roleIdStr = request.getParameter("roleIdStaff");
 
-        if (fullName == null || email == null || password == null || username == null || roleIdStr == null) {
-            request.setAttribute("error", "missing_fields");
-            request.getRequestDispatcher("Auth/SignIn-SignUp.jsp").forward(request, response);
+        if (fullName.trim().isEmpty() || email.trim().isEmpty() || password.trim().isEmpty() || username.trim().isEmpty() || roleIdStr.trim().isEmpty()) {
+            request.setAttribute(ERROR, "missing_fields");
+            try {
+                request.getRequestDispatcher(PATHLINK).forward(request, response);
+            } catch (ServletException | IOException e) {
+                e.printStackTrace();
+            }
             return;
         }
 
@@ -32,15 +38,15 @@ public class RegisterServlet extends HttpServlet {
             // Chuyển đổi roleId và xử lý
             int roleId = Integer.parseInt(roleIdStr);
             if (roleId != 1 && roleId != 2) {
-                request.setAttribute("error", "invalid_role_id");
-                request.getRequestDispatcher("Auth/SignIn-SignUp.jsp").forward(request, response);
+                request.setAttribute(ERROR, "invalid_role_id");
+                request.getRequestDispatcher(PATHLINK).forward(request, response);
                 return;
             }
 
             AccountDAO accountDAO = new AccountDAO();
             if (accountDAO.checkEmailExists(email) || accountDAO.checkUsernameExists(username)) {
-                request.setAttribute("error", "email_or_username_exists");
-                request.getRequestDispatcher("Auth/SignIn-SignUp.jsp").forward(request, response);
+                request.setAttribute(ERROR, "email_or_username_exists");
+                request.getRequestDispatcher(PATHLINK).forward(request, response);
                 return;
             }
 
@@ -49,15 +55,23 @@ public class RegisterServlet extends HttpServlet {
 
             // Chuyển hướng thành công
             request.setAttribute("success", "account_created");
-            request.getRequestDispatcher("Auth/SignIn-SignUp.jsp").forward(request, response);
+            request.getRequestDispatcher(PATHLINK).forward(request, response);
 
         } catch (NumberFormatException e) {
-            request.setAttribute("error", "invalid_role_id");
-            request.getRequestDispatcher("Auth/SignIn-SignUp.jsp").forward(request, response);
+            request.setAttribute(ERROR, "invalid_role_id");
+            try {
+                request.getRequestDispatcher(PATHLINK).forward(request, response);
+            } catch (ServletException | IOException servletException) {
+                servletException.printStackTrace();
+            }
         } catch (Exception e) {
             logger.severe("Error occurred during registration: " + e.getMessage());
-            request.setAttribute("error", "internal_error");
-            request.getRequestDispatcher("Auth/SignIn-SignUp.jsp").forward(request, response);
+            request.setAttribute(ERROR, "internal_error");
+            try {
+                request.getRequestDispatcher(PATHLINK).forward(request, response);
+            } catch (ServletException | IOException servletException) {
+                servletException.printStackTrace();
+            }
         }
     }
 }
