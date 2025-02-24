@@ -97,6 +97,46 @@
             font-family: 'Poppins', sans-serif;
         }
 
+        .role-type-select {
+            width: 100%;
+            padding: 12px 15px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            background-color: #eee;
+            font-size: 14px;
+            font-family: 'Poppins', sans-serif;
+            color: #333;
+            appearance: none; /* Ẩn mũi tên mặc định */
+            -webkit-appearance: none; /* Dành cho trình duyệt WebKit */
+            -moz-appearance: none; /* Dành cho trình duyệt Firefox */
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .role-type-select option {
+            padding: 10px;
+            background-color: #fff;
+            color: #333;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Hiệu ứng khi hover */
+        .role-type-select:hover {
+            border-color: #FF4B2B;
+            background-color: #fff;
+        }
+
+        /* Hiệu ứng khi focus */
+        .role-type-select:focus {
+            outline: none;
+            border-color: #FF4B2B;
+            box-shadow: 0 0 5px rgba(255, 75, 43, 0.5);
+        }
+
         button {
             border-radius: 20px;
             border: 1px solid #FF4B2B;
@@ -309,51 +349,88 @@
 <div class="container" id="container">
     <!-- Phần đăng ký -->
     <div class="form-container sign-up-container">
-        <form action="#">
+        <form action="RegisterServlet" method="post">
             <h1>Create Account</h1>
             <select id="accountType" class="account-type-select">
                 <option value="member">Member</option>
                 <option value="staff">Staff/Admin</option>
             </select>
             <div id="memberFields">
-                <input type="text" placeholder="Full Name"/>
-                <input type="email" placeholder="Email"/>
-                <input type="text" placeholder="Phone"/>
-                <input type="text" placeholder="Address"/>
-                <input type="password" placeholder="Password"/>
+                <input type="text" name="fullName" placeholder="Full Name"/>
+                <input type="email" name="email" placeholder="Email"/>
+                <input type="text" name="phone" placeholder="Phone"/>
+                <input type="text" name="address" placeholder="Address"/>
+                <input type="password" name="password" placeholder="Password"/>
             </div>
+
             <div id="staffFields" style="display: none;">
-                <input type="text" placeholder="Full Name"/>
-                <input type="email" placeholder="Email"/>
-                <input type="text" placeholder="Username"/>
-                <input type="password" placeholder="Password"/>
-                <input type="number" placeholder="Role ID"/>
+                <input type="text" name="fullNameStaff" placeholder="Full Name"/>
+                <input type="email" name="emailStaff" placeholder="Email"/>
+                <input type="text" name="usernameStaff" placeholder="Username"/>
+                <input type="password" name="passwordStaff" placeholder="Password"/>
+
+                <!-- Dropdown cho Role -->
+                <select name="roleIdStaff" class="role-type-select">
+                    <option value="1">Admin</option>
+                    <option value="2">Staff</option>
+                </select>
             </div>
+
+
+            <!-- Hiển thị lỗi -->
+            <%
+                String error = (String) request.getAttribute("error");
+                if (error != null) {
+                    if (error.equals("missing_fields")) {
+            %>
+            <div class="error-message" style="color: #FF4B2B">Please fill in all fields.</div>
+            <%
+            } else if (error.equals("invalid_role_id")) {
+            %>
+            <div class="error-message" style="color: #FF4B2B">Invalid Role ID.</div>
+            <%
+            } else if (error.equals("email_or_username_exists")) {
+            %>
+            <div class="error-message" style="color: #FF4B2B">Email or Username already exists.</div>
+            <%
+            } else if (error.equals("internal_error")) {
+            %>
+            <div class="error-message" style="color: #FF4B2B">An error occurred during registration.</div>
+            <%
+                    }
+                }
+            %>
+
+            <!-- Hiển thị thành công -->
+            <%
+                String success = (String) request.getAttribute("success");
+                if (success != null && success.equals("account_created")) {
+            %>
+            <div class="success-message" style="color: green;">Account created successfully! Please login.</div>
+            <%
+                }
+            %>
+
             <button>Sign Up</button>
         </form>
     </div>
 
+    <!-- Phần đăng nhập -->
     <div class="form-container sign-in-container">
         <form action="LoginServlet" method="post">
             <h1>Sign in</h1>
-            <div class="social-container">
-                <a href="#" class="social"><i class="fab fa-facebook-f"></i></a>
-                <a href="#" class="social"><i class="fab fa-google-plus-g"></i></a>
-                <a href="#" class="social"><i class="fab fa-linkedin-in"></i></a>
-            </div>
-            <span>or use your account</span>
             <input type="email" name="emailLogin" placeholder="Email" required/>
             <input type="password" name="passwordLogin" placeholder="Password" required/>
 
-            <!-- Kiểm tra lỗi và hiển thị thông báo lỗi nếu có -->
+            <!-- Hiển thị lỗi -->
             <%
-                String error = request.getParameter("error");
-                if (error != null) {
-                    if (error.equals("missing_credentials")) {
+                String errorLogin = (String) request.getAttribute("error");
+                if (errorLogin != null) {
+                    if (errorLogin.equals("missing_credentials")) {
             %>
             <div class="error-message" style="color: #FF4B2B">Please provide both email and password.</div>
             <%
-            } else if (error.equals("invalid_credentials")) {
+            } else if (errorLogin.equals("invalid_credentials")) {
             %>
             <div class="error-message" style="color: #FF4B2B">Invalid email or password. Please try again.</div>
             <%
@@ -364,7 +441,7 @@
                     }
                 }
             %>
-            <a href="#">Forgot your password?</a>
+
             <button type="submit">Sign In</button>
         </form>
     </div>
