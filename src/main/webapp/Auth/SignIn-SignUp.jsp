@@ -333,9 +333,8 @@
         </form>
     </div>
 
-    <!-- Phần đăng nhập -->
     <div class="form-container sign-in-container">
-        <form action="Login" method="post">
+        <form action="LoginServlet" method="post">
             <h1>Sign in</h1>
             <div class="social-container">
                 <a href="#" class="social"><i class="fab fa-facebook-f"></i></a>
@@ -343,12 +342,33 @@
                 <a href="#" class="social"><i class="fab fa-linkedin-in"></i></a>
             </div>
             <span>or use your account</span>
-            <input type="email" name="email" placeholder="Email"/>
-            <input type="password" name="password" placeholder="Password"/>
+            <input type="email" name="emailLogin" placeholder="Email" required/>
+            <input type="password" name="passwordLogin" placeholder="Password" required/>
+
+            <!-- Kiểm tra lỗi và hiển thị thông báo lỗi nếu có -->
+            <%
+                String error = request.getParameter("error");
+                if (error != null) {
+                    if (error.equals("missing_credentials")) {
+            %>
+            <div class="error-message" style="color: #FF4B2B">Please provide both email and password.</div>
+            <%
+            } else if (error.equals("invalid_credentials")) {
+            %>
+            <div class="error-message" style="color: #FF4B2B">Invalid email or password. Please try again.</div>
+            <%
+            } else {
+            %>
+            <div class="error-message" style="color: #FF4B2B">An unknown error occurred. Please try again later.</div>
+            <%
+                    }
+                }
+            %>
             <a href="#">Forgot your password?</a>
-            <button>Sign In</button>
+            <button type="submit">Sign In</button>
         </form>
     </div>
+
 
     <!-- Overlay -->
     <div class="overlay-container">
