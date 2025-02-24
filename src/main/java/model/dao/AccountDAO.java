@@ -12,15 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AccountDAO extends LibraryContext {
-    
+
     public AccountDAO() {
         super();
-    }
-
-    public static void main(String[] args) {
-        AccountDAO accountDAO = new AccountDAO();
-        Account account = accountDAO.login("admin@gmail.com", "admin");
-        System.out.println(account);
     }
 
     // Hash Password using SHA-512

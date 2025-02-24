@@ -16,16 +16,6 @@ public class BookCategoriesDAO extends LibraryContext {
         super();
     }
 
-    public static void main(String[] args) {
-        BookCategoriesDAO bookCategoriesDAO = new BookCategoriesDAO();
-        List<BookCategories> categories = bookCategoriesDAO.getAllCategories();
-        for (BookCategories category : categories) {
-            System.out.println("ID: " + category.getIdCategory() + ", Name: " + category.getCategoryName());
-        }
-        BookCategories category = bookCategoriesDAO.getCategoryById(1);
-        System.out.println("ID: " + category.getIdCategory() + ", Name: " + category.getCategoryName());
-    }
-
     public List<BookCategories> getAllCategories() {
         List<BookCategories> categories = new ArrayList<>();
         try {
