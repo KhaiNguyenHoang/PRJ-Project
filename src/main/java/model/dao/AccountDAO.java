@@ -17,6 +17,31 @@ public class AccountDAO extends LibraryContext {
         super();
     }
 
+    public List<Account> getAllAccounts() {
+        List<Account> accounts = new ArrayList<>();
+        String query = "SELECT * FROM Account";
+        try (PreparedStatement statement = conn.prepareStatement(query)) {
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                Account account = new Account(
+                        resultSet.getInt("IdAccount"),
+                        resultSet.getString("FullName"),
+                        resultSet.getString("Emails"),
+                        resultSet.getString("Username"),
+                        resultSet.getString("PasswordHash"),
+                        resultSet.getInt("Role_ID"),
+                        resultSet.getDate("CreatedAt"),
+                        resultSet.getDate("UpdatedAt"),
+                        resultSet.getDate("DeletedAt")
+                );
+                accounts.add(account);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return accounts;
+    }
+
     // Hash Password using SHA-512
     private String hashPassword(String password) {
         try {

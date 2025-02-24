@@ -14,6 +14,25 @@ public class PermissionsDAO extends LibraryContext {
         super();
     }
 
+    public List<Permissions> getPermissions() {
+        List<Permissions> permissions = new ArrayList<>();
+        try {
+            String query = "SELECT IdPermission, RoleID, Action FROM Permissions";
+            PreparedStatement statement = conn.prepareStatement(query);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                int idPermission = resultSet.getInt(1);
+                int roleId = resultSet.getInt(2);
+                String action = resultSet.getString(3);
+                Permissions permission = new Permissions(idPermission, roleId, action);
+                permissions.add(permission);
+            }
+        } catch (SQLException e) {
+            System.out.println("Cannot get permissions");
+        }
+        return permissions;
+    }
+
     public Permissions getPermissionById(int i) {
         Permissions permission = null;
         try {

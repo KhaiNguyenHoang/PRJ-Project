@@ -1,5 +1,7 @@
 package model.entity;
 
+import java.util.Date;
+
 public class Books {
     private int idBook;
     private String title;
@@ -12,8 +14,28 @@ public class Books {
     private boolean isDigital;
     private String status;
     private String filePath;
+    private Date createdAt;
+    private Date updatedAt;
+    private Date deletedAt;
 
     public Books() {
+    }
+
+    public Books(int idBook, Date deletedAt, Date updatedAt, Date createdAt, String filePath, String status, boolean isDigital, int copiesAvailable, int categoryId, int yearPublished, String publisher, String isbn, String author, String title) {
+        this.idBook = idBook;
+        this.deletedAt = deletedAt;
+        this.updatedAt = updatedAt;
+        this.createdAt = createdAt;
+        this.filePath = filePath;
+        this.status = status;
+        this.isDigital = isDigital;
+        this.copiesAvailable = copiesAvailable;
+        this.categoryId = categoryId;
+        this.yearPublished = yearPublished;
+        this.publisher = publisher;
+        this.isbn = isbn;
+        this.author = author;
+        this.title = title;
     }
 
     public Books(int idBook, String title, String author, String isbn, String publisher, int yearPublished, int categoryId, int copiesAvailable, boolean isDigital, String status, String filePath) {
@@ -28,6 +50,30 @@ public class Books {
         this.isDigital = isDigital;
         this.status = status;
         this.filePath = filePath;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Date getDeletedAt() {
+        return deletedAt;
+    }
+
+    public void setDeletedAt(Date deletedAt) {
+        this.deletedAt = deletedAt;
+    }
+
+    public Date getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     public int getIdBook() {
