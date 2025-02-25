@@ -10,12 +10,9 @@ import model.dao.AccountDAO;
 import model.entity.Account;
 
 import java.io.IOException;
-import java.util.logging.Logger;
 
 @WebServlet(name = "LoginServlet", value = "/LoginServlet")
 public class LoginServlet extends HttpServlet {
-
-    private static final Logger logger = Logger.getLogger(LoginServlet.class.getName());
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -25,7 +22,11 @@ public class LoginServlet extends HttpServlet {
         // Kiểm tra nếu email hoặc password là null hoặc rỗng
         if (email == null || password == null || email.isEmpty() || password.isEmpty()) {
             request.setAttribute("error", "missing_credentials");
-            request.getRequestDispatcher("Auth/SignIn-SignUp.jsp").forward(request, response);
+            try {
+                request.getRequestDispatcher("Auth/SignIn-SignUp.jsp").forward(request, response);
+            } catch (ServletException | IOException e) {
+                e.printStackTrace();
+            }
             return;
         }
 
@@ -34,15 +35,21 @@ public class LoginServlet extends HttpServlet {
         Account account = accountDAO.login(email, password);
 
         if (account == null) {
-            logger.warning("Login failed for email: " + email);
             request.setAttribute("error", "invalid_credentials");
-            request.getRequestDispatcher("Auth/SignIn-SignUp.jsp").forward(request, response);
+            try {
+                request.getRequestDispatcher("Auth/SignIn-SignUp.jsp").forward(request, response);
+            } catch (ServletException | IOException e) {
+                e.printStackTrace();
+            }
         } else {
-            logger.info("Login successful for email: " + email);
             HttpSession session = request.getSession();
             session.setAttribute("user", account);
             request.getSession().setAttribute("account", account);
-            response.sendRedirect("index.html");
+            try {
+                request.getRequestDispatcher("index.jsp").forward(request, response);
+            } catch (ServletException | IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

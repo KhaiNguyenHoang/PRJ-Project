@@ -13,26 +13,42 @@ import java.util.List;
 
 public class AccountDAO extends LibraryContext {
 
+    static final String ID_ACCOUNT = "IdAccount";
+    static final String FULL_NAME = "FullName";
+    static final String EMAILS = "Emails";
+    static final String USERNAME = "Username";
+    static final String PASSWORD_HASH = "PasswordHash";
+    static final String ROLE_ID = "Role_ID";
+    static final String CREATED_AT = "CreatedAt";
+    static final String UPDATED_AT = "UpdatedAt";
+    static final String DELETED_AT = "DeletedAt";
+    static final String ROLE_NAME = "RoleName";
+    static final String ROLE_DESCRIPTION = "RoleDescription";
+    static final String ROLE_CREATED_AT = "RoleCreatedAt";
+    static final String ROLE_UPDATED_AT = "RoleUpdatedAt";
+    static final String ROLE_DELETED_AT = "RoleDeletedAt";
+
     public AccountDAO() {
         super();
     }
 
     public List<Account> getAllAccounts() {
         List<Account> accounts = new ArrayList<>();
-        String query = "SELECT * FROM Account";
+        String query = "SELECT * " +
+                "FROM Account";
         try (PreparedStatement statement = conn.prepareStatement(query)) {
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
                 Account account = new Account(
-                        resultSet.getInt("IdAccount"),
-                        resultSet.getString("FullName"),
-                        resultSet.getString("Emails"),
-                        resultSet.getString("Username"),
-                        resultSet.getString("PasswordHash"),
-                        resultSet.getInt("Role_ID"),
-                        resultSet.getDate("CreatedAt"),
-                        resultSet.getDate("UpdatedAt"),
-                        resultSet.getDate("DeletedAt")
+                        resultSet.getInt(ID_ACCOUNT),
+                        resultSet.getString(FULL_NAME),
+                        resultSet.getString(EMAILS),
+                        resultSet.getString(USERNAME),
+                        resultSet.getString(PASSWORD_HASH),
+                        resultSet.getInt(ROLE_ID),
+                        resultSet.getDate(CREATED_AT),
+                        resultSet.getDate(UPDATED_AT),
+                        resultSet.getDate(DELETED_AT)
                 );
                 accounts.add(account);
             }
@@ -49,7 +65,7 @@ public class AccountDAO extends LibraryContext {
             byte[] hash = md.digest(password.getBytes());
             StringBuilder hexString = new StringBuilder();
             for (byte b : hash) {
-                hexString.append(Integer.toHexString(0xFF & b));
+                hexString.append(String.format("%02x", b & 0xFF));
             }
             return hexString.toString();
         } catch (NoSuchAlgorithmException e) {
@@ -90,7 +106,7 @@ public class AccountDAO extends LibraryContext {
             return null;
         }
         String passwordHash = hashPassword(password);
-        String query = "SELECT * FROM Account WHERE Emails = ? AND PasswordHash = ?";
+        String query = "SELECT * " + "FROM Account WHERE Emails = ? AND PasswordHash = ?";
         try (PreparedStatement statement = conn.prepareStatement(query)) {
             // Set email and password parameters for the query
             statement.setString(1, emails);
@@ -99,15 +115,15 @@ public class AccountDAO extends LibraryContext {
             // If a record is found, return the account
             if (resultSet.next()) {
                 return new Account(
-                        resultSet.getInt("IdAccount"),
-                        resultSet.getString("FullName"),
-                        resultSet.getString("Emails"),
-                        resultSet.getString("Username"),
-                        resultSet.getString("PasswordHash"),
-                        resultSet.getInt("Role_ID"),
-                        resultSet.getDate("CreatedAt"),
-                        resultSet.getDate("UpdatedAt"),
-                        resultSet.getDate("DeletedAt")
+                        resultSet.getInt(ID_ACCOUNT),
+                        resultSet.getString(FULL_NAME),
+                        resultSet.getString(EMAILS),
+                        resultSet.getString(USERNAME),
+                        resultSet.getString(PASSWORD_HASH),
+                        resultSet.getInt(ROLE_ID),
+                        resultSet.getDate(CREATED_AT),
+                        resultSet.getDate(UPDATED_AT),
+                        resultSet.getDate(DELETED_AT)
                 );
             }
         } catch (SQLException e) {
@@ -196,15 +212,15 @@ public class AccountDAO extends LibraryContext {
              ResultSet resultSet = statement.executeQuery()) {
             while (resultSet.next()) {
                 accounts.add(new Account(
-                        resultSet.getInt("IdAccount"),
-                        resultSet.getString("FullName"),
-                        resultSet.getString("Emails"),
-                        resultSet.getString("Username"),
-                        resultSet.getString("PasswordHash"),
-                        resultSet.getInt("Role_ID"),
-                        resultSet.getDate("CreatedAt"),
-                        resultSet.getDate("UpdatedAt"),
-                        resultSet.getDate("DeletedAt")
+                        resultSet.getInt(ID_ACCOUNT),
+                        resultSet.getString(FULL_NAME),
+                        resultSet.getString(EMAILS),
+                        resultSet.getString(USERNAME),
+                        resultSet.getString(PASSWORD_HASH),
+                        resultSet.getInt(ROLE_ID),
+                        resultSet.getDate(CREATED_AT),
+                        resultSet.getDate(UPDATED_AT),
+                        resultSet.getDate(DELETED_AT)
                 ));
             }
         } catch (SQLException e) {
@@ -215,21 +231,21 @@ public class AccountDAO extends LibraryContext {
 
     // Get account by ID
     public Account getAccountById(int accountId) {
-        String query = "SELECT * FROM Account WHERE IdAccount = ?";
+        String query = "SELECT * " + "FROM Account WHERE IdAccount = ?";
         try (PreparedStatement statement = conn.prepareStatement(query)) {
             statement.setInt(1, accountId);
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 return new Account(
-                        resultSet.getInt("IdAccount"),
-                        resultSet.getString("FullName"),
-                        resultSet.getString("Emails"),
-                        resultSet.getString("Username"),
-                        resultSet.getString("PasswordHash"),
-                        resultSet.getInt("Role_ID"),
-                        resultSet.getDate("CreatedAt"),
-                        resultSet.getDate("UpdatedAt"),
-                        resultSet.getDate("DeletedAt")
+                        resultSet.getInt(ID_ACCOUNT),
+                        resultSet.getString(FULL_NAME),
+                        resultSet.getString(EMAILS),
+                        resultSet.getString(USERNAME),
+                        resultSet.getString(PASSWORD_HASH),
+                        resultSet.getInt(ROLE_ID),
+                        resultSet.getDate(CREATED_AT),
+                        resultSet.getDate(UPDATED_AT),
+                        resultSet.getDate(DELETED_AT)
                 );
             }
         } catch (SQLException e) {
@@ -240,21 +256,21 @@ public class AccountDAO extends LibraryContext {
 
     // Get account by Username
     public Account getAccountByUsername(String username) {
-        String query = "SELECT * FROM Account WHERE Username = ?";
+        String query = "SELECT * " + "FROM Account WHERE Username = ?";
         try (PreparedStatement statement = conn.prepareStatement(query)) {
             statement.setString(1, username);
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 return new Account(
-                        resultSet.getInt("IdAccount"),
-                        resultSet.getString("FullName"),
-                        resultSet.getString("Emails"),
-                        resultSet.getString("Username"),
-                        resultSet.getString("PasswordHash"),
-                        resultSet.getInt("Role_ID"),
-                        resultSet.getDate("CreatedAt"),
-                        resultSet.getDate("UpdatedAt"),
-                        resultSet.getDate("DeletedAt")
+                        resultSet.getInt(ID_ACCOUNT),
+                        resultSet.getString(FULL_NAME),
+                        resultSet.getString(EMAILS),
+                        resultSet.getString(USERNAME),
+                        resultSet.getString(PASSWORD_HASH),
+                        resultSet.getInt(ROLE_ID),
+                        resultSet.getDate(CREATED_AT),
+                        resultSet.getDate(UPDATED_AT),
+                        resultSet.getDate(DELETED_AT)
                 );
             }
         } catch (SQLException e) {

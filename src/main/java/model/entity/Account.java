@@ -12,6 +12,7 @@ public class Account {
     private Date createdAt;
     private Date updatedAt;
     private Date deletedAt;
+
     public Account(int idAccount, String fullName, String emails, String username, String passwordHash, int roleId, Date createdAt, Date updatedAt, Date deletedAt) {
         this.idAccount = idAccount;
         this.fullName = fullName;
