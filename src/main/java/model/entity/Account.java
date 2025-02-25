@@ -1,9 +1,8 @@
 package model.entity;
 
-import java.io.Serializable;
 import java.util.Date;
 
-public class Account implements Serializable {
+public class Account {
     private int idAccount;
     private String fullName;
     private String emails;
