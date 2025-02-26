@@ -343,6 +343,10 @@
             color: #3c97bf;
             text-decoration: none;
         }
+
+        .forgot:hover {
+            color: #3c97bf;
+        }
     </style>
 </head>
 <body>
@@ -383,19 +387,27 @@
                 if (error != null) {
                     if (error.equals("missing_fields")) {
             %>
-            <div class="error-message" style="color: #FF4B2B">Please fill in all fields.</div>
+            <div class="error-message" style="color: #FF4B2B; font-family:'Comic Sans MS'; padding-bottom: 5px">Please
+                fill in all fields.
+            </div>
             <%
             } else if (error.equals("invalid_role_id")) {
             %>
-            <div class="error-message" style="color: #FF4B2B">Invalid Role ID.</div>
+            <div class="error-message" style="color: #FF4B2B; font-family:'Comic Sans MS'; padding-bottom: 5px">Invalid
+                Role ID.
+            </div>
             <%
             } else if (error.equals("email_or_username_exists")) {
             %>
-            <div class="error-message" style="color: #FF4B2B">Email or Username already exists.</div>
+            <div class="error-message" style="color: #FF4B2B; font-family:'Comic Sans MS'; padding-bottom: 5px">Email or
+                Username already exists.
+            </div>
             <%
             } else if (error.equals("internal_error")) {
             %>
-            <div class="error-message" style="color: #FF4B2B">An error occurred during registration.</div>
+            <div class="error-message" style="color: #FF4B2B; font-family:'Comic Sans MS'; padding-bottom: 5px">An error
+                occurred during registration.
+            </div>
             <%
                     }
                 }
@@ -419,6 +431,11 @@
     <div class="form-container sign-in-container">
         <form action="LoginServlet" method="post">
             <h1>Sign in</h1>
+            <div class="social-container">
+                <a href="#" class="social"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="social"><i class="fab fa-google-plus-g"></i></a>
+                <a href="#" class="social"><i class="fab fa-linkedin-in"></i></a>
+            </div>
             <input type="email" name="emailLogin" placeholder="Email" required/>
             <input type="password" name="passwordLogin" placeholder="Password" required/>
 
@@ -428,20 +445,27 @@
                 if (errorLogin != null) {
                     if (errorLogin.equals("missing_credentials")) {
             %>
-            <div class="error-message" style="color: #FF4B2B">Please provide both email and password.</div>
+            <div class="error-message" style="color: #FF4B2B; font-family:'Comic Sans MS'; padding-bottom: 5px">Please
+                provide both email and password.
+            </div>
             <%
             } else if (errorLogin.equals("invalid_credentials")) {
             %>
-            <div class="error-message" style="color: #FF4B2B">Invalid email or password. Please try again.</div>
+            <div class="error-message" style="color: #FF4B2B; font-family:'Comic Sans MS'; padding-bottom: 5px">Invalid
+                email or password. Please try again.
+            </div>
             <%
             } else {
             %>
-            <div class="error-message" style="color: #FF4B2B">An unknown error occurred. Please try again later.</div>
+            <div class="error-message" style="color: #FF4B2B; font-family:'Comic Sans MS'; padding-bottom: 5px">An
+                unknown error occurred. Please try again
+                later.
+            </div>
             <%
                     }
                 }
             %>
-
+            <a class="forgot" href="#">Forgot your password?</a>
             <button type="submit">Sign In</button>
         </form>
     </div>

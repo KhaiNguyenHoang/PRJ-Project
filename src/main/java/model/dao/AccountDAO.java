@@ -22,11 +22,6 @@ public class AccountDAO extends LibraryContext {
     static final String CREATED_AT = "CreatedAt";
     static final String UPDATED_AT = "UpdatedAt";
     static final String DELETED_AT = "DeletedAt";
-    static final String ROLE_NAME = "RoleName";
-    static final String ROLE_DESCRIPTION = "RoleDescription";
-    static final String ROLE_CREATED_AT = "RoleCreatedAt";
-    static final String ROLE_UPDATED_AT = "RoleUpdatedAt";
-    static final String ROLE_DELETED_AT = "RoleDeletedAt";
 
     public AccountDAO() {
         super();
@@ -34,8 +29,7 @@ public class AccountDAO extends LibraryContext {
 
     public List<Account> getAllAccounts() {
         List<Account> accounts = new ArrayList<>();
-        String query = "SELECT * " +
-                "FROM Account";
+        String query = "SELECT * " + "FROM Account";
         try (PreparedStatement statement = conn.prepareStatement(query)) {
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
@@ -65,7 +59,7 @@ public class AccountDAO extends LibraryContext {
             byte[] hash = md.digest(password.getBytes());
             StringBuilder hexString = new StringBuilder();
             for (byte b : hash) {
-                hexString.append(String.format("%02x", b & 0xFF));
+                hexString.append(Integer.toHexString(0xFF & b));
             }
             return hexString.toString();
         } catch (NoSuchAlgorithmException e) {

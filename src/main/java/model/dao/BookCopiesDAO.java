@@ -12,6 +12,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class BookCopiesDAO extends LibraryContext {
+    private static final String ID_COPY = "IdCopy";
+    private static final String BOOK_ID = "BookID";
+    private static final String COPY_NUMBER = "CopyNumber";
+    private static final String STATUS = "Status";
+
     public BookCopiesDAO() {
         super();
     }
@@ -23,10 +28,10 @@ public class BookCopiesDAO extends LibraryContext {
             PreparedStatement statement = conn.prepareStatement(query);
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
-                int idCopy = resultSet.getInt("IdCopy");
-                int bookId = resultSet.getInt("BookID");
-                int copyNumber = resultSet.getInt("CopyNumber");
-                String status = resultSet.getString("Status");
+                int idCopy = resultSet.getInt(ID_COPY);
+                int bookId = resultSet.getInt(BOOK_ID);
+                int copyNumber = resultSet.getInt(COPY_NUMBER);
+                String status = resultSet.getString(STATUS);
                 BookCopies copy = new BookCopies(idCopy, bookId, copyNumber, status);
                 copies.add(copy);
             }
@@ -88,9 +93,9 @@ public class BookCopiesDAO extends LibraryContext {
             statement.setInt(1, idCopy);
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
-                int bookId = resultSet.getInt("BookID");
-                int copyNumber = resultSet.getInt("CopyNumber");
-                String status = resultSet.getString("Status");
+                int bookId = resultSet.getInt(BOOK_ID);
+                int copyNumber = resultSet.getInt(COPY_NUMBER);
+                String status = resultSet.getString(STATUS);
                 copy = new BookCopies(idCopy, bookId, copyNumber, status);
             }
         } catch (SQLException ex) {
@@ -106,10 +111,10 @@ public class BookCopiesDAO extends LibraryContext {
             PreparedStatement statement = conn.prepareStatement(query);
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
-                int idCopy = resultSet.getInt("IdCopy");
-                int bookId = resultSet.getInt("BookID");
-                int copyNumber = resultSet.getInt("CopyNumber");
-                String status = resultSet.getString("Status");
+                int idCopy = resultSet.getInt(ID_COPY);
+                int bookId = resultSet.getInt(BOOK_ID);
+                int copyNumber = resultSet.getInt(COPY_NUMBER);
+                String status = resultSet.getString(STATUS);
                 BookCopies copy = new BookCopies(idCopy, bookId, copyNumber, status);
                 copies.add(copy);
             }

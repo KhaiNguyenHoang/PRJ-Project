@@ -87,7 +87,7 @@ public class BooksDAO extends LibraryContext {
     public List<Books> getAllBooks() {
         List<Books> books = new ArrayList<>();
         try {
-            String query = "SELECT * FROM books";
+            String query = "SELECT * " + "FROM books";
             PreparedStatement preparedStatement = conn.prepareStatement(query);
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {

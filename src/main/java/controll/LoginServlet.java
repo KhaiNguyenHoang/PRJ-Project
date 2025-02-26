@@ -21,7 +21,7 @@ public class LoginServlet extends HttpServlet {
 
         // Kiểm tra nếu email hoặc password là null hoặc rỗng
         if (email == null || password == null || email.isEmpty() || password.isEmpty()) {
-            request.setAttribute("error", "missing_credentials");
+            request.setAttribute("error", "missing_cre-dentials");
             try {
                 request.getRequestDispatcher("Auth/SignIn-SignUp.jsp").forward(request, response);
             } catch (ServletException | IOException e) {
@@ -46,7 +46,7 @@ public class LoginServlet extends HttpServlet {
             session.setAttribute("user", account);
             request.getSession().setAttribute("account", account);
             try {
-                request.getRequestDispatcher("index.jsp").forward(request, response);
+                request.getRequestDispatcher("HomeHTML/HomePageHTML/index.html").forward(request, response);
             } catch (ServletException | IOException e) {
                 e.printStackTrace();
             }

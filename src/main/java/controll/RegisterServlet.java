@@ -24,7 +24,7 @@ public class RegisterServlet extends HttpServlet {
         String username = request.getParameter("usernameStaff");
         String roleIdStr = request.getParameter("roleIdStaff");
 
-        if (fullName == null || email == null || password == null || username == null || roleIdStr == null) {
+        if (fullName.isEmpty() || email.isEmpty() || password.isEmpty() || username.isEmpty() || roleIdStr.isEmpty()) {
             request.setAttribute(ERROR_ATTRIBUTE, "missing_fields");
             try {
                 request.getRequestDispatcher(REGISTER_PAGE).forward(request, response);
