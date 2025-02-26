@@ -16,7 +16,7 @@ public class StaffDAO extends LibraryContext {
 
     public List<Staff> getAllStaff() {
         List<Staff> staffList = new ArrayList<>();
-        String query = "SELECT * FROM Staff";
+        String query = "SELECT * " + "FROM Staff";
         try (PreparedStatement statement = conn.prepareStatement(query);
              ResultSet resultSet = statement.executeQuery()) {
             while (resultSet.next()) {
@@ -35,7 +35,7 @@ public class StaffDAO extends LibraryContext {
     }
 
     public Staff getStaffById(int idStaff) {
-        String query = "SELECT * FROM Staff WHERE idStaff = ?";
+        String query = "SELECT * " + "FROM Staff WHERE idStaff = ?";
         try (PreparedStatement statement = conn.prepareStatement(query)) {
             statement.setInt(1, idStaff);
             try (ResultSet resultSet = statement.executeQuery()) {
