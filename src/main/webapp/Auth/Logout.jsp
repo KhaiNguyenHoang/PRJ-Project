@@ -352,131 +352,20 @@
 <body>
 <div class="container" id="container">
     <!-- Phần đăng ký -->
-    <div class="form-container sign-up-container">
-        <form action="RegisterServlet" method="post">
-            <h1>Create Account</h1>
-            <select id="accountType" class="account-type-select">
-                <option value="member">Member</option>
-                <option value="staff">Staff/Admin</option>
-            </select>
-            <div id="memberFields">
-                <input type="text" name="fullNameMember" placeholder="Full Name"/>
-                <input type="email" name="emailMember" placeholder="Email"/>
-                <input type="text" name="phoneMember" placeholder="Phone"/>
-                <input type="text" name="addressMember" placeholder="Address"/>
-                <input type="password" name="passwordMember" placeholder="Password"/>
-            </div>
-
-            <div id="staffFields" style="display: none;">
-                <input type="text" name="fullNameStaff" placeholder="Full Name"/>
-                <input type="email" name="emailStaff" placeholder="Email"/>
-                <input type="text" name="usernameStaff" placeholder="Username"/>
-                <input type="password" name="passwordStaff" placeholder="Password"/>
-
-                <!-- Dropdown cho Role -->
-                <select name="roleIdStaff" class="role-type-select">
-                    <option value="1">Admin</option>
-                    <option value="2">Staff</option>
-                </select>
-            </div>
-
-
-            <!-- Hiển thị lỗi -->
-            <%
-                String error = (String) request.getAttribute("error");
-                if (error != null) {
-                    if (error.equals("missing_fields")) {
-            %>
-            <div class="error-message" style="color: #FF4B2B; font-family:'Comic Sans MS'; padding-bottom: 5px">Please
-                fill in all fields.
-            </div>
-            <%
-            } else if (error.equals("invalid_role_id")) {
-            %>
-            <div class="error-message" style="color: #FF4B2B; font-family:'Comic Sans MS'; padding-bottom: 5px">Invalid
-                Role ID.
-            </div>
-            <%
-            } else if (error.equals("email_or_username_exists")) {
-            %>
-            <div class="error-message" style="color: #FF4B2B; font-family:'Comic Sans MS'; padding-bottom: 5px">Email or
-                Username already exists.
-            </div>
-            <%
-            } else if (error.equals("internal_error")) {
-            %>
-            <div class="error-message" style="color: #FF4B2B; font-family:'Comic Sans MS'; padding-bottom: 5px">An error
-                occurred during registration.
-            </div>
-            <%
-                    }
-                }
-            %>
-
-            <!-- Hiển thị thành công -->
-            <%
-                String success = (String) request.getAttribute("success");
-                if
-                (success != null && success.equals("account_created")) {
-            %>
-            <div class="success-message" style="color: green; font-family:'Comic Sans MS'; padding-bottom: 5px">Account
-                created successfully! Please login.
-            </div>
-            <%
-                }
-            %>
-
-            <button>Sign Up</button>
+    <div class="form-container sign-in-container">
+        <form action="logout" method="post">
+            <h1>Log out</h1>
+            <p>Are you sure you want to log out?</p>
+            <button type="submit">Log out</button>
         </form>
     </div>
 
     <!-- Phần đăng nhập -->
-    <div class="form-container sign-in-container">
-        <form action="LoginServlet" method="post">
-            <h1>Sign in</h1>
-            <div class="social-container">
-                <a href="#" class="social"><i class="fab fa-facebook-f"></i></a>
-                <a href="#" class="social"><i class="fab fa-google-plus-g"></i></a>
-                <a href="#" class="social"><i class="fab fa-linkedin-in"></i></a>
-            </div>
-            <input type="email" name="emailLogin" placeholder="Email" required/>
-            <input type="password" name="passwordLogin" placeholder="Password" required/>
-
-            <!-- Hiển thị lỗi -->
-            <%
-                String errorLogin = (String) request.getAttribute("error");
-                if (errorLogin != null) {
-                    if (errorLogin.equals("missing_credentials")) {
-            %>
-            <div class="error-message" style="color: #FF4B2B; font-family:'Comic Sans MS'; padding-bottom: 5px">Please
-                provide both email and password.
-            </div>
-            <%
-            } else if (errorLogin.equals("invalid_credentials")) {
-            %>
-            <div class="error-message" style="color: #FF4B2B; font-family:'Comic Sans MS'; padding-bottom: 5px">Invalid
-                email or password. Please try again.
-            </div>
-            <%
-            } else if (errorLogin.equals("locked_account")) {
-            %>
-            <div class="error-message" style="color: #FF4B2B; font-family:'Comic Sans MS'; padding-bottom: 5px">Account
-                is locked. Please contact the administrator.
-            </div>
-            <%
-            } else {
-            %>
-            <div class="error-message" style="color: #FF4B2B; font-family:'Comic Sans MS'; padding-bottom: 5px">An
-                unknown error occurred. Please try again
-                later.
-            </div>
-
-            <%
-                    }
-                }
-            %>
-            <a class="forgot" href="#">Forgot your password?</a>
-            <button type="submit">Sign In</button>
+    <div class="form-container sign-up-container">
+        <form action="CancelLogout" method="post">
+            <h1>Cancel log out</h1>
+            <p>Are you sure you want to cancel log out?</p>
+            <button type="submit">Cancel</button>
         </form>
     </div>
 
@@ -484,15 +373,15 @@
     <!-- Overlay -->
     <div class="overlay-container">
         <div class="overlay">
-            <div class="overlay-panel overlay-left">
-                <h1>Welcome Back!</h1>
-                <p>To keep connected with us please login with your personal info</p>
-                <button class="ghost" id="signIn">Sign In</button>
-            </div>
             <div class="overlay-panel overlay-right">
-                <h1>Hello, Friend!</h1>
-                <p>Enter your personal details and start journey with us</p>
-                <button class="ghost" id="signUp">Sign Up</button>
+                <h1>Keep work with us!</h1>
+                <p>Comeback the home page with us</p>
+                <button class="ghost" id="signUp">Cancle the Log out</button>
+            </div>
+            <div class="overlay-panel overlay-left">
+                <h1>See you later!</h1>
+                <p>To keep connected with us please login with your personal info</p>
+                <button class="ghost" id="signIn">Log out</button>
             </div>
         </div>
     </div>
