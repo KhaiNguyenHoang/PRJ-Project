@@ -7,7 +7,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import model.dao.AccountDAO;
+import model.dao.MembersDAO;
 import model.entity.Account;
+import model.entity.Members;
 
 import java.io.IOException;
 
@@ -21,7 +23,7 @@ public class LoginServlet extends HttpServlet {
 
         // Kiểm tra nếu email hoặc password là null hoặc rỗng
         if (email == null || password == null || email.isEmpty() || password.isEmpty()) {
-            request.setAttribute("error", "missing_cre-dentials");
+            request.setAttribute("error", "missing_credentials");
             try {
                 request.getRequestDispatcher("Auth/SignIn-SignUp.jsp").forward(request, response);
             } catch (ServletException | IOException e) {
@@ -33,8 +35,11 @@ public class LoginServlet extends HttpServlet {
         // Khởi tạo AccountDAO để gọi phương thức login
         AccountDAO accountDAO = new AccountDAO();
         Account account = accountDAO.login(email, password);
+        MembersDAO membersDAO = new MembersDAO();
+        Members members = membersDAO.login(email, password);
 
-        if (account == null) {
+        // Kiểm tra nếu cả account và members đều không hợp lệ
+        if (account == null && members == null) {
             request.setAttribute("error", "invalid_credentials");
             try {
                 request.getRequestDispatcher("Auth/SignIn-SignUp.jsp").forward(request, response);
@@ -42,11 +47,17 @@ public class LoginServlet extends HttpServlet {
                 e.printStackTrace();
             }
         } else {
+            // Nếu có tài khoản hợp lệ, tạo session và chuyển hướng
             HttpSession session = request.getSession();
-            session.setAttribute("user", account);
-            request.getSession().setAttribute("account", account);
+            if (account != null) {
+                session.setAttribute("user", account);
+                request.getSession().setAttribute("account", account);
+            } else {
+                session.setAttribute("user", members);
+                request.getSession().setAttribute("members", members);
+            }
             try {
-                response.sendRedirect("HomePage");
+                response.sendRedirect("HomePage");  // Chuyển hướng về trang chủ
             } catch (IOException e) {
                 e.printStackTrace();
             }

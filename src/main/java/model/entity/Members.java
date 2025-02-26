@@ -15,15 +15,29 @@ public class Members {
     private Date updatedAt;
     private Date deletedAt;
 
-    public Members(int idMember, String status, Date membershipDate, String passwordHash, String address, String phone, String fullName, String email) {
+    public Members(int idMember, String fullName, String email, String phone, String address, String passwordHash, Date membershipDate, String status, Date createdAt, Date updatedAt, Date deletedAt) {
         this.idMember = idMember;
-        this.status = status;
-        this.membershipDate = membershipDate;
-        this.passwordHash = passwordHash;
-        this.address = address;
-        this.phone = phone;
         this.fullName = fullName;
         this.email = email;
+        this.phone = phone;
+        this.address = address;
+        this.passwordHash = passwordHash;
+        this.membershipDate = membershipDate;
+        this.status = status;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.deletedAt = deletedAt;
+    }
+
+    public Members(int idMember, String fullName, String email, String phone, String address, String passwordHash, Date membershipDate, String status) {
+        this.idMember = idMember;
+        this.fullName = fullName;
+        this.email = email;
+        this.phone = phone;
+        this.address = address;
+        this.passwordHash = passwordHash;
+        this.membershipDate = membershipDate;
+        this.status = status;
     }
 
     public int getIdMember() {

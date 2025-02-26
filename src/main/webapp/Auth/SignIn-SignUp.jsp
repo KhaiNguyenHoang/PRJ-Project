@@ -360,11 +360,11 @@
                 <option value="staff">Staff/Admin</option>
             </select>
             <div id="memberFields">
-                <input type="text" name="fullName" placeholder="Full Name"/>
-                <input type="email" name="email" placeholder="Email"/>
-                <input type="text" name="phone" placeholder="Phone"/>
-                <input type="text" name="address" placeholder="Address"/>
-                <input type="password" name="password" placeholder="Password"/>
+                <input type="text" name="fullNameMember" placeholder="Full Name"/>
+                <input type="email" name="emailMember" placeholder="Email"/>
+                <input type="text" name="phoneMember" placeholder="Phone"/>
+                <input type="text" name="addressMember" placeholder="Address"/>
+                <input type="password" name="passwordMember" placeholder="Password"/>
             </div>
 
             <div id="staffFields" style="display: none;">

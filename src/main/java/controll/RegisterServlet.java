@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import model.dao.AccountDAO;
+import model.dao.MembersDAO;
 
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -18,24 +19,56 @@ public class RegisterServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String accountType = "staff";
+
+        if ((!request.getParameter("fullNameMember").isEmpty() && !request.getParameter("emailMember").isEmpty() && !request.getParameter("phoneMember").isEmpty() && !request.getParameter("addressMember").isEmpty() && !request.getParameter("passwordMember").isEmpty())) {
+            accountType = "member";
+        }
+
+        // Nếu là member
+        if (accountType.equals("member")) {
+            String fullName = request.getParameter("fullNameMember");
+            String email = request.getParameter("emailMember");
+            String phone = request.getParameter("phoneMember");
+            String address = request.getParameter("addressMember");
+            String password = request.getParameter("passwordMember");
+
+            if (fullName.isEmpty() || email.isEmpty() || phone.isEmpty() || address.isEmpty() || password.isEmpty()) {
+                request.setAttribute(ERROR_ATTRIBUTE, "missing_fields");
+                request.getRequestDispatcher(REGISTER_PAGE).forward(request, response);
+                return;
+            }
+
+            MembersDAO membersDAO = new MembersDAO();
+            if (membersDAO.checkEmailExists(email)) {
+                request.setAttribute(ERROR_ATTRIBUTE, "email_or_username_exists");
+                request.getRequestDispatcher(REGISTER_PAGE).forward(request, response);
+                return;
+            }
+
+            // Đăng ký Member
+            membersDAO.registerMember(fullName, email, phone, address, password);
+
+            // Thành công
+            request.setAttribute("success", "account_created");
+            request.getRequestDispatcher(REGISTER_PAGE).forward(request, response);
+            return;
+        }
+        // Nếu là staff/admin
         String fullName = request.getParameter("fullNameStaff");
         String email = request.getParameter("emailStaff");
-        String password = request.getParameter("passwordStaff");
         String username = request.getParameter("usernameStaff");
+        String password = request.getParameter("passwordStaff");
         String roleIdStr = request.getParameter("roleIdStaff");
 
-        if (fullName.isEmpty() || email.isEmpty() || password.isEmpty() || username.isEmpty() || roleIdStr.isEmpty()) {
+        if (fullName.trim().isEmpty() || email.trim().isEmpty() || username.trim().isEmpty() || password.trim().isEmpty() || roleIdStr.trim().isEmpty()) {
             request.setAttribute(ERROR_ATTRIBUTE, "missing_fields");
-            try {
-                request.getRequestDispatcher(REGISTER_PAGE).forward(request, response);
-            } catch (ServletException | IOException e) {
-                e.printStackTrace();
-            }
+            request.getRequestDispatcher(REGISTER_PAGE).forward(request, response);
             return;
         }
 
         try {
-            // Chuyển đổi roleId và xử lý
+            // Chuyển đổi roleId
             int roleId = Integer.parseInt(roleIdStr);
             if (roleId != 1 && roleId != 2) {
                 request.setAttribute(ERROR_ATTRIBUTE, "invalid_role_id");
@@ -50,28 +83,16 @@ public class RegisterServlet extends HttpServlet {
                 return;
             }
 
-            // Đăng ký tài khoản mới
+            // Đăng ký Staff/Admin
             accountDAO.registerAccount(fullName, email, username, password, roleId);
 
-            // Chuyển hướng thành công
+            // Thành công
             request.setAttribute("success", "account_created");
             request.getRequestDispatcher(REGISTER_PAGE).forward(request, response);
 
         } catch (NumberFormatException e) {
             request.setAttribute(ERROR_ATTRIBUTE, "invalid_role_id");
-            try {
-                request.getRequestDispatcher(REGISTER_PAGE).forward(request, response);
-            } catch (ServletException | IOException ex) {
-                ex.printStackTrace();
-            }
-        } catch (Exception e) {
-            LOGGER.severe("Error occurred during registration: " + e.getMessage());
-            request.setAttribute(ERROR_ATTRIBUTE, "internal_error");
-            try {
-                request.getRequestDispatcher(REGISTER_PAGE).forward(request, response);
-            } catch (ServletException | IOException ex) {
-                ex.printStackTrace();
-            }
+            request.getRequestDispatcher(REGISTER_PAGE).forward(request, response);
         }
     }
 }
