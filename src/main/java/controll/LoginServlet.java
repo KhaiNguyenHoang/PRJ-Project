@@ -46,8 +46,8 @@ public class LoginServlet extends HttpServlet {
             session.setAttribute("user", account);
             request.getSession().setAttribute("account", account);
             try {
-                request.getRequestDispatcher("HomeHTML/HomePageHTML/index.html").forward(request, response);
-            } catch (ServletException | IOException e) {
+                response.sendRedirect("HomePage");
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
