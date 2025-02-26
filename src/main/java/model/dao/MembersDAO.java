@@ -23,7 +23,8 @@ public class MembersDAO extends LibraryContext {
         for (Members member : membersList) {
             System.out.println(member);
         }
-        System.out.println(membersDAO.login("member1@gmail.com", "123456").getEmail());
+        membersDAO.banMemberByEmail("member1@gmail.com");
+        System.out.println(membersDAO.login("member1@gmail.com", "123456").getStatus());
     }
 
     // Helper method to map ResultSet to Members object
@@ -151,6 +152,41 @@ public class MembersDAO extends LibraryContext {
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    public int getMemberIdByEmail(String email) {
+        String sql = "SELECT idMember FROM members WHERE email = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, email);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("idMember");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();  // Log the exception (consider better logging in production)
+        }
+        return -1;
+    }
+
+    public void banMemberByEmail(String email) {
+        String sql = "UPDATE members SET status = 'suspended' WHERE email = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, email);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();  // Log the exception (consider better logging in production)
+        }
+    }
+
+    public void unbanMemberByEmail(String email) {
+        String sql = "UPDATE members SET status = 'active' WHERE email = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, email);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();  // Log the exception (consider better logging in production)
         }
     }
 }

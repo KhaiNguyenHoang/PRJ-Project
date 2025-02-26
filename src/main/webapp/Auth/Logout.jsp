@@ -362,10 +362,10 @@
 
     <!-- Phần đăng nhập -->
     <div class="form-container sign-up-container">
-        <form action="canclelogout" method="post">
-            <h1>Cancle Log out</h1>
-            <p>Are you sure you want to cancle log out?</p>
-            <button type="submit">Cancle</button>
+        <form action="CancelLogout" method="post">
+            <h1>Cancel log out</h1>
+            <p>Are you sure you want to cancel log out?</p>
+            <button type="submit">Cancel</button>
         </form>
     </div>
 

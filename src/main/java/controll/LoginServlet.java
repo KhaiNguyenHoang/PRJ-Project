@@ -52,14 +52,28 @@ public class LoginServlet extends HttpServlet {
             if (account != null) {
                 session.setAttribute("user", account);
                 request.getSession().setAttribute("account", account);
+                try {
+                    response.sendRedirect("HomePage");  // Chuyển hướng về trang chủ
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             } else {
-                session.setAttribute("user", members);
-                request.getSession().setAttribute("members", members);
-            }
-            try {
-                response.sendRedirect("HomePage");  // Chuyển hướng về trang chủ
-            } catch (IOException e) {
-                e.printStackTrace();
+                if (members.getStatus().equalsIgnoreCase("Active")) {
+                    session.setAttribute("user", members);
+                    request.getSession().setAttribute("members", members);
+                    try {
+                        response.sendRedirect("HomePage");  // Chuyển hướng về trang chủ
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    request.setAttribute("error", "locked_account");
+                    try {
+                        request.getRequestDispatcher("Auth/SignIn-SignUp.jsp").forward(request, response);
+                    } catch (ServletException | IOException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
         }
     }

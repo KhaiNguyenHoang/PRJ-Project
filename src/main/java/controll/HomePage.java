@@ -14,11 +14,11 @@ public class HomePage extends HttpServlet {
     @Override
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        request.getRequestDispatcher("/HomeHTML/HomePageHTML/index.html").forward(request, response);
+        request.getRequestDispatcher("/HomeHTML/HomeMemberHTML/index.html").forward(request, response);
     }
 
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        request.getRequestDispatcher("/HomeHTML/HomePageHTML/index.html").forward(request, response);
+        request.getRequestDispatcher("/HomeHTML/HomeMemberHTML/index.html").forward(request, response);
     }
 }

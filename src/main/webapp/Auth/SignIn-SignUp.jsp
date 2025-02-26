@@ -416,9 +416,12 @@
             <!-- Hiển thị thành công -->
             <%
                 String success = (String) request.getAttribute("success");
-                if (success != null && success.equals("account_created")) {
+                if
+                (success != null && success.equals("account_created")) {
             %>
-            <div class="success-message" style="color: green;">Account created successfully! Please login.</div>
+            <div class="success-message" style="color: green; font-family:'Comic Sans MS'; padding-bottom: 5px">Account
+                created successfully! Please login.
+            </div>
             <%
                 }
             %>
@@ -455,12 +458,19 @@
                 email or password. Please try again.
             </div>
             <%
+            } else if (errorLogin.equals("locked_account")) {
+            %>
+            <div class="error-message" style="color: #FF4B2B; font-family:'Comic Sans MS'; padding-bottom: 5px">Account
+                is locked. Please contact the administrator.
+            </div>
+            <%
             } else {
             %>
             <div class="error-message" style="color: #FF4B2B; font-family:'Comic Sans MS'; padding-bottom: 5px">An
                 unknown error occurred. Please try again
                 later.
             </div>
+
             <%
                     }
                 }
