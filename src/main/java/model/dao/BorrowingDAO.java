@@ -152,7 +152,7 @@ public class BorrowingDAO extends LibraryContext {
 
     // Lấy thông tin mượn sách theo IdBorrow
     public Borrowing getBorrowingById(int idBorrow) {
-        String query = "SELECT * FROM Borrowing WHERE IdBorrow = ?";
+        String query = "SELECT * " + "FROM Borrowing WHERE IdBorrow = ?";
         try (PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setInt(1, idBorrow);
             try (ResultSet rs = ps.executeQuery()) {
@@ -184,7 +184,7 @@ public class BorrowingDAO extends LibraryContext {
     // Lấy tất cả các mượn sách của thành viên
     public List<Borrowing> getAllBorrowingsByMemberId(int memberId) {
         List<Borrowing> borrowings = new ArrayList<>();
-        String query = "SELECT * FROM Borrowing WHERE MemberID = ?";
+        String query = "SELECT * " + "FROM Borrowing WHERE MemberID = ?";
         try (PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setInt(1, memberId);
             try (ResultSet rs = ps.executeQuery()) {
