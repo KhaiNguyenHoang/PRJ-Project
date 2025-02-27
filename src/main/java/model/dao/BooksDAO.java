@@ -6,6 +6,8 @@ import model.utils.LibraryContext;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class BooksDAO extends LibraryContext {
 
@@ -153,4 +155,53 @@ public class BooksDAO extends LibraryContext {
         }
         return false;
     }
+
+    public List<Books> searchBooks(String keyword) {
+        String searchQuery = "SELECT * " + "FROM Books WHERE Title LIKE ? OR Author LIKE ? OR ISBN LIKE ?";
+        try (PreparedStatement ps = conn.prepareStatement(searchQuery)) {
+            ps.setString(1, "%" + keyword + "%");
+            ps.setString(2, "%" + keyword + "%");
+            ps.setString(3, "%" + keyword + "%");
+
+            try (ResultSet rs = ps.executeQuery()) {
+                return mapResultSetToBooksList(rs);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private List<Books> mapResultSetToBooksList(ResultSet rs) {
+        List<Books> booksList = new ArrayList<>();
+        try {
+            while (rs.next()) {
+                booksList.add(mapResultSetToBooks(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return booksList;
+    }
+
+    private Books mapResultSetToBooks(ResultSet rs) {
+        Books book = new Books();
+        try {
+            book.setIdBook(rs.getInt("IdBook"));
+            book.setTitle(rs.getString("Title"));
+            book.setAuthor(rs.getString("Author"));
+            book.setIsbn(rs.getString("ISBN"));
+            book.setPublisher(rs.getString("Publisher"));
+            book.setYearPublished(rs.getInt("YearPublished"));
+            book.setCategoryId(rs.getInt("CategoryID"));
+            book.setCopiesAvailable(rs.getInt("CopiesAvailable"));
+            book.setDigital(rs.getBoolean("IsDigital"));
+            book.setFilePath(rs.getString("FilePath"));
+            book.setStatus(rs.getString("Status"));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return book;
+    }
+
 }
