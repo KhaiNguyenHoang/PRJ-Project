@@ -10,127 +10,134 @@ import java.sql.SQLException;
 public class BooksDAO extends LibraryContext {
 
     public BooksDAO() {
-        super();
+        super(); // Kết nối tới cơ sở dữ liệu thông qua lớp cha LibraryContext
     }
 
-    // Xóa sách và tất cả bản sao liên quan
-    public boolean deleteBook(int bookId) {
-        // Bắt đầu giao dịch để đảm bảo tính toàn vẹn dữ liệu
-        try {
-            conn.setAutoCommit(false);  // Tắt auto-commit để thực hiện giao dịch
+    public static void main(String[] args) {
+        BooksDAO booksDAO = new BooksDAO();
+        booksDAO.addBook(new Books("Don Quixote", "Miguel de Cervantes", "9780142437230", "Penguin Classics", 2003, 1, 1, false, "don_quixote.pdf", "Available"));
+    }
 
-            // Xóa các bản sao liên quan đến sách trong bảng BookCopies
-            String deleteCopiesQuery = "DELETE FROM BookCopies WHERE BookID = ?";
-            try (PreparedStatement preparedStatement = conn.prepareStatement(deleteCopiesQuery)) {
-                preparedStatement.setInt(1, bookId);
-                preparedStatement.executeUpdate();
-            }
+    // Thêm sách mới
+    public boolean addBook(Books book) {
+        String insertBookQuery = "INSERT INTO Books (Title, Author, ISBN, Publisher, YearPublished, CategoryID, CopiesAvailable, IsDigital, FilePath, Status) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement ps = conn.prepareStatement(insertBookQuery, PreparedStatement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, book.getTitle());
+            ps.setString(2, book.getAuthor());
+            ps.setString(3, book.getIsbn());
+            ps.setString(4, book.getPublisher());
+            ps.setInt(5, book.getYearPublished());
+            ps.setInt(6, book.getCategoryId());
+            ps.setInt(7, book.getCopiesAvailable());
+            ps.setBoolean(8, book.isDigital());
+            ps.setString(9, book.getFilePath());
+            ps.setString(10, book.getStatus());
 
-            // Xóa sách trong bảng Books
-            String deleteBookQuery = "DELETE FROM Books WHERE IdBook = ?";
-            try (PreparedStatement preparedStatement = conn.prepareStatement(deleteBookQuery)) {
-                preparedStatement.setInt(1, bookId);
-                int rowsAffected = preparedStatement.executeUpdate();
-                if (rowsAffected > 0) {
-                    conn.commit();  // Commit giao dịch nếu thành công
-                    return true;
-                } else {
-                    conn.rollback();  // Rollback nếu không có dòng nào bị xóa
-                    return false;
+            int rowsAffected = ps.executeUpdate();
+            if (rowsAffected > 0) {
+                // Lấy IdBook của sách mới được thêm vào
+                try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        int bookId = generatedKeys.getInt(1);
+
+                        // Thêm bản sao vào bảng BookCopies
+                        BookCopiesDAO bookCopiesDAO = new BookCopiesDAO();
+                        for (int i = 1; i <= book.getCopiesAvailable(); i++) {
+                            bookCopiesDAO.addBookCopy(bookId, i, "Available");
+                        }
+
+                        // Cập nhật lại trạng thái sách
+                        updateBookStatusBasedOnCopies(bookId);
+                    }
                 }
+                return true;
             }
         } catch (SQLException e) {
-            try {
-                conn.rollback();  // Rollback giao dịch nếu có lỗi
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            }
             e.printStackTrace();
-            return false;
-        } finally {
-            try {
-                conn.setAutoCommit(true);  // Bật lại auto-commit sau khi giao dịch hoàn tất
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            }
         }
+        return false;
     }
 
-    // Cập nhật thông tin sách và các bản sao nếu cần
+    // Cập nhật sách
     public boolean updateBook(Books book) {
-        // Bắt đầu giao dịch
-        try {
-            conn.setAutoCommit(false);  // Tắt auto-commit để thực hiện giao dịch
+        String updateBookQuery = "UPDATE Books SET Title = ?, Author = ?, ISBN = ?, Publisher = ?, YearPublished = ?, CategoryID = ?, CopiesAvailable = ?, " +
+                "IsDigital = ?, FilePath = ?, Status = ? WHERE IdBook = ?";
+        try (PreparedStatement ps = conn.prepareStatement(updateBookQuery)) {
+            ps.setString(1, book.getTitle());
+            ps.setString(2, book.getAuthor());
+            ps.setString(3, book.getIsbn());
+            ps.setString(4, book.getPublisher());
+            ps.setInt(5, book.getYearPublished());
+            ps.setInt(6, book.getCategoryId());
+            ps.setInt(7, book.getCopiesAvailable());
+            ps.setBoolean(8, book.isDigital());
+            ps.setString(9, book.getFilePath());
+            ps.setString(10, book.getStatus());
+            ps.setInt(11, book.getIdBook());
 
-            // Cập nhật sách trong bảng Books
-            String query = "UPDATE books SET title = ?, author = ?, isbn = ?, publisher = ?, yearPublished = ?, categoryId = ?, copiesAvailable = ?, isDigital = ?, status = ?, filePath = ?, updatedAt = GETDATE() WHERE idBook = ?";
-            try (PreparedStatement preparedStatement = conn.prepareStatement(query)) {
-                preparedStatement.setString(1, book.getTitle());
-                preparedStatement.setString(2, book.getAuthor());
-                preparedStatement.setString(3, book.getIsbn());
-                preparedStatement.setString(4, book.getPublisher());
-                preparedStatement.setInt(5, book.getYearPublished());
-                preparedStatement.setInt(6, book.getCategoryId());
-                preparedStatement.setInt(7, book.getCopiesAvailable());
-                preparedStatement.setBoolean(8, book.isDigital());
-                preparedStatement.setString(9, book.getStatus());
-                preparedStatement.setString(10, book.getFilePath());
-                preparedStatement.setInt(11, book.getIdBook());
-                int rowsAffected = preparedStatement.executeUpdate();
-                if (rowsAffected == 0) {
-                    conn.rollback();
-                    return false;
-                }
-            }
+            int rowsAffected = ps.executeUpdate();
+            if (rowsAffected > 0) {
+                // Cập nhật số lượng bản sao nếu có sự thay đổi
+                BookCopiesDAO bookCopiesDAO = new BookCopiesDAO();
+                bookCopiesDAO.syncBookCopies(book.getIdBook(), book.getCopiesAvailable());
 
-            // Sau khi cập nhật sách, có thể cần phải cập nhật thông tin bản sao
-            // Thực hiện logic cập nhật nếu có thay đổi cần thiết trong BookCopies
-            BookCopiesDAO bookCopiesDAO = new BookCopiesDAO();
-            bookCopiesDAO.updateCopiesStatus(book.getIdBook(), book.getStatus());
-
-            conn.commit();  // Commit giao dịch nếu thành công
-            return true;
-        } catch (SQLException e) {
-            try {
-                conn.rollback();  // Rollback nếu có lỗi
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            }
-            e.printStackTrace();
-            return false;
-        } finally {
-            try {
-                conn.setAutoCommit(true);  // Bật lại auto-commit sau khi giao dịch hoàn tất
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            }
-        }
-    }
-
-    // Lấy sách theo ID
-    public Books getBookById(int id) {
-        Books book = null;
-        String query = "SELECT * " + "FROM books WHERE idBook = ?";
-        try (PreparedStatement preparedStatement = conn.prepareStatement(query)) {
-            preparedStatement.setInt(1, id);
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    book = mapResultSetToBook(resultSet);
-                }
+                // Cập nhật trạng thái sách dựa trên số lượng bản sao có sẵn
+                updateBookStatusBasedOnCopies(book.getIdBook());
+                return true;
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return book;
+        return false;
     }
 
-    // Cập nhật trạng thái của bản sao liên quan khi cập nhật sách
-    public boolean updateCopiesStatus(int bookId, String status) {
-        String query = "UPDATE BookCopies SET Status = ? WHERE BookID = ?";
-        try (PreparedStatement preparedStatement = conn.prepareStatement(query)) {
-            preparedStatement.setString(1, status);
-            preparedStatement.setInt(2, bookId);
-            int rowsAffected = preparedStatement.executeUpdate();
+    // Cập nhật trạng thái sách dựa trên số lượng bản sao có sẵn
+    public boolean updateBookStatusBasedOnCopies(int bookId) {
+        String query = "SELECT COUNT(*) AS CopiesAvailable, " +
+                "SUM(CASE WHEN Status = 'Borrowed' THEN 1 ELSE 0 END) AS BorrowedCount, " +
+                "SUM(CASE WHEN Status = 'Reserved' THEN 1 ELSE 0 END) AS ReservedCount, " +
+                "SUM(CASE WHEN Status = 'Lost' THEN 1 ELSE 0 END) AS LostCount " +
+                "FROM BookCopies WHERE BookID = ?";
+        try (PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, bookId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int copiesAvailable = rs.getInt("CopiesAvailable");
+                    int borrowedCount = rs.getInt("BorrowedCount");
+                    int reservedCount = rs.getInt("ReservedCount");
+                    int lostCount = rs.getInt("LostCount");
+
+                    // Tính toán trạng thái sách dựa trên số lượng bản sao
+                    String status = "Available";
+                    if (lostCount == copiesAvailable) {
+                        status = "Lost";
+                    } else if (borrowedCount > 0) {
+                        status = "Borrowed";
+                    } else if (reservedCount > 0) {
+                        status = "Reserved";
+                    }
+
+                    // Cập nhật trạng thái sách
+                    updateBookStatus(bookId, status);
+
+                    // Cập nhật lại số lượng bản sao có sẵn trong sách
+                    updateCopiesAvailable(bookId, copiesAvailable - borrowedCount - reservedCount - lostCount);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // Cập nhật số lượng bản sao có sẵn trong sách
+    private boolean updateCopiesAvailable(int bookId, int copiesAvailable) {
+        String updateCopiesAvailableQuery = "UPDATE Books SET CopiesAvailable = ? WHERE IdBook = ?";
+        try (PreparedStatement ps = conn.prepareStatement(updateCopiesAvailableQuery)) {
+            ps.setInt(1, copiesAvailable);
+            ps.setInt(2, bookId);
+            int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -138,23 +145,17 @@ public class BooksDAO extends LibraryContext {
         return false;
     }
 
-    // Phương thức ánh xạ kết quả từ ResultSet vào đối tượng Books
-    private Books mapResultSetToBook(ResultSet resultSet) throws SQLException {
-        Books book = new Books();
-        book.setIdBook(resultSet.getInt("idBook"));
-        book.setTitle(resultSet.getString("title"));
-        book.setAuthor(resultSet.getString("author"));
-        book.setIsbn(resultSet.getString("isbn"));
-        book.setPublisher(resultSet.getString("publisher"));
-        book.setYearPublished(resultSet.getInt("yearPublished"));
-        book.setCategoryId(resultSet.getInt("categoryId"));
-        book.setCopiesAvailable(resultSet.getInt("copiesAvailable"));
-        book.setDigital(resultSet.getBoolean("isDigital"));
-        book.setStatus(resultSet.getString("status"));
-        book.setFilePath(resultSet.getString("filePath"));
-        book.setCreatedAt(resultSet.getDate("createdAt"));
-        book.setDeletedAt(resultSet.getDate("deletedAt"));
-        book.setUpdatedAt(resultSet.getDate("updatedAt"));
-        return book;
+    // Cập nhật trạng thái sách
+    private boolean updateBookStatus(int bookId, String status) {
+        String updateStatusQuery = "UPDATE Books SET Status = ? WHERE IdBook = ?";
+        try (PreparedStatement ps = conn.prepareStatement(updateStatusQuery)) {
+            ps.setString(1, status);
+            ps.setInt(2, bookId);
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }
