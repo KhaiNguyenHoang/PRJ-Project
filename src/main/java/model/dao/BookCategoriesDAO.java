@@ -91,4 +91,19 @@ public class BookCategoriesDAO extends LibraryContext {
             return false;
         }
     }
+
+    public int getIdCategoryByName(String categoryName) {
+        try {
+            String query = "SELECT IdCategory FROM BookCategories WHERE CategoryName = ?";
+            PreparedStatement statement = conn.prepareStatement(query);
+            statement.setString(1, categoryName);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                return resultSet.getInt("IdCategory");
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(BookCategoriesDAO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return -1;
+    }
 }
