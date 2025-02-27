@@ -8,102 +8,112 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class BookCategoriesDAO extends LibraryContext {
+
     public BookCategoriesDAO() {
         super();
     }
 
-    public List<BookCategories> getAllCategories() {
-        List<BookCategories> categories = new ArrayList<>();
-        try {
-            String query = "SELECT IdCategory,CategoryName FROM BookCategories";
-            PreparedStatement statement = conn.prepareStatement(query);
-            ResultSet resultSet = statement.executeQuery();
-            while (resultSet.next()) {
-                int idCategory = resultSet.getInt("IdCategory");
-                String categoryName = resultSet.getString("CategoryName");
-                BookCategories category = new BookCategories(idCategory, categoryName);
-                categories.add(category);
+    // Thêm danh mục sách mới
+    public boolean addBookCategory(BookCategories category) {
+        String insertQuery = "INSERT INTO BookCategories (CategoryName) VALUES (?)";
+        try (PreparedStatement ps = conn.prepareStatement(insertQuery, PreparedStatement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, category.getCategoryName());
+            int rowsAffected = ps.executeUpdate();
+            if (rowsAffected > 0) {
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        category.setIdCategory(rs.getInt(1)); // Gán ID tự động tạo
+                    }
+                }
+                return true;
             }
+            return false;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
-        } catch (SQLException ex) {
-            Logger.getLogger(BookCategoriesDAO.class.getName()).log(Level.SEVERE, null, ex);
+    // Xóa danh mục sách theo ID
+    public boolean deleteBookCategory(int idCategory) {
+        String deleteQuery = "DELETE FROM BookCategories WHERE IdCategory = ?";
+        try (PreparedStatement ps = conn.prepareStatement(deleteQuery)) {
+            ps.setInt(1, idCategory);
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false; // Lỗi nếu danh mục đang được tham chiếu bởi Books
+        }
+    }
+
+    // Cập nhật danh mục sách
+    public boolean updateBookCategory(BookCategories category) {
+        String updateQuery = "UPDATE BookCategories SET CategoryName = ? WHERE IdCategory = ?";
+        try (PreparedStatement ps = conn.prepareStatement(updateQuery)) {
+            ps.setString(1, category.getCategoryName());
+            ps.setInt(2, category.getIdCategory());
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public BookCategories getBookCategoryByName(String categoryName) {
+        String query = "SELECT * " + "FROM BookCategories WHERE CategoryName = ?";
+        try (PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setString(1, categoryName);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToBookCategory(rs);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    // Lấy danh mục sách theo ID
+    public BookCategories getBookCategoryById(int idCategory) {
+        String query = "SELECT * " + " FROM BookCategories WHERE IdCategory = ?";
+        try (PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, idCategory);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToBookCategory(rs);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    // Lấy tất cả danh mục sách
+    public List<BookCategories> getAllBookCategories() {
+        List<BookCategories> categories = new ArrayList<>();
+        String query = "SELECT * " + " FROM BookCategories";
+        try (PreparedStatement ps = conn.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                categories.add(mapResultSetToBookCategory(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         return categories;
     }
 
-    public BookCategories getCategoryById(int idCategory) {
-        BookCategories category = null;
-        try {
-            String query = "SELECT CategoryName FROM BookCategories WHERE IdCategory = ?";
-            PreparedStatement statement = conn.prepareStatement(query);
-            statement.setInt(1, idCategory);
-            ResultSet resultSet = statement.executeQuery();
-            if (resultSet.next()) {
-                String categoryName = resultSet.getString("CategoryName");
-                category = new BookCategories(idCategory, categoryName);
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(BookCategoriesDAO.class.getName()).log(Level.SEVERE, null, ex);
-        }
+    // Ánh xạ ResultSet thành BookCategories
+    private BookCategories mapResultSetToBookCategory(ResultSet rs) throws SQLException {
+        BookCategories category = new BookCategories();
+        category.setIdCategory(rs.getInt("IdCategory"));
+        category.setCategoryName(rs.getString("CategoryName"));
         return category;
-    }
-
-    public boolean updateCategory(BookCategories category) {
-        try {
-            String query = "UPDATE BookCategories SET CategoryName = ? WHERE IdCategory = ?";
-            PreparedStatement statement = conn.prepareStatement(query);
-            statement.setString(1, category.getCategoryName());
-            statement.setInt(2, category.getIdCategory());
-            statement.executeUpdate();
-            return true;
-        } catch (SQLException ex) {
-            Logger.getLogger(BookCategoriesDAO.class.getName()).log(Level.SEVERE, null, ex);
-            return false;
-        }
-    }
-
-    public boolean addCategory(BookCategories category) {
-        try {
-            String query = "INSERT INTO BookCategories (CategoryName) VALUES (?)";
-            PreparedStatement statement = conn.prepareStatement(query);
-            statement.setString(1, category.getCategoryName());
-            statement.executeUpdate();
-            return true;
-        } catch (SQLException ex) {
-            Logger.getLogger(BookCategoriesDAO.class.getName()).log(Level.SEVERE, null, ex);
-            return false;
-        }
-    }
-
-    public boolean deleteCategory(int idCategory) {
-        try {
-            String query = "DELETE FROM BookCategories WHERE IdCategory = ?";
-            PreparedStatement statement = conn.prepareStatement(query);
-            statement.setInt(1, idCategory);
-            statement.executeUpdate();
-            return true;
-        } catch (SQLException ex) {
-            Logger.getLogger(BookCategoriesDAO.class.getName()).log(Level.SEVERE, null, ex);
-            return false;
-        }
-    }
-
-    public int getIdCategoryByName(String categoryName) {
-        try {
-            String query = "SELECT IdCategory FROM BookCategories WHERE CategoryName = ?";
-            PreparedStatement statement = conn.prepareStatement(query);
-            statement.setString(1, categoryName);
-            ResultSet resultSet = statement.executeQuery();
-            if (resultSet.next()) {
-                return resultSet.getInt("IdCategory");
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(BookCategoriesDAO.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return -1;
     }
 }

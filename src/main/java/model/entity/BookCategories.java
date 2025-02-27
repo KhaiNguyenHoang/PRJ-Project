@@ -12,6 +12,10 @@ public class BookCategories {
         this.categoryName = categoryName;
     }
 
+    public BookCategories(String categoryName) {
+        this.categoryName = categoryName;
+    }
+
     public int getIdCategory() {
         return idCategory;
     }
