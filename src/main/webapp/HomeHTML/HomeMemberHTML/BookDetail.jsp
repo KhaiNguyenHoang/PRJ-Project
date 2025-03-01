@@ -240,33 +240,35 @@
         <div class="container">
             <%
                 String bookIdParam = request.getParameter("id");
+                Books book = null;
+                BookDetail bookDetail = null;
                 if (bookIdParam != null) {
                     try {
                         int bookId = Integer.parseInt(bookIdParam);
                         BooksDAO booksDAO = new BooksDAO();
-                        Books book = booksDAO.getBookById(bookId);
+                        book = booksDAO.getBookById(bookId);
                         BookDetailDAO bookDetailDAO = new BookDetailDAO();
-                        BookDetail bookDetail = bookDetailDAO.getBookDetailByBookID(bookId);
+                        bookDetail = bookDetailDAO.getBookDetailByBookID(bookId);
 
                         if (book != null && bookDetail != null) {
             %>
             <div class="book-details">
                 <div class="book-info">
                     <!-- Book Cover Image -->
-                    <img src="<%= book.getFilePath() %>" alt="Cover of <%= book.getTitle() %>" class="book-cover"/>
+                    <img src="<%=book.getFilePath()%>" alt="Cover of <%=book.getTitle()%>" class="book-cover"/>
                     <!-- Book Information -->
                     <div>
-                        <h2><%= book.getTitle() %>
+                        <h2><%=book.getTitle()%>
                         </h2>
-                        <p><strong>Author:</strong> <%= book.getAuthor() %>
+                        <p><strong>Author:</strong> <%=book.getAuthor()%>
                         </p>
-                        <p><strong>ISBN:</strong> <%= book.getIsbn() %>
+                        <p><strong>ISBN:</strong> <%=book.getIsbn()%>
                         </p>
-                        <p><strong>Publisher:</strong> <%= book.getPublisher() %>
+                        <p><strong>Publisher:</strong> <%=book.getPublisher()%>
                         </p>
-                        <p><strong>Year Published:</strong> <%= book.getYearPublished() %>
+                        <p><strong>Year Published:</strong> <%=book.getYearPublished()%>
                         </p>
-                        <p><strong>Copies Available:</strong> <%= book.getCopiesAvailable() %>
+                        <p><strong>Copies Available:</strong> <%=book.getCopiesAvailable()%>
                         </p>
                     </div>
                 </div>
@@ -274,7 +276,7 @@
                 <!-- Book Description -->
                 <div class="book-description">
                     <h3>Book Description</h3>
-                    <p><%= bookDetail.getDescription() %>
+                    <p><%=bookDetail.getDescription()%>
                     </p>
                 </div>
 
@@ -295,7 +297,7 @@
 
                 <!-- Borrow Book Button -->
                 <form action="BorrowBookServlet" method="post">
-                    <input type="hidden" name="bookId" value="<%= book.getIdBook() %>">
+                    <input type="hidden" name="bookId" value="<%=book.getIdBook()%>">
                     <button type="submit" class="borrow-button">Borrow Book</button>
                 </form>
 
@@ -336,8 +338,9 @@
     const pdfContainer = document.getElementById('pdfContainer');
 
     // Load PDF
-    <% if (book != null && book.isDigital() && bookDetail.getPdfPath() != null && !bookDetail.getPdfPath().isEmpty()) { %>
-    pdfjsLib.getDocument('<%= bookDetail.getPdfPath() %>').promise.then(function (pdf) {
+    <% if (book != null && book.isDigital() && bookDetail.getPdfPath() != null && !bookDetail.getPdfPath().isEmpty()) {
+                %>
+    pdfjsLib.getDocument('<%=bookDetail.getPdfPath()%>').promise.then(function (pdf) {
         pdfDoc = pdf;
         renderPage(pageNum);
     }).catch(function (error) {
