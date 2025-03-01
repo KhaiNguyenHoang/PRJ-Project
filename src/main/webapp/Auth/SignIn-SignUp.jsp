@@ -353,9 +353,9 @@
 <div class="container" id="container">
     <!-- Phần đăng ký -->
     <div class="form-container sign-up-container">
-        <form action="RegisterServlet" method="post">
+        <form action="RegisterServlet" method="post" novalidate>
             <h1>Create Account</h1>
-            <select id="accountType" class="account-type-select">
+            <select id="accountType" name="accountType" class="account-type-select">
                 <option value="member">Member</option>
                 <option value="staff">Staff/Admin</option>
             </select>
@@ -503,9 +503,6 @@
     const signUpButton = document.getElementById('signUp');
     const signInButton = document.getElementById('signIn');
     const container = document.getElementById('container');
-
-    // Mặc định hiển thị form đăng ký
-    container.classList.add("right-panel-active");
 
     signUpButton.addEventListener('click', () => {
         container.classList.add("right-panel-active");
