@@ -102,33 +102,45 @@
             color: #555;
         }
 
-        .pdf-container {
-            max-height: 0;
-            opacity: 0;
-            overflow: hidden;
-            transition: max-height 0.5s ease, opacity 0.5s ease;
-            margin-top: 20px;
+        /* PDF Viewer Styles */
+        .pdf-viewer {
+            margin-top: 30px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
         }
 
-        .pdf-container.open {
-            max-height: 700px;
-            opacity: 1;
+        .pdf-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
         }
 
-        .preview-button {
+        .pdf-controls button {
             background-color: #3498db;
             color: white;
             border: none;
-            padding: 12px 25px;
+            padding: 10px 20px;
             cursor: pointer;
             border-radius: 6px;
-            font-size: 1.1rem;
+            font-size: 1rem;
             transition: background-color 0.3s ease;
-            margin-top: 20px;
         }
 
-        .preview-button:hover {
+        .pdf-controls button:hover {
             background-color: #2980b9;
+        }
+
+        #pdfContainer canvas {
+            display: block;
+            margin: 0 auto;
+            border-radius: 4px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            max-width: 100%;
         }
 
         .borrow-button {
@@ -172,6 +184,11 @@
             .book-cover {
                 margin-bottom: 30px;
             }
+
+            .pdf-controls {
+                flex-direction: column;
+                gap: 10px;
+            }
         }
     </style>
 </head>
@@ -185,8 +202,8 @@
                     <span>Library</span>
                 </a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse"
-                        data-target="#navbarSupportedContent"
-                        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                        data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
@@ -223,33 +240,35 @@
         <div class="container">
             <%
                 String bookIdParam = request.getParameter("id");
+                Books book = null;
+                BookDetail bookDetail = null;
                 if (bookIdParam != null) {
                     try {
                         int bookId = Integer.parseInt(bookIdParam);
                         BooksDAO booksDAO = new BooksDAO();
-                        Books book = booksDAO.getBookById(bookId);
+                        book = booksDAO.getBookById(bookId);
                         BookDetailDAO bookDetailDAO = new BookDetailDAO();
-                        BookDetail bookDetail = bookDetailDAO.getBookDetailByBookID(bookId);
+                        bookDetail = bookDetailDAO.getBookDetailByBookID(bookId);
 
                         if (book != null && bookDetail != null) {
             %>
             <div class="book-details">
                 <div class="book-info">
                     <!-- Book Cover Image -->
-                    <img src="<%= book.getFilePath() %>" alt="Cover of <%= book.getTitle() %>" class="book-cover"/>
+                    <img src="<%=book.getFilePath()%>" alt="Cover of <%=book.getTitle()%>" class="book-cover"/>
                     <!-- Book Information -->
                     <div>
-                        <h2><%= book.getTitle() %>
+                        <h2><%=book.getTitle()%>
                         </h2>
-                        <p><strong>Author:</strong> <%= book.getAuthor() %>
+                        <p><strong>Author:</strong> <%=book.getAuthor()%>
                         </p>
-                        <p><strong>ISBN:</strong> <%= book.getIsbn() %>
+                        <p><strong>ISBN:</strong> <%=book.getIsbn()%>
                         </p>
-                        <p><strong>Publisher:</strong> <%= book.getPublisher() %>
+                        <p><strong>Publisher:</strong> <%=book.getPublisher()%>
                         </p>
-                        <p><strong>Year Published:</strong> <%= book.getYearPublished() %>
+                        <p><strong>Year Published:</strong> <%=book.getYearPublished()%>
                         </p>
-                        <p><strong>Copies Available:</strong> <%= book.getCopiesAvailable() %>
+                        <p><strong>Copies Available:</strong> <%=book.getCopiesAvailable()%>
                         </p>
                     </div>
                 </div>
@@ -257,28 +276,28 @@
                 <!-- Book Description -->
                 <div class="book-description">
                     <h3>Book Description</h3>
-                    <p><%= bookDetail.getDescription() %>
+                    <p><%=bookDetail.getDescription()%>
                     </p>
                 </div>
 
-                <!-- PDF Preview (if digital) -->
-                <% if (book.isDigital()) { %>
-                <% if (bookDetail.getPdfPath() != null && !bookDetail.getPdfPath().isEmpty()) { %>
-                <button id="previewBtn" class="preview-button">Read Preview</button>
-                <div id="pdfContainer" class="pdf-container">
-                    <iframe src="<%= bookDetail.getPdfPath() %>" width="100%" height="600px"
-                            title="PDF Preview of <%= book.getTitle() %>"></iframe>
+                <!-- PDF Viewer (if digital) -->
+                <% if (book.isDigital() && bookDetail.getPdfPath() != null && !bookDetail.getPdfPath().isEmpty()) { %>
+                <div class="pdf-viewer">
+                    <div class="pdf-controls">
+                        <button onclick="prevPage()">Previous Page</button>
+                        <button onclick="nextPage()">Next Page</button>
+                        <button onclick="zoomIn()">Zoom In</button>
+                        <button onclick="zoomOut()">Zoom Out</button>
+                    </div>
+                    <div id="pdfContainer"></div>
                 </div>
                 <% } else { %>
-                <p>No PDF available for this book.</p>
-                <% } %>
-                <% } else { %>
-                <p>This book is not available in digital format.</p>
+                <p>This book is not available in digital format or no PDF is provided.</p>
                 <% } %>
 
                 <!-- Borrow Book Button -->
                 <form action="BorrowBookServlet" method="post">
-                    <input type="hidden" name="bookId" value="<%= book.getIdBook() %>">
+                    <input type="hidden" name="bookId" value="<%=book.getIdBook()%>">
                     <button type="submit" class="borrow-button">Borrow Book</button>
                 </form>
 
@@ -311,18 +330,64 @@
 <!-- Scripts -->
 <script src="HomeHTML/HomeMemberHTML/js/jquery-3.4.1.min.js" type="text/javascript"></script>
 <script src="HomeHTML/HomeMemberHTML/js/bootstrap.js" type="text/javascript"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.4.456/pdf.min.js"></script>
 <script>
-    const previewBtn = document.getElementById('previewBtn');
+    let pdfDoc = null;
+    let pageNum = 1;
+    let scale = 1.5;
     const pdfContainer = document.getElementById('pdfContainer');
-    if (previewBtn && pdfContainer) {
-        previewBtn.addEventListener('click', function () {
-            pdfContainer.classList.toggle('open');
-            if (pdfContainer.classList.contains('open')) {
-                previewBtn.textContent = "Close Preview";
-            } else {
-                previewBtn.textContent = "Read Preview";
-            }
+
+    // Load PDF
+    <% if (book != null && book.isDigital() && bookDetail.getPdfPath() != null && !bookDetail.getPdfPath().isEmpty()) {
+                %>
+    pdfjsLib.getDocument('<%=bookDetail.getPdfPath()%>').promise.then(function (pdf) {
+        pdfDoc = pdf;
+        renderPage(pageNum);
+    }).catch(function (error) {
+        console.error('Error loading PDF: ', error);
+        pdfContainer.innerHTML = '<p>Error loading PDF preview.</p>';
+    });
+    <% } %>
+
+    // Render PDF page
+    function renderPage(num) {
+        pdfContainer.innerHTML = ''; // Clear previous canvas
+        pdfDoc.getPage(num).then(function (page) {
+            const viewport = page.getViewport({scale: scale});
+            const canvas = document.createElement('canvas');
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+            pdfContainer.appendChild(canvas);
+            const context = canvas.getContext('2d');
+            page.render({canvasContext: context, viewport: viewport});
         });
+    }
+
+    // Previous page
+    function prevPage() {
+        if (pageNum <= 1) return;
+        pageNum--;
+        renderPage(pageNum);
+    }
+
+    // Next page
+    function nextPage() {
+        if (pageNum >= pdfDoc.numPages) return;
+        pageNum++;
+        renderPage(pageNum);
+    }
+
+    // Zoom in
+    function zoomIn() {
+        scale += 0.5;
+        renderPage(pageNum);
+    }
+
+    // Zoom out
+    function zoomOut() {
+        if (scale <= 0.5) return;
+        scale -= 0.5;
+        renderPage(pageNum);
     }
 </script>
 </body>
