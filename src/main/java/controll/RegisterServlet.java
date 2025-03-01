@@ -70,7 +70,7 @@ public class RegisterServlet extends HttpServlet {
         try {
             // Chuyển đổi roleId
             int roleId = Integer.parseInt(roleIdStr);
-            if (roleId != 1 && roleId != 2) {
+            if (roleId != 3 && roleId != 4) {
                 request.setAttribute(ERROR_ATTRIBUTE, "invalid_role_id");
                 request.getRequestDispatcher(REGISTER_PAGE).forward(request, response);
                 return;
