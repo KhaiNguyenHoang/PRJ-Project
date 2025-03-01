@@ -12,6 +12,10 @@ import java.io.IOException;
 public class LogoutAuth extends HttpServlet {
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        request.getRequestDispatcher("/Auth/Logout.jsp").forward(request, response);
+        try {
+            request.getRequestDispatcher("/Auth/Logout.jsp").forward(request, response);
+        } catch (ServletException | IOException e) {
+            e.printStackTrace();
+        }
     }
 }

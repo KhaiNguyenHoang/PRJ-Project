@@ -1,3 +1,6 @@
+<%@ page import="java.util.ArrayList" %>
+<%@ page import="model.entity.Books" %>
+<%@ page import="model.dao.BookCategoriesDAO" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <!DOCTYPE html>
 <html lang="en">
@@ -134,36 +137,57 @@
         <!-- Search Results -->
         <div class="container">
             <%
-                String searchQuery = request.getParameter("searchQuery");
-                if (searchQuery != null && !searchQuery.isEmpty()) {
-                    // Giả lập dữ liệu - thay bằng logic lấy từ database
-                    boolean hasResults = true; // Điều kiện kiểm tra kết quả
-                    if (hasResults) {
+                ArrayList<Books> books = (ArrayList<Books>) request.getAttribute("books");
+                String searchQuery = (String) request.getAttribute("searchQuery");
+                BookCategoriesDAO bookCategoriesDAO = new BookCategoriesDAO();
+                if (books != null) {
+                    if (books.size() > 0) {
             %>
             <table class="result-table">
+                <!-- Chỉ định tiêu đề bảng một lần -->
                 <thead>
                 <tr>
-                    <th>Tiêu đề</th>
-                    <th>Tác giả</th>
-                    <th>Thể loại</th>
+                    <th>Title</th>
+                    <th>Author</th>
+                    <th>ISBN</th>
+                    <th>Category</th>
+                    <th>Digital</th>
+                    <th>Year Published</th>
+                    <th>Publisher</th>
+                    <th>Copies Available</th>
+                    <th>Details</th>
                 </tr>
                 </thead>
                 <tbody>
+                <%
+                    // Lặp qua tất cả các sách và hiển thị trong tbody
+                    for (Books book : books) {
+                %>
                 <tr>
-                    <td>Sách Ví Dụ 1</td>
-                    <td>Nguyễn Văn A</td>
-                    <td>Tiểu thuyết</td>
+                    <td><%= book.getTitle() %>
+                    </td>
+                    <td><%= book.getAuthor() %>
+                    </td>
+                    <td><%= book.getIsbn() %>
+                    </td>
+                    <td><%= bookCategoriesDAO.getBookCategoryById(book.getCategoryId()).getCategoryName() %>
+                    </td>
+                    <td><%= book.isDigital() ? "Yes" : "No" %>
+                    </td>
+                    <td><%= book.getYearPublished() %>
+                    </td>
+                    <td><%= book.getPublisher() %>
+                    </td>
+                    <td><%= book.getCopiesAvailable() %>
+                    </td>
+                    <td>
+                        <!-- Thay đổi href để gửi request tới Servlet -->
+                        <a href="BookDetails?id=<%= book.getIdBook() %>" class="btn">Details</a>
+                    </td>
                 </tr>
-                <tr>
-                    <td>Sách Ví Dụ 2</td>
-                    <td>Trần Thị B</td>
-                    <td>Khoa học</td>
-                </tr>
-                <tr>
-                    <td>Sách Ví Dụ 3</td>
-                    <td>Lê Văn C</td>
-                    <td>Lịch sử</td>
-                </tr>
+                <%
+                    }
+                %>
                 </tbody>
             </table>
             <%
@@ -177,9 +201,8 @@
             %>
         </div>
     </section>
-</div>
 
-<!-- Footer Section -->
+</div>    <!-- Footer Section -->
 <section class="container-fluid footer_section">
     <p>© 2024 Group 2 All Rights Reserved | Design by Group 2</p>
 </section>

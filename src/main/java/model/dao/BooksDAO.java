@@ -15,11 +15,19 @@ public class BooksDAO extends LibraryContext {
         super(); // Kết nối tới cơ sở dữ liệu thông qua lớp cha LibraryContext
     }
 
+    public static void main(String[] args) {
+        BooksDAO booksDAO = new BooksDAO();
+        Books book = new Books("Harry Potter", "J.K. Rowling", "9780545010221", "Scholastic", 2007, 1, 5, true, "Images/HarryPotter.png", "Available");
+        booksDAO.addBook(book, "Harry Potter is a young wizard who discovers his magical heritage on his 11th birthday. He attends Hogwarts School of Witchcraft and Wizardry, where he learns about his past and the dark wizard Voldemort, who killed his parents and is determined to conquer the magical world. Alongside his friends Hermione Granger and Ron Weasley, Harry faces numerous challenges in a battle between good and evil, exploring themes of friendship, bravery, and self-discovery.", "PDF/HarryPotter.pdf");
+    }
+
     // Thêm sách mới
-    public boolean addBook(Books book) {
+    public boolean addBook(Books book, String Description, String PdfPath) {
         String insertBookQuery = "INSERT INTO Books (Title, Author, ISBN, Publisher, YearPublished, CategoryID, CopiesAvailable, IsDigital, FilePath, Status) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
         try (PreparedStatement ps = conn.prepareStatement(insertBookQuery, PreparedStatement.RETURN_GENERATED_KEYS)) {
+            // Thêm thông tin sách vào bảng Books
             ps.setString(1, book.getTitle());
             ps.setString(2, book.getAuthor());
             ps.setString(3, book.getIsbn());
@@ -32,6 +40,7 @@ public class BooksDAO extends LibraryContext {
             ps.setString(10, book.getStatus());
 
             int rowsAffected = ps.executeUpdate();
+
             if (rowsAffected > 0) {
                 // Lấy IdBook của sách mới được thêm vào
                 try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
@@ -39,13 +48,17 @@ public class BooksDAO extends LibraryContext {
                         int bookId = generatedKeys.getInt(1);
 
                         // Thêm bản sao vào bảng BookCopies
-                        BookCopiesDAO bookCopiesDAO = new BookCopiesDAO();
+                        BookCopiesDAO bookCopiesDAO = new BookCopiesDAO();  // Dùng kết nối chung
                         for (int i = 1; i <= book.getCopiesAvailable(); i++) {
                             bookCopiesDAO.addBookCopy(bookId, i, "Available");
                         }
 
                         // Cập nhật lại trạng thái sách
                         updateBookStatusBasedOnCopies(bookId);
+
+                        // Thêm chi tiết sách vào bảng BooksDetail
+                        BookDetailDAO bookDetailDAO = new BookDetailDAO();  // Dùng kết nối chung
+                        bookDetailDAO.addBookDetail(new model.entity.BookDetail(bookId, Description, PdfPath));
                     }
                 }
                 return true;
@@ -55,6 +68,7 @@ public class BooksDAO extends LibraryContext {
         }
         return false;
     }
+
 
     // Cập nhật sách
     public boolean updateBook(Books book) {
@@ -204,4 +218,18 @@ public class BooksDAO extends LibraryContext {
         return book;
     }
 
+    public Books getBookById(int bookId) {
+        String query = "SELECT * " + "FROM Books WHERE IdBook = ?";
+        try (PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, bookId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToBooks(rs);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }
