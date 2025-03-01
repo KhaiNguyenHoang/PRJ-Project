@@ -2,10 +2,11 @@ package model.entity;
 
 public class BookCopies {
     private int idCopy;
-    private int bookId;
+    private int bookId; // Liên kết với Books
     private int copyNumber;
-    private String status;
+    private String status; // 'Available', 'Borrowed', 'Reserved', 'Lost'
 
+    // Constructors
     public BookCopies() {
     }
 
@@ -16,6 +17,13 @@ public class BookCopies {
         this.status = status;
     }
 
+    public BookCopies(int bookId, int copyNumber, String status) {
+        this.bookId = bookId;
+        this.copyNumber = copyNumber;
+        this.status = status;
+    }
+
+    // Getters and Setters
     public int getIdCopy() {
         return idCopy;
     }
@@ -24,12 +32,12 @@ public class BookCopies {
         this.idCopy = idCopy;
     }
 
-    public String getStatus() {
-        return status;
+    public int getBookId() {
+        return bookId;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setBookId(int bookId) {
+        this.bookId = bookId;
     }
 
     public int getCopyNumber() {
@@ -40,11 +48,11 @@ public class BookCopies {
         this.copyNumber = copyNumber;
     }
 
-    public int getBookId() {
-        return bookId;
+    public String getStatus() {
+        return status;
     }
 
-    public void setBookId(int bookId) {
-        this.bookId = bookId;
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

@@ -10,107 +10,226 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BooksDAO extends LibraryContext {
+
     public BooksDAO() {
-        super();
+        super(); // Kết nối tới cơ sở dữ liệu thông qua lớp cha LibraryContext
     }
 
-    public boolean addBook(String title, String author, String isbn, String publisher, int yearPublished, int categoryId, int copiesAvailable, boolean isDigital, String status, String filePath) {
-        try {
-            String query = "INSERT INTO books (title, author, isbn, publisher, yearPublished, categoryId, copiesAvailable, isDigital, status, filePath) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            PreparedStatement preparedStatement = conn.prepareStatement(query);
-            preparedStatement.setString(1, title);
-            preparedStatement.setString(2, author);
-            preparedStatement.setString(3, isbn);
-            preparedStatement.setString(4, publisher);
-            preparedStatement.setInt(5, yearPublished);
-            preparedStatement.setInt(6, categoryId);
-            preparedStatement.setInt(7, copiesAvailable);
-            preparedStatement.setBoolean(8, isDigital);
-            preparedStatement.setString(9, status);
-            preparedStatement.setString(10, filePath);
-            preparedStatement.executeUpdate();
-            return true;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
+    public static void main(String[] args) {
+        BooksDAO booksDAO = new BooksDAO();
+        Books book = new Books("Harry Potter", "J.K. Rowling", "9780545010221", "Scholastic", 2007, 1, 5, true, "Images/HarryPotter.png", "Available");
+        booksDAO.addBook(book, "Harry Potter is a young wizard who discovers his magical heritage on his 11th birthday. He attends Hogwarts School of Witchcraft and Wizardry, where he learns about his past and the dark wizard Voldemort, who killed his parents and is determined to conquer the magical world. Alongside his friends Hermione Granger and Ron Weasley, Harry faces numerous challenges in a battle between good and evil, exploring themes of friendship, bravery, and self-discovery.", "PDF/HarryPotter.pdf");
     }
 
-    public boolean updateBook(String title, String author, String isbn, String publisher, int yearPublished, int categoryId, int copiesAvailable, boolean isDigital, String status, String filePath) {
-        try {
-            String query = "UPDATE books SET title = ?, author = ?, publisher = ?, yearPublished = ?, categoryId = ?, copiesAvailable = ?, isDigital = ?, status = ?, filePath = ? WHERE isbn = ?";
-            PreparedStatement preparedStatement = conn.prepareStatement(query);
-            preparedStatement.setString(1, title);
-            preparedStatement.setString(2, author);
-            preparedStatement.setString(3, publisher);
-            preparedStatement.setInt(4, yearPublished);
-            preparedStatement.setInt(5, categoryId);
-            preparedStatement.setInt(6, copiesAvailable);
-            preparedStatement.setBoolean(7, isDigital);
-            preparedStatement.setString(8, status);
-            preparedStatement.setString(9, filePath);
-            preparedStatement.setString(10, isbn);
-            preparedStatement.executeUpdate();
-            return true;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
+    // Thêm sách mới
+    public boolean addBook(Books book, String Description, String PdfPath) {
+        String insertBookQuery = "INSERT INTO Books (Title, Author, ISBN, Publisher, YearPublished, CategoryID, CopiesAvailable, IsDigital, FilePath, Status) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-    public boolean deleteBook(String isbn) {
-        try {
-            String query = "DELETE FROM books WHERE isbn = ?";
-            PreparedStatement preparedStatement = conn.prepareStatement(query);
-            preparedStatement.setString(1, isbn);
-            preparedStatement.executeUpdate();
-            return true;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
+        try (PreparedStatement ps = conn.prepareStatement(insertBookQuery, PreparedStatement.RETURN_GENERATED_KEYS)) {
+            // Thêm thông tin sách vào bảng Books
+            ps.setString(1, book.getTitle());
+            ps.setString(2, book.getAuthor());
+            ps.setString(3, book.getIsbn());
+            ps.setString(4, book.getPublisher());
+            ps.setInt(5, book.getYearPublished());
+            ps.setInt(6, book.getCategoryId());
+            ps.setInt(7, book.getCopiesAvailable());
+            ps.setBoolean(8, book.isDigital());
+            ps.setString(9, book.getFilePath());
+            ps.setString(10, book.getStatus());
 
-    public boolean deleteBookByTitle(String title) {
-        try {
-            String query = "DELETE FROM books WHERE title = ?";
-            PreparedStatement preparedStatement = conn.prepareStatement(query);
-            preparedStatement.setString(1, title);
-            preparedStatement.executeUpdate();
-            return true;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
+            int rowsAffected = ps.executeUpdate();
 
-    public List<Books> getAllBooks() {
-        List<Books> books = new ArrayList<>();
-        try {
-            String query = "SELECT * " + "FROM books";
-            PreparedStatement preparedStatement = conn.prepareStatement(query);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
-                Books book = new Books();
-                book.setIdBook(resultSet.getInt("idBook"));
-                book.setTitle(resultSet.getString("title"));
-                book.setAuthor(resultSet.getString("author"));
-                book.setIsbn(resultSet.getString("isbn"));
-                book.setPublisher(resultSet.getString("publisher"));
-                book.setYearPublished(resultSet.getInt("yearPublished"));
-                book.setCategoryId(resultSet.getInt("categoryId"));
-                book.setCopiesAvailable(resultSet.getInt("copiesAvailable"));
-                book.setDigital(resultSet.getBoolean("isDigital"));
-                book.setStatus(resultSet.getString("status"));
-                book.setFilePath(resultSet.getString("filePath"));
-                book.setCreatedAt(resultSet.getDate("createdAt"));
-                book.setDeletedAt(resultSet.getDate("deletedAt"));
-                book.setUpdatedAt(resultSet.getDate("updatedAt"));
-                books.add(book);
+            if (rowsAffected > 0) {
+                // Lấy IdBook của sách mới được thêm vào
+                try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        int bookId = generatedKeys.getInt(1);
+
+                        // Thêm bản sao vào bảng BookCopies
+                        BookCopiesDAO bookCopiesDAO = new BookCopiesDAO();  // Dùng kết nối chung
+                        for (int i = 1; i <= book.getCopiesAvailable(); i++) {
+                            bookCopiesDAO.addBookCopy(bookId, i, "Available");
+                        }
+
+                        // Cập nhật lại trạng thái sách
+                        updateBookStatusBasedOnCopies(bookId);
+
+                        // Thêm chi tiết sách vào bảng BooksDetail
+                        BookDetailDAO bookDetailDAO = new BookDetailDAO();  // Dùng kết nối chung
+                        bookDetailDAO.addBookDetail(new model.entity.BookDetail(bookId, Description, PdfPath));
+                    }
+                }
+                return true;
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return books;
+        return false;
+    }
+
+
+    // Cập nhật sách
+    public boolean updateBook(Books book) {
+        String updateBookQuery = "UPDATE Books SET Title = ?, Author = ?, ISBN = ?, Publisher = ?, YearPublished = ?, CategoryID = ?, CopiesAvailable = ?, " +
+                "IsDigital = ?, FilePath = ?, Status = ? WHERE IdBook = ?";
+        try (PreparedStatement ps = conn.prepareStatement(updateBookQuery)) {
+            ps.setString(1, book.getTitle());
+            ps.setString(2, book.getAuthor());
+            ps.setString(3, book.getIsbn());
+            ps.setString(4, book.getPublisher());
+            ps.setInt(5, book.getYearPublished());
+            ps.setInt(6, book.getCategoryId());
+            ps.setInt(7, book.getCopiesAvailable());
+            ps.setBoolean(8, book.isDigital());
+            ps.setString(9, book.getFilePath());
+            ps.setString(10, book.getStatus());
+            ps.setInt(11, book.getIdBook());
+
+            int rowsAffected = ps.executeUpdate();
+            if (rowsAffected > 0) {
+                // Cập nhật số lượng bản sao nếu có sự thay đổi
+                BookCopiesDAO bookCopiesDAO = new BookCopiesDAO();
+                bookCopiesDAO.syncBookCopies(book.getIdBook(), book.getCopiesAvailable());
+
+                // Cập nhật trạng thái sách dựa trên số lượng bản sao có sẵn
+                updateBookStatusBasedOnCopies(book.getIdBook());
+                return true;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // Cập nhật trạng thái sách dựa trên số lượng bản sao có sẵn
+    public boolean updateBookStatusBasedOnCopies(int bookId) {
+        String query = "SELECT COUNT(*) AS CopiesAvailable, " +
+                "SUM(CASE WHEN Status = 'Borrowed' THEN 1 ELSE 0 END) AS BorrowedCount, " +
+                "SUM(CASE WHEN Status = 'Reserved' THEN 1 ELSE 0 END) AS ReservedCount, " +
+                "SUM(CASE WHEN Status = 'Lost' THEN 1 ELSE 0 END) AS LostCount " +
+                "FROM BookCopies WHERE BookID = ?";
+        try (PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, bookId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int copiesAvailable = rs.getInt("CopiesAvailable");
+                    int borrowedCount = rs.getInt("BorrowedCount");
+                    int reservedCount = rs.getInt("ReservedCount");
+                    int lostCount = rs.getInt("LostCount");
+
+                    // Tính toán trạng thái sách dựa trên số lượng bản sao
+                    String status = "Available";
+                    if (lostCount == copiesAvailable) {
+                        status = "Lost";
+                    } else if (borrowedCount > 0) {
+                        status = "Borrowed";
+                    } else if (reservedCount > 0) {
+                        status = "Reserved";
+                    }
+
+                    // Cập nhật trạng thái sách
+                    updateBookStatus(bookId, status);
+
+                    // Cập nhật lại số lượng bản sao có sẵn trong sách
+                    updateCopiesAvailable(bookId, copiesAvailable - borrowedCount - reservedCount - lostCount);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // Cập nhật số lượng bản sao có sẵn trong sách
+    private boolean updateCopiesAvailable(int bookId, int copiesAvailable) {
+        String updateCopiesAvailableQuery = "UPDATE Books SET CopiesAvailable = ? WHERE IdBook = ?";
+        try (PreparedStatement ps = conn.prepareStatement(updateCopiesAvailableQuery)) {
+            ps.setInt(1, copiesAvailable);
+            ps.setInt(2, bookId);
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // Cập nhật trạng thái sách
+    private boolean updateBookStatus(int bookId, String status) {
+        String updateStatusQuery = "UPDATE Books SET Status = ? WHERE IdBook = ?";
+        try (PreparedStatement ps = conn.prepareStatement(updateStatusQuery)) {
+            ps.setString(1, status);
+            ps.setInt(2, bookId);
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public List<Books> searchBooks(String keyword) {
+        String searchQuery = "SELECT * " + "FROM Books WHERE Title LIKE ? OR Author LIKE ? OR ISBN LIKE ?";
+        try (PreparedStatement ps = conn.prepareStatement(searchQuery)) {
+            ps.setString(1, "%" + keyword + "%");
+            ps.setString(2, "%" + keyword + "%");
+            ps.setString(3, "%" + keyword + "%");
+
+            try (ResultSet rs = ps.executeQuery()) {
+                return mapResultSetToBooksList(rs);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private List<Books> mapResultSetToBooksList(ResultSet rs) {
+        List<Books> booksList = new ArrayList<>();
+        try {
+            while (rs.next()) {
+                booksList.add(mapResultSetToBooks(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return booksList;
+    }
+
+    private Books mapResultSetToBooks(ResultSet rs) {
+        Books book = new Books();
+        try {
+            book.setIdBook(rs.getInt("IdBook"));
+            book.setTitle(rs.getString("Title"));
+            book.setAuthor(rs.getString("Author"));
+            book.setIsbn(rs.getString("ISBN"));
+            book.setPublisher(rs.getString("Publisher"));
+            book.setYearPublished(rs.getInt("YearPublished"));
+            book.setCategoryId(rs.getInt("CategoryID"));
+            book.setCopiesAvailable(rs.getInt("CopiesAvailable"));
+            book.setDigital(rs.getBoolean("IsDigital"));
+            book.setFilePath(rs.getString("FilePath"));
+            book.setStatus(rs.getString("Status"));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return book;
+    }
+
+    public Books getBookById(int bookId) {
+        String query = "SELECT * " + "FROM Books WHERE IdBook = ?";
+        try (PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, bookId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToBooks(rs);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

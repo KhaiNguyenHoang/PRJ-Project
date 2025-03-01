@@ -27,6 +27,11 @@ public class AccountDAO extends LibraryContext {
         super();
     }
 
+    public static void main(String[] args) {
+        AccountDAO accountDAO = new AccountDAO();
+        accountDAO.registerAccount("admin3", "admin3@gmail.com", "admin3", "admin3", 3);
+    }
+
     public List<Account> getAllAccounts() {
         List<Account> accounts = new ArrayList<>();
         String query = "SELECT * " + "FROM Account";
