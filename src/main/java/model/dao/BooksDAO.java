@@ -15,12 +15,6 @@ public class BooksDAO extends LibraryContext {
         super(); // Kết nối tới cơ sở dữ liệu thông qua lớp cha LibraryContext
     }
 
-    public static void main(String[] args) {
-        BooksDAO booksDAO = new BooksDAO();
-        Books book = new Books("Harry Potter", "J.K. Rowling", "9780545010221", "Scholastic", 2007, 1, 5, true, "Images/HarryPotter.png", "Available");
-        booksDAO.addBook(book, "Harry Potter is a young wizard who discovers his magical heritage on his 11th birthday. He attends Hogwarts School of Witchcraft and Wizardry, where he learns about his past and the dark wizard Voldemort, who killed his parents and is determined to conquer the magical world. Alongside his friends Hermione Granger and Ron Weasley, Harry faces numerous challenges in a battle between good and evil, exploring themes of friendship, bravery, and self-discovery.", "PDF/HarryPotter.pdf");
-    }
-
     // Thêm sách mới
     public boolean addBook(Books book, String Description, String PdfPath) {
         String insertBookQuery = "INSERT INTO Books (Title, Author, ISBN, Publisher, YearPublished, CategoryID, CopiesAvailable, IsDigital, FilePath, Status) " +
