@@ -6,187 +6,167 @@
     <meta charset="utf-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
-    <title>Quản Lý Tài Khoản</title>
-
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet"/>
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet"/>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
-
+    <title>Tài khoản</title>
+    <!-- Fonts style -->
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet"/>
+    <!-- Bootstrap CSS -->
+    <link href="HomeHTML/HomeMemberHTML/css/bootstrap.css" rel="stylesheet" type="text/css"/>
+    <link href="HomeHTML/HomeMemberHTML/css/style.css" rel="stylesheet"/>
+    <link href="HomeHTML/HomeMemberHTML/css/responsive.css" rel="stylesheet"/>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
     <style>
-        /* General Styles */
-        body {
-            background: linear-gradient(135deg, #e74c3c, #8e44ad);
-            font-family: 'Roboto', sans-serif;
-            color: white;
-        }
-
-        /* Navbar Styles */
-        .navbar {
-            background-color: rgba(0, 0, 0, 0.9);
-            padding: 20px;
-        }
-
-        .navbar-nav .nav-link {
-            color: white;
-            font-size: 1.2rem;
-            padding: 10px 15px;
-            font-weight: bold;
-            transition: all 0.3s ease;
-        }
-
-        .navbar-nav .nav-link:hover {
-            color: #00bcd4;
-            transform: scale(1.1);
-        }
-
-        .navbar-brand {
-            color: white;
-            font-size: 1.8rem;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-
         /* Account Section */
         .account-section {
             padding: 60px 0;
         }
 
-        .card {
+        .account-card {
             border-radius: 20px;
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
+            background-color: #ffffff;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .account-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
         }
 
         .card-header {
-            background-color: #00bcd4;
+            background: linear-gradient(90deg, #00bcd4, #0097a7);
             color: white;
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             text-align: center;
-            padding: 20px;
+            padding: 25px;
             border-radius: 20px 20px 0 0;
+            font-weight: 600;
+            letter-spacing: 1px;
         }
 
         .card-body {
-            background-color: #f4f6f9;
-            padding: 30px;
-            font-size: 1.1rem;
+            padding: 40px;
+            background-color: #f9fafc;
             border-radius: 0 0 20px 20px;
         }
 
+        /* Form Styling */
+        .form-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
         .form-control {
-            border-radius: 10px;
-            padding: 16px;
+            border-radius: 12px;
+            border: 2px solid #ddd;
+            padding: 12px 15px;
             font-size: 1rem;
-            border: 1px solid #ddd;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-            transition: all 0.3s ease;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
         .form-control:focus {
             border-color: #00bcd4;
-            box-shadow: 0 0 8px rgba(0, 188, 212, 0.3);
+            box-shadow: 0 0 10px rgba(0, 188, 212, 0.2);
         }
 
+        input[readonly] {
+            background-color: #f1f3f5;
+            cursor: not-allowed;
+            color: #6c757d;
+        }
+
+        /* Button Styling */
         .btn-custom {
             background-color: #00bcd4;
             color: white;
-            width: 100%;
             padding: 12px;
             border-radius: 12px;
             font-size: 1.2rem;
-            transition: 0.3s;
+            font-weight: 600;
             border: none;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0, 188, 212, 0.2);
         }
 
         .btn-custom:hover {
             background-color: #00acc1;
             transform: translateY(-3px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 6px 15px rgba(0, 188, 212, 0.3);
         }
 
         .btn-delete {
             background-color: #e74c3c;
             color: white;
-            width: 100%;
             padding: 12px;
             border-radius: 12px;
             font-size: 1.2rem;
-            margin-top: 20px;
-            transition: 0.3s;
+            font-weight: 600;
             border: none;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 10px rgba(231, 76, 60, 0.2);
         }
 
         .btn-delete:hover {
             background-color: #c0392b;
             transform: translateY(-3px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 6px 15px rgba(231, 76, 60, 0.3);
         }
 
-        .toast {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            background-color: #28a745;
-            color: white;
-            padding: 10px;
-            border-radius: 12px;
+        /* Collapse Animation */
+        .collapse:not(.show) {
             display: none;
-            font-size: 1.2rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            transform: translateX(100%);
-            transition: all 0.5s ease;
         }
 
-        .toast.show {
-            transform: translateX(0);
+        .collapsing {
+            transition: height 0.3s ease;
         }
 
-        .toast i {
-            margin-right: 8px;
-        }
-
-        /* Footer Section */
-        .footer-section {
-            background-color: #333;
-            color: white;
-            text-align: center;
-            padding: 20px 0;
-            margin-top: 40px;
-        }
-
-        .footer-section p {
+        /* Alert Styling */
+        .alert {
+            border-radius: 10px;
             font-size: 1rem;
-            margin: 0;
+            margin-top: 20px;
         }
     </style>
 </head>
-<body data-aos="fade-in">
+<body class="bg-gradient-to-r from-red-500 via-purple-600 to-pink-600 text-white">
 
-<!-- Navbar -->
+<!-- Header Section -->
 <header class="header_section">
-    <div class="container">
-        <nav class="navbar navbar-expand-lg navbar-dark">
-            <a class="navbar-brand" href="index.html">Library</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent">
+    <div class="container-fluid">
+        <nav class="navbar navbar-expand-lg custom_nav-container">
+            <a class="navbar-brand" href="index.jsp">
+                <span>Library</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse"
+                    data-target="#navbarSupportedContent"
+                    aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav ml-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="HomePage">Home</a>
-                    </li>
-                    <li class="nav-item active">
-                        <a class="nav-link" href="MemberAccount">My Account</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="logoutauth">Logout</a>
-                    </li>
-                </ul>
+                <div class="d-flex ml-auto flex-column flex-lg-row align-items-center">
+                    <ul class="navbar-nav">
+                        <li class="nav-item active">
+                            <a class="nav-link" href="HomePage">Home <span class="sr-only">(current)</span></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#about_section">About</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#how_section">How</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="contact.html">Borrowing</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="MemberAccount">Account</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="logoutauth">Logout</a>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </nav>
     </div>
@@ -195,84 +175,80 @@
 <!-- Account Management Section -->
 <div class="container account-section">
     <div class="row justify-content-center">
-        <div class="col-lg-8 col-md-10 col-sm-12">
-            <div class="card" data-aos="flip-left">
+        <div class="col-md-8 col-lg-6">
+            <div class="card account-card">
                 <div class="card-header">
-                    <span><i class="fas fa-user-circle"></i> Quản Lý Tài Khoản</span>
+                    <i class="fas fa-user-cog me-2"></i> Account Management
                 </div>
                 <div class="card-body">
-                    <form action="UpdateMember" method="post">
-                        <%
-                            Members loggedInMember = (Members) session.getAttribute("user");
-                            if (loggedInMember != null) {
-                        %>
+                    <%
+                        Members loggedInMember = (Members) session.getAttribute("user");
+                        if (loggedInMember != null) {
+                    %>
 
-                        <div class="mb-3">
-                            <label for="fullName" class="form-label">Họ và Tên:</label>
-                            <input type="text" id="fullName" name="fullName" class="form-control"
+                    <!-- Edit Info Form -->
+                    <form action="UpdateMember" method="post" id="updateForm">
+                        <div class="mb-4">
+                            <label for="fullName" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="fullName" name="fullName"
                                    value="<%= loggedInMember.getFullName() %>" required/>
                         </div>
-
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email:</label>
-                            <input type="email" id="email" name="email" class="form-control"
+                        <div class="mb-4">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email"
                                    value="<%= loggedInMember.getEmail() %>" readonly/>
                         </div>
-
-                        <div class="mb-3">
-                            <label for="phone" class="form-label">Số Điện Thoại:</label>
-                            <input type="text" id="phone" name="phone" class="form-control"
-                                   value="<%= loggedInMember.getPhone() %>" required/>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="address" class="form-label">Địa Chỉ:</label>
-                            <input type="text" id="address" name="address" class="form-control"
-                                   value="<%= loggedInMember.getAddress() %>" required/>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="oldPassword" class="form-label">Mật khẩu hiện tại:</label>
-                            <div class="input-group">
-                                <input type="password" id="oldPassword" name="oldPassword" class="form-control"
-                                       placeholder="Nhập mật khẩu cũ"/>
-                                <span class="input-group-text" onclick="togglePassword('oldPassword')"><i
-                                        class="fas fa-eye"></i></span>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="newPassword" class="form-label">Mật khẩu mới:</label>
-                            <div class="input-group">
-                                <input type="password" id="newPassword" name="newPassword" class="form-control"
-                                       placeholder="Nhập mật khẩu mới"/>
-                                <span class="input-group-text" onclick="togglePassword('newPassword')"><i
-                                        class="fas fa-eye"></i></span>
-                            </div>
-                        </div>
-
-                        <input type="hidden" name="idMember" value="<%= loggedInMember.getIdMember() %>"/>
-
-                        <button type="submit" class="btn-custom">Lưu Thay Đổi</button>
+                        <button type="submit" class="btn btn-custom w-100">Save Changes</button>
                     </form>
 
-                    <form action="DeleteAccount" method="post">
-                        <input type="hidden" name="idMember" value="<%= loggedInMember.getIdMember() %>"/>
-                        <div class="mb-3">
-                            <label for="confirmPassword" class="form-label">Nhập mật khẩu để xóa tài khoản:</label>
-                            <input type="password" id="confirmPassword" name="confirmPassword" class="form-control"
-                                   required/>
-                        </div>
-
-                        <button type="submit" class="btn-delete"
-                                onclick="return confirm('Bạn có chắc muốn xóa tài khoản không?')">Xóa Tài Khoản
+                    <!-- Change Password Section -->
+                    <div class="mt-4">
+                        <button class="btn btn-custom w-100" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#passwordForm">
+                            <i class="fas fa-key me-2"></i> Change Password
                         </button>
-                    </form>
+                        <div class="collapse mt-3" id="passwordForm">
+                            <form action="ChangePassword" method="post">
+                                <div class="mb-3">
+                                    <label for="oldPassword" class="form-label">Current Password</label>
+                                    <input type="password" class="form-control" id="oldPassword" name="oldPassword"
+                                           placeholder="Enter current password" required/>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="newPassword" class="form-label">New Password</label>
+                                    <input type="password" class="form-control" id="newPassword" name="newPassword"
+                                           placeholder="Enter new password" required/>
+                                </div>
+                                <button type="submit" class="btn btn-custom w-100">Update Password</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Deactivate Account Section -->
+                    <div class="mt-4">
+                        <button class="btn btn-delete w-100" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#deactivateForm">
+                            <i class="fas fa-user-slash me-2"></i> Deactivate Account
+                        </button>
+                        <div class="collapse mt-3" id="deactivateForm">
+                            <form action="DeactivateAccount" method="post">
+                                <div class="mb-3">
+                                    <label for="confirmPassword" class="form-label">Confirm Password</label>
+                                    <input type="password" class="form-control" id="confirmPassword"
+                                           name="confirmPassword" placeholder="Confirm your password" required/>
+                                </div>
+                                <button type="submit" class="btn btn-delete w-100">Deactivate Account</button>
+                            </form>
+                        </div>
+                    </div>
 
                     <%
                     } else {
                     %>
-                    <p class="text-center text-danger">Bạn chưa đăng nhập.</p>
+                    <div class="alert alert-danger text-center" role="alert">
+                        You are not logged in. Please <a href="login.jsp" class="alert-link">login</a> to manage your
+                        account.
+                    </div>
                     <%
                         }
                     %>
@@ -283,35 +259,46 @@
 </div>
 
 <!-- Toast Notification -->
-<div class="toast" id="toastMessage">Cập nhật thành công!</div>
+<div class="toast fixed top-5 right-5 z-50 bg-green-500 text-white p-3 rounded-md hidden">
+    <i class="fas fa-check-circle"></i> Cập nhật thành công!
+</div>
 
 <!-- Footer Section -->
-<section class="footer-section">
+<section class="container-fluid footer_section">
     <p>© 2024 Group 2 All Rights Reserved | Design by Group 2</p>
 </section>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>
-    function togglePassword(id) {
-        let input = document.getElementById(id);
-        if (input.type === "password") {
-            input.type = "text";
-        } else {
-            input.type = "password";
-        }
-    }
-
-    $(document).ready(function () {
-        let successMessage = '<%= request.getAttribute("successMessage") %>';
-        if (successMessage !== "null") {
-            $("#toastMessage").text(successMessage).fadeIn().delay(3000).fadeOut();
+    // Form validation and feedback
+    document.getElementById('updateForm')?.addEventListener('submit', function (e) {
+        const fullName = document.getElementById('fullName').value.trim();
+        if (!fullName) {
+            e.preventDefault();
+            alert('Full Name cannot be empty!');
         }
     });
 
-    AOS.init();
-</script>
+    document.querySelector('#passwordForm form')?.addEventListener('submit', function (e) {
+        const oldPassword = document.getElementById('oldPassword').value.trim();
+        const newPassword = document.getElementById('newPassword').value.trim();
+        if (!oldPassword || !newPassword) {
+            e.preventDefault();
+            alert('Please fill in both password fields!');
+        } else if (newPassword.length < 6) {
+            e.preventDefault();
+            alert('New password must be at least 6 characters long!');
+        }
+    });
 
+    document.querySelector('#deactivateForm form')?.addEventListener('submit', function (e) {
+        const confirmPassword = document.getElementById('confirmPassword').value.trim();
+        if (!confirmPassword) {
+            e.preventDefault();
+            alert('Please confirm your password!');
+        } else if (!confirm('Are you sure you want to deactivate your account? This action cannot be undone.')) {
+            e.preventDefault();
+        }
+    });
+</script>
 </body>
 </html>
