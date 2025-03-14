@@ -14,10 +14,6 @@ public class LogoutAuth extends HttpServlet {
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         try {
-            // Remove the user attribute and invalidate the session
-            request.getSession().removeAttribute("user");
-            request.getSession().invalidate();
-
             // Forward to the logout page
             request.getRequestDispatcher("/Auth/Logout.jsp").forward(request, response);
         } catch (Exception e) {
