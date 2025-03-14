@@ -26,7 +26,7 @@ public class HomePage extends HttpServlet {
         Members loggedInMember = (Members) request.getSession().getAttribute("user");
         if (loggedInMember != null) {
             try {
-                request.getRequestDispatcher("HomeHTML/HomeMemberHTML/HomePage.jsp").forward(request, response);
+                request.getRequestDispatcher("HomeHTML/HomeMemberHTML/index.jsp").forward(request, response);
             } catch (ServletException | IOException e) {
                 e.printStackTrace();
             }

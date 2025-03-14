@@ -2,7 +2,18 @@
 <%@ page import="model.entity.BookDetail" %>
 <%@ page import="model.dao.BooksDAO" %>
 <%@ page import="model.dao.BookDetailDAO" %>
+<%@ page import="model.entity.Members" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%
+    // Retrieve the current logged-in member from the session
+    Members currentMember = (Members) request.getSession().getAttribute("user");
+
+    // If no member is logged in, redirect to the Login page
+    if (currentMember == null) {
+        response.sendRedirect("/Auth/SignIn-SignUp.jsp");
+        return;  // Prevent further page processing after redirect
+    }
+%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -222,7 +233,7 @@
                                 <a class="nav-link" href="contact.html">Borrowing</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="MemberAccount ">Account</a>
+                                <a class="nav-link" href="MemberAccount">Account</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="logoutauth">Logout</a>

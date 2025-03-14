@@ -1,5 +1,15 @@
 <%@ page import="model.entity.Members" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%
+    // Retrieve the current logged-in member from the session
+    Members currentMember = (Members) request.getSession().getAttribute("user");
+
+    // If no member is logged in, redirect to the Login page
+    if (currentMember == null) {
+        response.sendRedirect("/Auth/SignIn-SignUp.jsp");
+        return;  // Prevent further page processing after redirect
+    }
+%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -128,6 +138,19 @@
             font-size: 1rem;
             margin-top: 20px;
         }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 50;
+            background-color: #28a745;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
     </style>
 </head>
 <body class="bg-gradient-to-r from-red-500 via-purple-600 to-pink-600 text-white">
@@ -187,7 +210,8 @@
                     %>
 
                     <!-- Edit Info Form -->
-                    <form action="UpdateMember" method="post" id="updateForm">
+                    <form action="Account" method="post" id="updateForm">
+                        <input type="hidden" name="action" value="changeInfo">
                         <div class="mb-4">
                             <label for="fullName" class="form-label">Full Name</label>
                             <input type="text" class="form-control" id="fullName" name="fullName"
@@ -197,7 +221,41 @@
                             <label for="email" class="form-label">Email</label>
                             <input type="email" class="form-control" id="email" name="email"
                                    value="<%= loggedInMember.getEmail() %>" readonly/>
+                            <small class="form-text text-muted">Email cannot be changed here. Contact support for
+                                assistance.</small>
                         </div>
+                        <div class="mb-4">
+                            <label for="phone" class="form-label">Phone</label>
+                            <input type="text" class="form-control" id="phone" name="phone"
+                                   value="<%= loggedInMember.getPhone() %>" required/>
+                        </div>
+                        <div class="mb-4">
+                            <label for="address" class="form-label">Address</label>
+                            <input type="text" class="form-control" id="address" name="address"
+                                   value="<%= loggedInMember.getAddress() %>" required/>
+                        </div>
+                        <%
+                            // Handle error messages
+                            String error = (String) request.getAttribute("error");
+                            if (error != null) {
+                        %>
+                        <div class="alert alert-danger">
+                            <% if ("empty_field".equals(error)) { %>All fields must be filled out.<% } %>
+                            <% if ("invalid_email".equals(error)) { %>Please provide a valid email address.<% } %>
+                            <% if ("invalid_phone".equals(error)) { %>Please provide a valid phone number (10
+                            digits).<% } %>
+                            <% if ("server_error".equals(error)) { %>An error occurred while updating your information.
+                            Please try again later.<% } %>
+                        </div>
+                        <% } %>
+
+                        <%
+                            // Handle success message
+                            String success = (String) request.getAttribute("success");
+                            if ("update_success".equals(success)) {
+                        %>
+                        <div class="alert alert-success">Your information has been updated successfully!</div>
+                        <% } %>
                         <button type="submit" class="btn btn-custom w-100">Save Changes</button>
                     </form>
 
@@ -208,7 +266,7 @@
                             <i class="fas fa-key me-2"></i> Change Password
                         </button>
                         <div class="collapse mt-3" id="passwordForm">
-                            <form action="ChangePassword" method="post">
+                            <form action="ChangePassword" method="post" id="passwordChangeForm">
                                 <div class="mb-3">
                                     <label for="oldPassword" class="form-label">Current Password</label>
                                     <input type="password" class="form-control" id="oldPassword" name="oldPassword"
@@ -218,6 +276,11 @@
                                     <label for="newPassword" class="form-label">New Password</label>
                                     <input type="password" class="form-control" id="newPassword" name="newPassword"
                                            placeholder="Enter new password" required/>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="confirmNewPassword" class="form-label">Confirm New Password</label>
+                                    <input type="password" class="form-control" id="confirmNewPassword"
+                                           name="confirmNewPassword" placeholder="Confirm new password" required/>
                                 </div>
                                 <button type="submit" class="btn btn-custom w-100">Update Password</button>
                             </form>
@@ -231,7 +294,7 @@
                             <i class="fas fa-user-slash me-2"></i> Deactivate Account
                         </button>
                         <div class="collapse mt-3" id="deactivateForm">
-                            <form action="DeactivateAccount" method="post">
+                            <form action="DeactivateAccount" method="post" id="deactivateAccountForm">
                                 <div class="mb-3">
                                     <label for="confirmPassword" class="form-label">Confirm Password</label>
                                     <input type="password" class="form-control" id="confirmPassword"
@@ -259,7 +322,7 @@
 </div>
 
 <!-- Toast Notification -->
-<div class="toast fixed top-5 right-5 z-50 bg-green-500 text-white p-3 rounded-md hidden">
+<div class="toast" id="successToast">
     <i class="fas fa-check-circle"></i> Cập nhật thành công!
 </div>
 
@@ -269,28 +332,34 @@
 </section>
 
 <script>
-    // Form validation and feedback
+    // Client-side validation and feedback
     document.getElementById('updateForm')?.addEventListener('submit', function (e) {
         const fullName = document.getElementById('fullName').value.trim();
-        if (!fullName) {
+        const phone = document.getElementById('phone').value.trim();
+        const address = document.getElementById('address').value.trim();
+        if (!fullName || !phone || !address) {
             e.preventDefault();
-            alert('Full Name cannot be empty!');
+            alert('Please fill in all required fields!');
         }
     });
 
-    document.querySelector('#passwordForm form')?.addEventListener('submit', function (e) {
+    document.getElementById('passwordChangeForm')?.addEventListener('submit', function (e) {
         const oldPassword = document.getElementById('oldPassword').value.trim();
         const newPassword = document.getElementById('newPassword').value.trim();
-        if (!oldPassword || !newPassword) {
+        const confirmNewPassword = document.getElementById('confirmNewPassword').value.trim();
+        if (!oldPassword || !newPassword || !confirmNewPassword) {
             e.preventDefault();
-            alert('Please fill in both password fields!');
+            alert('Please fill in all password fields!');
+        } else if (newPassword !== confirmNewPassword) {
+            e.preventDefault();
+            alert('New passwords do not match!');
         } else if (newPassword.length < 6) {
             e.preventDefault();
             alert('New password must be at least 6 characters long!');
         }
     });
 
-    document.querySelector('#deactivateForm form')?.addEventListener('submit', function (e) {
+    document.getElementById('deactivateAccountForm')?.addEventListener('submit', function (e) {
         const confirmPassword = document.getElementById('confirmPassword').value.trim();
         if (!confirmPassword) {
             e.preventDefault();
@@ -299,6 +368,16 @@
             e.preventDefault();
         }
     });
+
+    // Show toast notification on success
+    const success = '<%= request.getAttribute("success") %>';
+    if (success === 'update_success') {
+        const toast = document.getElementById('successToast');
+        toast.style.display = 'block';
+        setTimeout(() => {
+            toast.style.display = 'none';
+        }, 3000);
+    }
 </script>
 </body>
 </html>

@@ -1,7 +1,18 @@
 <%@ page import="java.util.ArrayList" %>
 <%@ page import="model.entity.Books" %>
 <%@ page import="model.dao.BookCategoriesDAO" %>
+<%@ page import="model.entity.Members" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%
+    // Retrieve the current logged-in member from the session
+    Members currentMember = (Members) request.getSession().getAttribute("user");
+
+    // If no member is logged in, redirect to the Login page
+    if (currentMember == null) {
+        response.sendRedirect("/Auth/SignIn-SignUp.jsp");
+        return;  // Prevent further page processing after redirect
+    }
+%>
 <!DOCTYPE html>
 <html lang="en">
 <head>

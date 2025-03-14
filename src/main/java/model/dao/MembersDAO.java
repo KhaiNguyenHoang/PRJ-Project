@@ -113,19 +113,21 @@ public class MembersDAO extends LibraryContext {
         return false;
     }
 
-    public void updateMember(Members member) {
-        String sql = "UPDATE members SET fullName = ?, email = ?, phone = ?, address = ?, passwordHash = ?, status = ?, updatedAt = NOW() WHERE idMember = ?";
+    public boolean updateMember(Members member) {
+        String sql = "UPDATE members SET fullName = ?, email = ?, phone = ?, address = ?, passwordHash = ?, status = ?, updatedAt = GETDATE() WHERE idMember = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, member.getFullName());
             ps.setString(2, member.getEmail());
             ps.setString(3, member.getPhone());
             ps.setString(4, member.getAddress());
-            ps.setString(5, hashPassword(member.getPasswordHash()));  // Mã hóa mật khẩu khi cập nhật
+            ps.setString(5, member.getPasswordHash());
             ps.setString(6, member.getStatus());
             ps.setInt(7, member.getIdMember());
-            ps.executeUpdate();
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0; // True if update succeeded
         } catch (SQLException e) {
-            e.printStackTrace();  // Log the exception (consider better logging in production)
+            e.printStackTrace(); // Replace with proper logging in production
+            return false; // False if update failed
         }
     }
 
