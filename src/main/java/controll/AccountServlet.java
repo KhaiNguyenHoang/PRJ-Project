@@ -9,8 +9,6 @@ import model.dao.MembersDAO;
 import model.entity.Members;
 
 import java.io.IOException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @WebServlet(name = "AccountServlet", value = "/Account")
 public class AccountServlet extends HttpServlet {
@@ -26,7 +24,7 @@ public class AccountServlet extends HttpServlet {
             String phone = request.getParameter("phone").trim();
             String address = request.getParameter("address").trim();
 
-            // Check if any field is empty
+            // Validate that all fields are filled
             if (fullName.isEmpty() || email.isEmpty() || phone.isEmpty() || address.isEmpty()) {
                 request.setAttribute(ERROR_ATTRIBUTE, "empty_field");
                 request.getRequestDispatcher("HomeHTML/HomeMemberHTML/MemberAccount.jsp").forward(request, response);
@@ -47,24 +45,23 @@ public class AccountServlet extends HttpServlet {
                 return;
             }
 
-            // Update user information
+            // Retrieve logged-in member
             Members loggedInMember = (Members) request.getSession().getAttribute("user");
             if (loggedInMember == null) {
                 response.sendRedirect("/Auth/SignIn-SignUp.jsp");
                 return;
             }
 
-            // Update the member object
+            // Update member information
             loggedInMember.setFullName(fullName);
             loggedInMember.setEmail(email);
             loggedInMember.setPhone(phone);
             loggedInMember.setAddress(address);
 
             MembersDAO membersDAO = new MembersDAO();
-            boolean updateSuccess = membersDAO.updateMember(loggedInMember); // Now returns boolean
+            boolean updateSuccess = membersDAO.updateMember(loggedInMember);
 
             if (updateSuccess) {
-                // Refresh session with updated member data from database
                 Members updatedMember = membersDAO.getMemberById(loggedInMember.getIdMember());
                 request.getSession().setAttribute("user", updatedMember);
                 request.setAttribute("success", "update_success");
@@ -72,14 +69,58 @@ public class AccountServlet extends HttpServlet {
                 request.setAttribute(ERROR_ATTRIBUTE, "update_failed");
             }
             request.getRequestDispatcher("HomeHTML/HomeMemberHTML/MemberAccount.jsp").forward(request, response);
+        } else if ("changePassword".equalsIgnoreCase(action)) {
+            String currentPassword = request.getParameter("currentPassword").trim();
+            String newPassword = request.getParameter("newPassword").trim();
+            String confirmNewPassword = request.getParameter("confirmNewPassword").trim();
+
+            // Retrieve logged-in member
+            Members loggedInMember = (Members) request.getSession().getAttribute("user");
+            if (loggedInMember == null) {
+                response.sendRedirect("/Auth/SignIn-SignUp.jsp");
+                return;
+            }
+
+            // Validate password fields
+            if (currentPassword.isEmpty() || newPassword.isEmpty() || confirmNewPassword.isEmpty()) {
+                request.setAttribute("error-password", "empty_password_field");
+                request.getRequestDispatcher("HomeHTML/HomeMemberHTML/MemberAccount.jsp").forward(request, response);
+                return;
+            }
+
+            if (!newPassword.equals(confirmNewPassword)) {
+                request.setAttribute("error-password", "password_mismatch");
+                request.getRequestDispatcher("HomeHTML/HomeMemberHTML/MemberAccount.jsp").forward(request, response);
+                return;
+            }
+
+            MembersDAO membersDAO = new MembersDAO();
+
+            // Check if current password matches
+            Members member = membersDAO.login(loggedInMember.getEmail(), currentPassword); // Using existing login method
+            if (member == null) {
+                request.setAttribute("error-password", "incorrect_current_password");
+                request.getRequestDispatcher("HomeHTML/HomeMemberHTML/MemberAccount.jsp").forward(request, response);
+                return;
+            }
+
+            // Update password
+            loggedInMember.setPasswordHash(membersDAO.hashPassword(newPassword));
+            boolean passwordChanged = membersDAO.updateMember(loggedInMember);
+
+            if (passwordChanged) {
+                request.getSession().setAttribute("user", loggedInMember); // Update session with new password hash
+                request.setAttribute("success-password", "password_changed");
+            } else {
+                request.setAttribute("error-password", "password_change_failed");
+            }
+            request.getRequestDispatcher("HomeHTML/HomeMemberHTML/MemberAccount.jsp").forward(request, response);
         }
     }
 
     private boolean isValidEmail(String email) {
         String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
-        Pattern pattern = Pattern.compile(emailRegex);
-        Matcher matcher = pattern.matcher(email);
-        return matcher.matches();
+        return email.matches(emailRegex);
     }
 
     private boolean isValidPhone(String phone) {

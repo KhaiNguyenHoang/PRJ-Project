@@ -45,7 +45,7 @@ public class LoginServlet extends HttpServlet {
                 session.setAttribute("user", account);
                 session.setAttribute("account", account);
                 response.sendRedirect("HomePage");  // Chuyển hướng về trang chủ
-            } else if (members != null) {
+            } else {
                 if ("Active".equalsIgnoreCase(members.getStatus())) {
                     session.setAttribute("user", members);
                     session.setAttribute("members", members);

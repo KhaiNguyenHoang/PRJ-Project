@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.util.logging.Logger;
 
 @WebServlet(name = "LogoutAuth", value = "/logoutauth")
 public class LogoutAuth extends HttpServlet {
@@ -17,10 +18,7 @@ public class LogoutAuth extends HttpServlet {
             // Forward to the logout page
             request.getRequestDispatcher("/Auth/Logout.jsp").forward(request, response);
         } catch (Exception e) {
-            // Log the error for debugging purposes
-            e.printStackTrace();
-            // Optionally, redirect to an error page or return an error message
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Logout failed due to server error.");
+            Logger.getLogger(LogoutAuth.class.getName()).log(java.util.logging.Level.SEVERE, null, e);
         }
     }
 }

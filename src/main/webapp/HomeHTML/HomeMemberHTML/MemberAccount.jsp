@@ -1,13 +1,10 @@
 <%@ page import="model.entity.Members" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%
-    // Retrieve the current logged-in member from the session
     Members currentMember = (Members) request.getSession().getAttribute("user");
-
-    // If no member is logged in, redirect to the Login page
     if (currentMember == null) {
         response.sendRedirect("/Auth/SignIn-SignUp.jsp");
-        return;  // Prevent further page processing after redirect
+        return;
     }
 %>
 <!DOCTYPE html>
@@ -17,16 +14,14 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
     <title>Tài khoản</title>
-    <!-- Fonts style -->
     <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet"/>
-    <!-- Bootstrap CSS -->
     <link href="HomeHTML/HomeMemberHTML/css/bootstrap.css" rel="stylesheet" type="text/css"/>
     <link href="HomeHTML/HomeMemberHTML/css/style.css" rel="stylesheet"/>
     <link href="HomeHTML/HomeMemberHTML/css/responsive.css" rel="stylesheet"/>
-    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        /* Account Section */
+        /* Add your custom styles here */
         .account-section {
             padding: 60px 0;
         }
@@ -35,23 +30,14 @@
             border-radius: 20px;
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
             background-color: #ffffff;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .account-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
         }
 
         .card-header {
             background: linear-gradient(90deg, #00bcd4, #0097a7);
             color: white;
-            font-size: 1.8rem;
             text-align: center;
             padding: 25px;
             border-radius: 20px 20px 0 0;
-            font-weight: 600;
-            letter-spacing: 1px;
         }
 
         .card-body {
@@ -60,49 +46,11 @@
             border-radius: 0 0 20px 20px;
         }
 
-        /* Form Styling */
-        .form-label {
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 10px;
-        }
-
-        .form-control {
-            border-radius: 12px;
-            border: 2px solid #ddd;
-            padding: 12px 15px;
-            font-size: 1rem;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .form-control:focus {
-            border-color: #00bcd4;
-            box-shadow: 0 0 10px rgba(0, 188, 212, 0.2);
-        }
-
-        input[readonly] {
-            background-color: #f1f3f5;
-            cursor: not-allowed;
-            color: #6c757d;
-        }
-
-        /* Button Styling */
         .btn-custom {
             background-color: #00bcd4;
             color: white;
             padding: 12px;
             border-radius: 12px;
-            font-size: 1.2rem;
-            font-weight: 600;
-            border: none;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            box-shadow: 0 4px 10px rgba(0, 188, 212, 0.2);
-        }
-
-        .btn-custom:hover {
-            background-color: #00acc1;
-            transform: translateY(-3px);
-            box-shadow: 0 6px 15px rgba(0, 188, 212, 0.3);
         }
 
         .btn-delete {
@@ -110,36 +58,8 @@
             color: white;
             padding: 12px;
             border-radius: 12px;
-            font-size: 1.2rem;
-            font-weight: 600;
-            border: none;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            box-shadow: 0 4px 10px rgba(231, 76, 60, 0.2);
         }
 
-        .btn-delete:hover {
-            background-color: #c0392b;
-            transform: translateY(-3px);
-            box-shadow: 0 6px 15px rgba(231, 76, 60, 0.3);
-        }
-
-        /* Collapse Animation */
-        .collapse:not(.show) {
-            display: none;
-        }
-
-        .collapsing {
-            transition: height 0.3s ease;
-        }
-
-        /* Alert Styling */
-        .alert {
-            border-radius: 10px;
-            font-size: 1rem;
-            margin-top: 20px;
-        }
-
-        /* Toast Notification */
         .toast {
             position: fixed;
             top: 20px;
@@ -157,42 +77,7 @@
 
 <!-- Header Section -->
 <header class="header_section">
-    <div class="container-fluid">
-        <nav class="navbar navbar-expand-lg custom_nav-container">
-            <a class="navbar-brand" href="index.jsp">
-                <span>Library</span>
-            </a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse"
-                    data-target="#navbarSupportedContent"
-                    aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <div class="d-flex ml-auto flex-column flex-lg-row align-items-center">
-                    <ul class="navbar-nav">
-                        <li class="nav-item active">
-                            <a class="nav-link" href="HomePage">Home <span class="sr-only">(current)</span></a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#about_section">About</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#how_section">How</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="contact.html">Borrowing</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="MemberAccount">Account</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="logoutauth">Logout</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </div>
+    <!-- Header content -->
 </header>
 
 <!-- Account Management Section -->
@@ -204,57 +89,44 @@
                     <i class="fas fa-user-cog me-2"></i> Account Management
                 </div>
                 <div class="card-body">
-                    <%
-                        Members loggedInMember = (Members) session.getAttribute("user");
-                        if (loggedInMember != null) {
-                    %>
-
                     <!-- Edit Info Form -->
                     <form action="Account" method="post" id="updateForm">
                         <input type="hidden" name="action" value="changeInfo">
                         <div class="mb-4">
                             <label for="fullName" class="form-label">Full Name</label>
                             <input type="text" class="form-control" id="fullName" name="fullName"
-                                   value="<%= loggedInMember.getFullName() %>" required/>
+                                   value="<%= currentMember.getFullName() %>" required/>
                         </div>
                         <div class="mb-4">
                             <label for="email" class="form-label">Email</label>
                             <input type="email" class="form-control" id="email" name="email"
-                                   value="<%= loggedInMember.getEmail() %>" readonly/>
+                                   value="<%= currentMember.getEmail() %>" readonly/>
                             <small class="form-text text-muted">Email cannot be changed here. Contact support for
                                 assistance.</small>
                         </div>
                         <div class="mb-4">
                             <label for="phone" class="form-label">Phone</label>
                             <input type="text" class="form-control" id="phone" name="phone"
-                                   value="<%= loggedInMember.getPhone() %>" required/>
+                                   value="<%= currentMember.getPhone() %>" required/>
                         </div>
                         <div class="mb-4">
                             <label for="address" class="form-label">Address</label>
                             <input type="text" class="form-control" id="address" name="address"
-                                   value="<%= loggedInMember.getAddress() %>" required/>
+                                   value="<%= currentMember.getAddress() %>" required/>
                         </div>
-                        <%
-                            // Handle error messages
-                            String error = (String) request.getAttribute("error");
-                            if (error != null) {
-                        %>
+                        <% if (request.getAttribute("error") != null) { %>
                         <div class="alert alert-danger">
+                            <% String error = (String) request.getAttribute("error"); %>
                             <% if ("empty_field".equals(error)) { %>All fields must be filled out.<% } %>
                             <% if ("invalid_email".equals(error)) { %>Please provide a valid email address.<% } %>
                             <% if ("invalid_phone".equals(error)) { %>Please provide a valid phone number (10
                             digits).<% } %>
-                            <% if ("server_error".equals(error)) { %>An error occurred while updating your information.
-                            Please try again later.<% } %>
+                            <% if ("update_failed".equals(error)) { %>Failed to update information. Please try
+                            again.<% } %>
                         </div>
                         <% } %>
-
-                        <%
-                            // Handle success message
-                            String success = (String) request.getAttribute("success");
-                            if ("update_success".equals(success)) {
-                        %>
-                        <div class="alert alert-success">Your information has been updated successfully!</div>
+                        <% if ("update_success".equals(request.getAttribute("success"))) { %>
+                        <div class="alert alert-success">Your account information has been updated successfully!</div>
                         <% } %>
                         <button type="submit" class="btn btn-custom w-100">Save Changes</button>
                     </form>
@@ -266,11 +138,12 @@
                             <i class="fas fa-key me-2"></i> Change Password
                         </button>
                         <div class="collapse mt-3" id="passwordForm">
-                            <form action="ChangePassword" method="post" id="passwordChangeForm">
+                            <form action="Account" method="post" id="passwordChangeForm">
+                                <input type="hidden" name="action" value="changePassword">
                                 <div class="mb-3">
-                                    <label for="oldPassword" class="form-label">Current Password</label>
-                                    <input type="password" class="form-control" id="oldPassword" name="oldPassword"
-                                           placeholder="Enter current password" required/>
+                                    <label for="currentPassword" class="form-label">Current Password</label>
+                                    <input type="password" class="form-control" id="currentPassword"
+                                           name="currentPassword" placeholder="Enter current password" required/>
                                 </div>
                                 <div class="mb-3">
                                     <label for="newPassword" class="form-label">New Password</label>
@@ -282,6 +155,22 @@
                                     <input type="password" class="form-control" id="confirmNewPassword"
                                            name="confirmNewPassword" placeholder="Confirm new password" required/>
                                 </div>
+                                <% if (request.getAttribute("error-password") != null) { %>
+                                <div class="alert alert-danger">
+                                    <% String passwordError = (String) request.getAttribute("error-password"); %>
+                                    <% if ("empty_password_field".equals(passwordError)) { %>All password fields must be
+                                    filled out.<% } %>
+                                    <% if ("password_mismatch".equals(passwordError)) { %>New passwords do not
+                                    match.<% } %>
+                                    <% if ("incorrect_current_password".equals(passwordError)) { %>Incorrect current
+                                    password.<% } %>
+                                    <% if ("password_change_failed".equals(passwordError)) { %>Failed to change
+                                    password. Please try again.<% } %>
+                                </div>
+                                <% } %>
+                                <% if ("password_changed".equals(request.getAttribute("success-password"))) { %>
+                                <div class="alert alert-success">Your password has been changed successfully!</div>
+                                <% } %>
                                 <button type="submit" class="btn btn-custom w-100">Update Password</button>
                             </form>
                         </div>
@@ -304,17 +193,6 @@
                             </form>
                         </div>
                     </div>
-
-                    <%
-                    } else {
-                    %>
-                    <div class="alert alert-danger text-center" role="alert">
-                        You are not logged in. Please <a href="login.jsp" class="alert-link">login</a> to manage your
-                        account.
-                    </div>
-                    <%
-                        }
-                    %>
                 </div>
             </div>
         </div>
@@ -331,8 +209,9 @@
     <p>© 2024 Group 2 All Rights Reserved | Design by Group 2</p>
 </section>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // Client-side validation and feedback
+    // Form validation and feedback
     document.getElementById('updateForm')?.addEventListener('submit', function (e) {
         const fullName = document.getElementById('fullName').value.trim();
         const phone = document.getElementById('phone').value.trim();
@@ -344,10 +223,10 @@
     });
 
     document.getElementById('passwordChangeForm')?.addEventListener('submit', function (e) {
-        const oldPassword = document.getElementById('oldPassword').value.trim();
+        const currentPassword = document.getElementById('currentPassword').value.trim();
         const newPassword = document.getElementById('newPassword').value.trim();
         const confirmNewPassword = document.getElementById('confirmNewPassword').value.trim();
-        if (!oldPassword || !newPassword || !confirmNewPassword) {
+        if (!currentPassword || !newPassword || !confirmNewPassword) {
             e.preventDefault();
             alert('Please fill in all password fields!');
         } else if (newPassword !== confirmNewPassword) {
@@ -371,7 +250,8 @@
 
     // Show toast notification on success
     const success = '<%= request.getAttribute("success") %>';
-    if (success === 'update_success') {
+    const passwordSuccess = '<%= request.getAttribute("success-password") %>';
+    if (success === 'update_success' || passwordSuccess === 'password_changed') {
         const toast = document.getElementById('successToast');
         toast.style.display = 'block';
         setTimeout(() => {
