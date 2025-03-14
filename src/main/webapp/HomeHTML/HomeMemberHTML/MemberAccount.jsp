@@ -77,7 +77,42 @@
 
 <!-- Header Section -->
 <header class="header_section">
-    <!-- Header content -->
+    <div class="container-fluid">
+        <nav class="navbar navbar-expand-lg custom_nav-container">
+            <a class="navbar-brand" href="index.jsp">
+                <span>Library</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse"
+                    data-target="#navbarSupportedContent"
+                    aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <div class="d-flex ml-auto flex-column flex-lg-row align-items-center">
+                    <ul class="navbar-nav">
+                        <li class="nav-item active">
+                            <a class="nav-link" href="HomePage">Home <span class="sr-only">(current)</span></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#about_section">About</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#how_section">How</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="contact.html">Borrowing</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="MemberAccount">Account</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="logoutauth">Logout</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </div>
 </header>
 
 <!-- Account Management Section -->
@@ -168,7 +203,7 @@
                                     password. Please try again.<% } %>
                                 </div>
                                 <% } %>
-                                <% if ("password_changed".equals(request.getAttribute("success-password"))) { %>
+                                <% if ("password_changed_successfully".equals(request.getAttribute("success-password"))) { %>
                                 <div class="alert alert-success">Your password has been changed successfully!</div>
                                 <% } %>
                                 <button type="submit" class="btn btn-custom w-100">Update Password</button>
@@ -183,7 +218,8 @@
                             <i class="fas fa-user-slash me-2"></i> Deactivate Account
                         </button>
                         <div class="collapse mt-3" id="deactivateForm">
-                            <form action="DeactivateAccount" method="post" id="deactivateAccountForm">
+                            <form action="Account" method="post" id="deactivateAccountForm">
+                                <input type="hidden" name="action" value="deactiveAccount">
                                 <div class="mb-3">
                                     <label for="confirmPassword" class="form-label">Confirm Password</label>
                                     <input type="password" class="form-control" id="confirmPassword"

@@ -132,7 +132,7 @@ public class MembersDAO extends LibraryContext {
     }
 
     // Hash mật khẩu bằng SHA-512
-    private String hashPassword(String password) {
+    public String hashPassword(String password) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-512");
             byte[] hash = md.digest(password.getBytes());
@@ -182,20 +182,36 @@ public class MembersDAO extends LibraryContext {
         }
     }
 
-    public boolean changePassword(String currentPassword, String newPassword, String repeatPassword) {
-        if (!newPassword.equals(repeatPassword)) {
+    public boolean changePassword(String currentPassword, String newPassword) {
+        String sql = "UPDATE members SET passwordHash = ? WHERE passwordHash = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            // Set the hashed new password for the update
+            ps.setString(1, hashPassword(newPassword));
+
+            // Set the hashed current password to find the matching row
+            ps.setString(2, hashPassword(currentPassword));
+
+            // Execute the update and check if it was successful
+            int rowsAffected = ps.executeUpdate();
+
+            // Return true if at least one row was updated, indicating success
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;  // Return false if there was an error
+        }
+    }
+
+    public boolean deactiveAccount(int idMember, String passwordHash) {
+        String sql = "UPDATE members SET status = 'Expired' WHERE idMember = ? AND passwordHash = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idMember);
+            ps.setString(2, hashPassword(passwordHash));
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
             return false;
-        } else {
-            String sql = "UPDATE members SET passwordHash = ? WHERE passwordhash = ?";
-            try (PreparedStatement ps = conn.prepareStatement(sql)) {
-                ps.setString(1, hashPassword(newPassword));
-                ps.setString(2, hashPassword(currentPassword));
-                ps.executeUpdate();
-                return true;
-            } catch (SQLException e) {
-                e.printStackTrace();
-                return false;
-            }
         }
     }
 }
