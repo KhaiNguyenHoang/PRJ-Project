@@ -181,4 +181,21 @@ public class MembersDAO extends LibraryContext {
             e.printStackTrace();  // Log the exception (consider better logging in production)
         }
     }
+
+    public boolean changePassword(String currentPassword, String newPassword, String repeatPassword) {
+        if (!newPassword.equals(repeatPassword)) {
+            return false;
+        } else {
+            String sql = "UPDATE members SET passwordHash = ? WHERE passwordhash = ?";
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setString(1, hashPassword(newPassword));
+                ps.setString(2, hashPassword(currentPassword));
+                ps.executeUpdate();
+                return true;
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
+    }
 }
