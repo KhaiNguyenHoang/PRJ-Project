@@ -13,6 +13,12 @@ public class BookCopiesDAO extends LibraryContext {
         super(); // Kết nối tới cơ sở dữ liệu thông qua lớp cha LibraryContext
     }
 
+    public static void main(String[] args) {
+        BookCopiesDAO bookCopiesDAO = new BookCopiesDAO();
+        bookCopiesDAO.updateBookCopyStatus(60, "Available");
+        bookCopiesDAO.updateBookCopyStatus(63, "Available");
+    }
+
     public boolean hasAvailableCopy(int bookId) {
         String query = "SELECT COUNT(*) FROM BookCopies WHERE BookID = ? AND Status = 'Available'";
         try (PreparedStatement ps = conn.prepareStatement(query)) {

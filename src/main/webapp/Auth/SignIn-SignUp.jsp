@@ -434,11 +434,6 @@
     <div class="form-container sign-in-container">
         <form action="LoginServlet" method="post">
             <h1>Sign in</h1>
-            <div class="social-container">
-                <a href="#" class="social"><i class="fab fa-facebook-f"></i></a>
-                <a href="#" class="social"><i class="fab fa-google-plus-g"></i></a>
-                <a href="#" class="social"><i class="fab fa-linkedin-in"></i></a>
-            </div>
             <input type="email" name="emailLogin" placeholder="Email" required/>
             <input type="password" name="passwordLogin" placeholder="Password" required/>
 
