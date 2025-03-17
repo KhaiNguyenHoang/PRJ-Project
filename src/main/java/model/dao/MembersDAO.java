@@ -67,7 +67,7 @@ public class MembersDAO extends LibraryContext {
         String sql = "SELECT * " + "FROM members WHERE email = ? AND passwordHash = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, email);
-            ps.setString(2, hashPassword(password));  // Mã hóa mật khẩu nhập vào
+            ps.setString(2, hashPassword(password));
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return mapResultSetToMember(rs);
@@ -126,12 +126,11 @@ public class MembersDAO extends LibraryContext {
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0; // True if update succeeded
         } catch (SQLException e) {
-            e.printStackTrace(); // Replace with proper logging in production
+            e.printStackTrace(); // Replaced with proper logging in production
             return false; // False if update failed
         }
     }
 
-    // Hash mật khẩu bằng SHA-512
     public String hashPassword(String password) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-512");
