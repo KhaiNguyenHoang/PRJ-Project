@@ -6,7 +6,6 @@ import model.utils.LibraryContext;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,12 +17,12 @@ public class FinePaymentsDAO extends LibraryContext {
 
     // Thêm thanh toán phạt vào bảng FinePayments
     public boolean addFinePayment(int fineId, double amountPaid, String paymentMethod) {
-        String insertPaymentQuery = "INSERT INTO FinePayments (FineID, AmountPaid, PaymentDate, PaymentMethod) VALUES (?, ?, ?, ?)";
+        String insertPaymentQuery = "INSERT INTO FinePayments (FineID, AmountPaid, PaymentDate, PaymentMethod) " +
+                "VALUES (?, ?, GETDATE(), ?)";
         try (PreparedStatement ps = conn.prepareStatement(insertPaymentQuery)) {
             ps.setInt(1, fineId);
             ps.setDouble(2, amountPaid);
-            ps.setTimestamp(3, new Timestamp(new java.util.Date().getTime())); // Lấy thời gian hiện tại
-            ps.setString(4, paymentMethod);
+            ps.setString(3, paymentMethod);
 
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0;
@@ -48,33 +47,6 @@ public class FinePaymentsDAO extends LibraryContext {
             e.printStackTrace();
         }
         return finePaymentsList;
-    }
-
-    // Lấy tất cả thanh toán phạt
-    public List<FinePayments> getAllFinePayments() {
-        List<FinePayments> finePaymentsList = new ArrayList<>();
-        String query = "SELECT * " + "FROM FinePayments";
-        try (PreparedStatement ps = conn.prepareStatement(query); ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                finePaymentsList.add(mapResultSetToFinePayments(rs));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return finePaymentsList;
-    }
-
-    // Xóa thanh toán phạt theo IdPayment
-    public boolean deleteFinePayment(int paymentId) {
-        String deleteQuery = "DELETE FROM FinePayments WHERE IdPayment = ?";
-        try (PreparedStatement ps = conn.prepareStatement(deleteQuery)) {
-            ps.setInt(1, paymentId);
-            int rowsAffected = ps.executeUpdate();
-            return rowsAffected > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
     }
 
     // Map kết quả từ ResultSet thành đối tượng FinePayments
