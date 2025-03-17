@@ -150,6 +150,7 @@ public class FinesDAO extends LibraryContext {
         }
     }
 
+    // Lấy tất cả các phạt
     public List<Fines> getAllFines() {
         ArrayList<Fines> finesList = new ArrayList<>();
         String query = "SELECT * " + "FROM Fines";
