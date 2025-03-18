@@ -4,28 +4,26 @@ import java.util.Date;
 
 public class Borrowing {
     private int idBorrow;
-    private int memberId; // Liên kết với Members
-    private int bookId;   // Liên kết với Books
-    private int bookCopyId; // Liên kết với BookCopies
+    private int memberId;
+    private int bookId;
+    private int bookCopyId;
     private Date borrowDate;
     private Date dueDate;
     private Date returnDate;
-    private String status; // 'Borrowed', 'Returned', 'Overdue'
+    private String status;
     private Date createdAt;
 
     // Constructors
     public Borrowing() {
     }
 
-    public Borrowing(int idBorrow, int memberId, int bookId, int bookCopyId, Date borrowDate, Date dueDate, String status, Date createdAt) {
-        this.idBorrow = idBorrow;
+    public Borrowing(int memberId, int bookId, int bookCopyId, Date borrowDate, Date dueDate, String status) {
         this.memberId = memberId;
         this.bookId = bookId;
         this.bookCopyId = bookCopyId;
         this.borrowDate = borrowDate;
         this.dueDate = dueDate;
         this.status = status;
-        this.createdAt = createdAt;
     }
 
     public Borrowing(int idBorrow, int memberId, int bookId, int bookCopyId, Date borrowDate, Date dueDate, String status) {

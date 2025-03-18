@@ -13,12 +13,6 @@ public class BookCopiesDAO extends LibraryContext {
         super(); // Kết nối tới cơ sở dữ liệu thông qua lớp cha LibraryContext
     }
 
-    public static void main(String[] args) {
-        BookCopiesDAO bookCopiesDAO = new BookCopiesDAO();
-        bookCopiesDAO.updateBookCopyStatus(60, "Available");
-        bookCopiesDAO.updateBookCopyStatus(63, "Available");
-    }
-
     public boolean hasAvailableCopy(int bookId) {
         String query = "SELECT COUNT(*) FROM BookCopies WHERE BookID = ? AND Status = 'Available'";
         try (PreparedStatement ps = conn.prepareStatement(query)) {
@@ -104,6 +98,22 @@ public class BookCopiesDAO extends LibraryContext {
         String query = "SELECT * " + "FROM BookCopies WHERE IdCopy = ?";
         try (PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setInt(1, copyId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToBookCopy(rs);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    // Tìm bản sao sách có sẵn gần nhất theo BookID
+    public BookCopies getFirstAvailableBookCopy(int bookId) {
+        String query = "SELECT * " + "FROM BookCopies WHERE BookID = ? AND Status = 'Available' ORDER BY IdCopy ASC";
+        try (PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, bookId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return mapResultSetToBookCopy(rs);

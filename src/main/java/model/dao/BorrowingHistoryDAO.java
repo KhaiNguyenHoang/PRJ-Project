@@ -14,10 +14,9 @@ import java.util.List;
 public class BorrowingHistoryDAO extends LibraryContext {
 
     public BorrowingHistoryDAO() {
-        super(); // Kết nối tới cơ sở dữ liệu thông qua lớp cha LibraryContext
+        super();
     }
 
-    // Ghi lại lịch sử mượn sách
     public boolean addBorrowingHistory(Borrowing borrowing) {
         String insertHistoryQuery = "INSERT INTO BorrowingHistory (MemberID, BookID, BookCopyId, BorrowDate, ReturnDate) " +
                 "VALUES (?, ?, ?, ?, ?)";
@@ -26,7 +25,7 @@ public class BorrowingHistoryDAO extends LibraryContext {
             ps.setInt(2, borrowing.getBookId());
             ps.setInt(3, borrowing.getBookCopyId());
             ps.setTimestamp(4, new Timestamp(borrowing.getBorrowDate().getTime()));
-            ps.setTimestamp(5, null); // Lịch sử mượn không có ngày trả ngay lập tức
+            ps.setTimestamp(5, null);
 
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0;
@@ -36,7 +35,6 @@ public class BorrowingHistoryDAO extends LibraryContext {
         return false;
     }
 
-    // Cập nhật lịch sử trả sách
     public boolean updateReturnHistory(Borrowing borrowing) {
         String updateHistoryQuery = "UPDATE BorrowingHistory SET ReturnDate = ? WHERE BookCopyId = ? AND MemberID = ? AND ReturnDate IS NULL";
         try (PreparedStatement ps = conn.prepareStatement(updateHistoryQuery)) {
@@ -52,10 +50,9 @@ public class BorrowingHistoryDAO extends LibraryContext {
         return false;
     }
 
-    // Lấy lịch sử mượn trả sách theo MemberID
     public List<BorrowingHistory> getBorrowingHistoryByMemberId(int memberId) {
         List<BorrowingHistory> historyList = new ArrayList<>();
-        String query = "SELECT * FROM BorrowingHistory WHERE MemberID = ? ORDER BY BorrowDate DESC"; // Thêm sắp xếp theo ngày mượn
+        String query = "SELECT * FROM BorrowingHistory WHERE MemberID = ? ORDER BY BorrowDate DESC";
         try (PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setInt(1, memberId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -69,14 +66,13 @@ public class BorrowingHistoryDAO extends LibraryContext {
         return historyList;
     }
 
-    // Map kết quả từ ResultSet thành đối tượng BorrowingHistory
     private BorrowingHistory mapResultSetToBorrowingHistory(ResultSet rs) throws SQLException {
         BorrowingHistory history = new BorrowingHistory();
         history.setIdHistory(rs.getInt("IdHistory"));
         history.setMemberId(rs.getInt("MemberID"));
         history.setBookId(rs.getInt("BookID"));
         history.setBookCopyId(rs.getInt("BookCopyId"));
-        history.setBorrowDate(rs.getTimestamp("BorrowDate"));
+        history.setBorrowDate(rs.getTimestamp("BorrowDate")); // Assuming BorrowingHistory uses java.util.Date
         history.setReturnDate(rs.getTimestamp("ReturnDate"));
         return history;
     }
