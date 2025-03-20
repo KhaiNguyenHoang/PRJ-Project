@@ -14,30 +14,43 @@ import java.util.List;
 public class BorrowingHistoryDAO extends LibraryContext {
 
     public BorrowingHistoryDAO() {
-        super();
+        super(); // Initializes the database connection from LibraryContext
     }
 
+    /**
+     * Adds a new borrowing history record when a book is borrowed.
+     *
+     * @param borrowing The Borrowing object containing borrow details
+     * @return true if the insertion is successful, false otherwise
+     */
     public boolean addBorrowingHistory(Borrowing borrowing) {
-        String insertHistoryQuery = "INSERT INTO BorrowingHistory (MemberID, BookID, BookCopyId, BorrowDate, ReturnDate) " +
+        String sql = "INSERT INTO BorrowingHistory (MemberID, BookID, BookCopyId, BorrowDate, ReturnDate) " +
                 "VALUES (?, ?, ?, ?, ?)";
-        try (PreparedStatement ps = conn.prepareStatement(insertHistoryQuery)) {
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, borrowing.getMemberId());
             ps.setInt(2, borrowing.getBookId());
             ps.setInt(3, borrowing.getBookCopyId());
             ps.setTimestamp(4, new Timestamp(borrowing.getBorrowDate().getTime()));
-            ps.setTimestamp(5, null);
+            ps.setTimestamp(5, null); // ReturnDate is null when borrowing starts
 
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0;
         } catch (SQLException e) {
             e.printStackTrace();
+            return false;
         }
-        return false;
     }
 
+    /**
+     * Updates the return date for a borrowing record when a book is returned.
+     *
+     * @param borrowing The Borrowing object with return details
+     * @return true if the update is successful, false otherwise
+     */
     public boolean updateReturnHistory(Borrowing borrowing) {
-        String updateHistoryQuery = "UPDATE BorrowingHistory SET ReturnDate = ? WHERE BookCopyId = ? AND MemberID = ? AND ReturnDate IS NULL";
-        try (PreparedStatement ps = conn.prepareStatement(updateHistoryQuery)) {
+        String sql = "UPDATE BorrowingHistory SET ReturnDate = ? " +
+                "WHERE BookCopyId = ? AND MemberID = ? AND ReturnDate IS NULL";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setTimestamp(1, new Timestamp(borrowing.getReturnDate().getTime()));
             ps.setInt(2, borrowing.getBookCopyId());
             ps.setInt(3, borrowing.getMemberId());
@@ -46,34 +59,40 @@ public class BorrowingHistoryDAO extends LibraryContext {
             return rowsAffected > 0;
         } catch (SQLException e) {
             e.printStackTrace();
+            return false;
         }
-        return false;
     }
 
-    public List<BorrowingHistory> getBorrowingHistoryByMemberId(int memberId) {
+    /**
+     * Retrieves the borrowing history for a specific member, including book titles.
+     *
+     * @param memberId The ID of the member
+     * @return A list of BorrowingHistory objects
+     * @throws SQLException If a database error occurs
+     */
+    public List<BorrowingHistory> getBorrowingHistoryByMemberId(int memberId) throws SQLException {
         List<BorrowingHistory> historyList = new ArrayList<>();
-        String query = "SELECT * FROM BorrowingHistory WHERE MemberID = ? ORDER BY BorrowDate DESC";
-        try (PreparedStatement ps = conn.prepareStatement(query)) {
-            ps.setInt(1, memberId);
-            try (ResultSet rs = ps.executeQuery()) {
+        String sql = "SELECT bh.IdHistory, bh.MemberID, bh.BookID, bh.BookCopyId, bh.BorrowDate, bh.ReturnDate, b.title AS bookTitle " +
+                "FROM BorrowingHistory bh " +
+                "JOIN Books b ON bh.BookID = b.IdBook " +
+                "WHERE bh.MemberID = ? " +
+                "ORDER BY bh.BorrowDate DESC";
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, memberId);
+            try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    historyList.add(mapResultSetToBorrowingHistory(rs));
+                    BorrowingHistory history = new BorrowingHistory();
+                    history.setIdHistory(rs.getInt("IdHistory"));
+                    history.setMemberId(rs.getInt("MemberID"));
+                    history.setBookId(rs.getInt("BookID"));
+                    history.setBookCopyId(rs.getInt("BookCopyId"));
+                    history.setBorrowDate(rs.getTimestamp("BorrowDate"));
+                    history.setReturnDate(rs.getTimestamp("ReturnDate"));// Set the transient bookTitle field
+                    historyList.add(history);
                 }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
         return historyList;
-    }
-
-    private BorrowingHistory mapResultSetToBorrowingHistory(ResultSet rs) throws SQLException {
-        BorrowingHistory history = new BorrowingHistory();
-        history.setIdHistory(rs.getInt("IdHistory"));
-        history.setMemberId(rs.getInt("MemberID"));
-        history.setBookId(rs.getInt("BookID"));
-        history.setBookCopyId(rs.getInt("BookCopyId"));
-        history.setBorrowDate(rs.getTimestamp("BorrowDate")); // Assuming BorrowingHistory uses java.util.Date
-        history.setReturnDate(rs.getTimestamp("ReturnDate"));
-        return history;
     }
 }

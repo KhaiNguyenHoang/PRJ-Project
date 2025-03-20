@@ -230,7 +230,7 @@
                                 <a class="nav-link" href="#how_section">How</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="contact.html">Borrowing</a>
+                                <a class="nav-link" href="Borrowing">Borrowing</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="MemberAccount">Account</a>

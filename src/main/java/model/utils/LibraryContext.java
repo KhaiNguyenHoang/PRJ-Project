@@ -21,16 +21,19 @@ public class LibraryContext {
                     + "encrypt=true;trustServerCertificate=true;";
             conn = DriverManager.getConnection(dbURL);
             if (conn != null) {
-                DatabaseMetaData dm = conn.getMetaData();
-                System.out.println("Driver name: " + dm.getDriverName());
-                System.out.println("Driver version: " + dm.getDriverVersion());
-                System.out.println("Product name: "
-                        + dm.getDatabaseProductName());
-                System.out.println("Product version: "
-                        + dm.getDatabaseProductVersion());
+                try {
+                    DatabaseMetaData dm = conn.getMetaData();
+                    System.out.println("Driver name: " + dm.getDriverName());
+                    System.out.println("Driver version: " + dm.getDriverVersion());
+                    System.out.println("Product name: "
+                            + dm.getDatabaseProductName());
+                    System.out.println("Product version: "
+                            + dm.getDatabaseProductVersion());
+                } catch (SQLException e) {
+                    // import org.slf4j.Logger
+                }
             }
-        } catch (SQLException ex) {
-        } catch (ClassNotFoundException ex) {
+        } catch (SQLException | ClassNotFoundException ex) {
             Logger.getLogger(LibraryContext.class.getName()).log(Level.SEVERE, null,
                     ex);
         }
