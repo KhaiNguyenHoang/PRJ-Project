@@ -20,12 +20,13 @@ public class BorrowingDAO extends LibraryContext {
         try {
             // Use current date as java.util.Date
             Date today = new Date();
+            BookCopiesDAO bookCopiesDAO = new BookCopiesDAO();
             // Create Borrowing object with proper constructor
-            Borrowing borrowing = new Borrowing(8, 36, 59, today, today, "Borrowed");
+            Borrowing borrowing = new Borrowing(8, 38, bookCopiesDAO.getFirstAvailableBookCopy(38).getIdCopy(), today, today, "Borrowed");
 
             // Initialize BorrowingDAO and borrow book
             BorrowingDAO borrowingDAO = new BorrowingDAO();
-            boolean isSuccess = borrowingDAO.returnBook(2, today);
+            boolean isSuccess = borrowingDAO.borrowBook(borrowing);
 
             if (isSuccess) {
                 System.out.println("Book return successfully.");
