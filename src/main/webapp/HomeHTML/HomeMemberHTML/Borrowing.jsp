@@ -239,9 +239,10 @@
             <table class="table table-striped">
                 <thead>
                 <tr>
-                    <th>Tên sách</th>
-                    <th>Ngày mượn</th>
-                    <th>Ngày trả</th>
+                    <th>Tittle</th>
+                    <th>Borrowing Date</th>
+                    <th>Returning Date</th>
+                    <th>Action</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -257,6 +258,22 @@
                     </td>
                     <td><%= history.getReturnDate() != null ? dateFormat.format(history.getReturnDate()) : "Chưa trả" %>
                     </td>
+                    <td>
+                            <%
+                        if (history.getReturnDate() == null) {
+                    %>
+                        <form action="Returning" method="post" style="display:inline;">
+                            <input type="hidden" name="historyId" value="<%= history.getIdHistory() %>">
+                            <button type="submit" class="btn btn-success"><i class="fas fa-undo me-2"></i>Returning
+                            </button>
+                        </form>
+                            <%
+                        } else {
+                    %>
+                        <button class="btn btn-secondary" disabled><i class="fas fa-undo me-2"></i>Đã trả</button>
+                            <%
+                        }
+                    %>
                 </tr>
                 <%
                     }
