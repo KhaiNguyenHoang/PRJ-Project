@@ -1,4 +1,4 @@
-<%@ page import="model.entity.Members" %>
+<%@ page import="model.Members" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%
     Members currentMember = (Members) request.getSession().getAttribute("user");

@@ -1,7 +1,7 @@
-package model.dao;
+package dao;
 
-import model.entity.BookCategories;
-import model.utils.LibraryContext;
+import model.BookCategories;
+import utils.LibraryContext;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

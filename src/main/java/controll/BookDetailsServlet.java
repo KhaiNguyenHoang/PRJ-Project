@@ -1,14 +1,14 @@
 package controll;
 
+import dao.BookDetailDAO;
+import dao.BooksDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import model.dao.BookDetailDAO;
-import model.dao.BooksDAO;
-import model.entity.BookDetail;
-import model.entity.Books;
+import model.BookDetail;
+import model.Books;
 
 import java.io.IOException;
 

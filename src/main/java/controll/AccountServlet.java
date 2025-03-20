@@ -1,12 +1,12 @@
 package controll;
 
+import dao.MembersDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import model.dao.MembersDAO;
-import model.entity.Members;
+import model.Members;
 
 import java.io.IOException;
 
@@ -125,7 +125,7 @@ public class AccountServlet extends HttpServlet {
                 request.getRequestDispatcher("HomeHTML/HomeMemberHTML/MemberAccount.jsp").forward(request, response);
                 return;
             }
-            
+
             MembersDAO membersDAO = new MembersDAO();
             // Check if current password matches
             if (membersDAO.deactiveAccount(loggedInMember.getIdMember(), passwordHash)) {

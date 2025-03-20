@@ -1,7 +1,7 @@
-package model.dao;
+package dao;
 
-import model.entity.Members;
-import model.utils.LibraryContext;
+import model.Members;
+import utils.LibraryContext;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

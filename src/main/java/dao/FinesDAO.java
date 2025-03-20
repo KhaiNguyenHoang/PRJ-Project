@@ -1,7 +1,7 @@
-package model.dao;
+package dao;
 
-import model.entity.Fines;
-import model.utils.LibraryContext;
+import model.Fines;
+import utils.LibraryContext;
 
 import java.sql.*;
 import java.util.ArrayList;

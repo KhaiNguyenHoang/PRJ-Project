@@ -1,8 +1,8 @@
-package model.dao;
+package dao;
 
-import model.entity.Borrowing;
-import model.entity.BorrowingHistory;
-import model.utils.LibraryContext;
+import model.Borrowing;
+import model.BorrowingHistory;
+import utils.LibraryContext;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

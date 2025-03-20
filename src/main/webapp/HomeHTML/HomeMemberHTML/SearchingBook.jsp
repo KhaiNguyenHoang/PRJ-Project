@@ -1,7 +1,7 @@
 <%@ page import="java.util.ArrayList" %>
-<%@ page import="model.entity.Books" %>
-<%@ page import="model.dao.BookCategoriesDAO" %>
-<%@ page import="model.entity.Members" %>
+<%@ page import="model.Books" %>
+<%@ page import="dao.BookCategoriesDAO" %>
+<%@ page import="model.Members" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%
     // Retrieve the current logged-in member from the session

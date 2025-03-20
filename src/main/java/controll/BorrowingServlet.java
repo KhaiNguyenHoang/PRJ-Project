@@ -1,17 +1,18 @@
 package controll;
 
+import dao.BookCopiesDAO;
+import dao.BooksDAO;
+import dao.BorrowingDAO;
+import dao.BorrowingHistoryDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import model.dao.BookCopiesDAO;
-import model.dao.BorrowingDAO;
-import model.dao.BorrowingHistoryDAO;
-import model.entity.Books;
-import model.entity.Borrowing;
-import model.entity.BorrowingHistory;
-import model.entity.Members;
+import model.Books;
+import model.Borrowing;
+import model.BorrowingHistory;
+import model.Members;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -40,7 +41,7 @@ public class BorrowingServlet extends HttpServlet {
         try {
             if (bookIdParam != null && !bookIdParam.isEmpty()) {
                 int bookId = Integer.parseInt(bookIdParam);
-                Books book = new model.dao.BooksDAO().getBookById(bookId);
+                Books book = new BooksDAO().getBookById(bookId);
                 if (book != null) {
                     request.setAttribute("selectedBook", book);
                 } else {
@@ -53,7 +54,7 @@ public class BorrowingServlet extends HttpServlet {
 
                 // If search keyword is provided, search for books
                 if (keyword != null && !keyword.isEmpty()) {
-                    List<Books> booksList = new model.dao.BooksDAO().searchBooks(keyword);
+                    List<Books> booksList = new BooksDAO().searchBooks(keyword);
                     request.setAttribute("booksList", booksList);
                 }
             }

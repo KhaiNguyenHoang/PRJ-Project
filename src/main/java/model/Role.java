@@ -1,4 +1,4 @@
-package model.entity;
+package model;
 
 public class Role {
     private int idRole;

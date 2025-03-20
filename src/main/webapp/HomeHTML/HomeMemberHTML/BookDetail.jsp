@@ -1,8 +1,8 @@
-<%@ page import="model.entity.Books" %>
-<%@ page import="model.entity.BookDetail" %>
-<%@ page import="model.dao.BooksDAO" %>
-<%@ page import="model.dao.BookDetailDAO" %>
-<%@ page import="model.entity.Members" %>
+<%@ page import="model.Books" %>
+<%@ page import="model.BookDetail" %>
+<%@ page import="dao.BooksDAO" %>
+<%@ page import="dao.BookDetailDAO" %>
+<%@ page import="model.Members" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%
     // Retrieve the current logged-in member from the session

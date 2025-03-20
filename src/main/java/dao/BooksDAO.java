@@ -1,7 +1,8 @@
-package model.dao;
+package dao;
 
-import model.entity.Books;
-import model.utils.LibraryContext;
+import model.BookDetail;
+import model.Books;
+import utils.LibraryContext;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -52,7 +53,7 @@ public class BooksDAO extends LibraryContext {
 
                         // Thêm chi tiết sách vào bảng BooksDetail
                         BookDetailDAO bookDetailDAO = new BookDetailDAO();  // Dùng kết nối chung
-                        bookDetailDAO.addBookDetail(new model.entity.BookDetail(bookId, Description, PdfPath));
+                        bookDetailDAO.addBookDetail(new BookDetail(bookId, Description, PdfPath));
                     }
                 }
                 return true;

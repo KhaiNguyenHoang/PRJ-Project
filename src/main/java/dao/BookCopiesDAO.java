@@ -1,7 +1,7 @@
-package model.dao;
+package dao;
 
-import model.entity.BookCopies;
-import model.utils.LibraryContext;
+import model.BookCopies;
+import utils.LibraryContext;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

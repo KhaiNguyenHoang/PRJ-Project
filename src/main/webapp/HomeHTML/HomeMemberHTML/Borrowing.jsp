@@ -1,7 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page session="true" %>
-<%@ page import="model.entity.Books, model.entity.BorrowingHistory, java.util.List, java.text.SimpleDateFormat" %>
-<%@ page import="model.dao.BooksDAO" %>
+<%@ page import="model.Books, model.BorrowingHistory, java.util.List, java.text.SimpleDateFormat" %>
+<%@ page import="dao.BooksDAO" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>

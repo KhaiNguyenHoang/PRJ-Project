@@ -1,4 +1,4 @@
-<%@ page import="model.entity.Members" %>
+<%@ page import="model.Members" %>
 <%@ page session="true" %>
 <%
     // Retrieve the current logged-in member from the session
