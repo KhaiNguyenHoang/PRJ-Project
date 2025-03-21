@@ -233,7 +233,7 @@
     %>
     <div class="card mt-4">
         <div class="card-header">
-            <i class="fas fa-history me-2"></i>Lịch sử mượn sách của bạn
+            <i class="fas fa-history me-2"></i>History Borrowing
         </div>
         <div class="card-body">
             <table class="table table-striped">
@@ -256,7 +256,7 @@
                     </td>
                     <td><%= dateFormat.format(history.getBorrowDate()) %>
                     </td>
-                    <td><%= history.getReturnDate() != null ? dateFormat.format(history.getReturnDate()) : "Chưa trả" %>
+                    <td><%= history.getReturnDate() != null ? dateFormat.format(history.getReturnDate()) : "Not Returning" %>
                     </td>
                     <td>
                             <%
@@ -270,7 +270,8 @@
                             <%
                         } else {
                     %>
-                        <button class="btn btn-secondary" disabled><i class="fas fa-undo me-2"></i>Đã trả</button>
+                        <button class="btn btn-secondary" disabled><i class="fas fa-undo me-2"></i>Success Returning
+                        </button>
                             <%
                         }
                     %>

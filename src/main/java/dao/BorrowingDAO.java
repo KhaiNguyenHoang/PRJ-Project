@@ -47,20 +47,30 @@ public class BorrowingDAO extends LibraryContext {
         try {
             conn.setAutoCommit(false);
 
+            // Kiểm tra xem có bản sao sách nào khả dụng không
             if (!bookCopiesDAO.hasAvailableCopy(borrowing.getBookId())) {
+                System.out.println("No available copies for BookID: " + borrowing.getBookId());
                 return false;
             }
 
-            // Check date validity using Date's before method
+            // Kiểm tra xem thành viên đã mượn sách này và chưa trả hay chưa
+            Borrowing existingBorrowing = getBorrowingByMemberIdAndBookId(borrowing.getMemberId(), borrowing.getBookId());
+            if (existingBorrowing != null) {
+                System.out.println("Member " + borrowing.getMemberId() + " has already borrowed BookID " + borrowing.getBookId() + " and not returned it.");
+                return false;
+            }
+
+            // Kiểm tra tính hợp lệ của ngày
             if (borrowing.getDueDate().before(borrowing.getBorrowDate())) {
+                System.out.println("Due date " + borrowing.getDueDate() + " is before borrow date " + borrowing.getBorrowDate());
                 return false;
             }
 
+            // Thêm bản ghi mượn mới
             String borrowQuery = "INSERT INTO Borrowing (MemberID, BookID, BookCopyId, BorrowDate, DueDate, Status) " +
                     "VALUES (?, ?, ?, ?, ?, ?)";
             ps = conn.prepareStatement(borrowQuery);
 
-            // Convert java.util.Date to java.sql.Date
             java.sql.Date borrowDate = new java.sql.Date(borrowing.getBorrowDate().getTime());
             java.sql.Date dueDate = new java.sql.Date(borrowing.getDueDate().getTime());
 
@@ -73,20 +83,26 @@ public class BorrowingDAO extends LibraryContext {
 
             int rowsAffected = ps.executeUpdate();
             if (rowsAffected == 0) {
+                System.out.println("Failed to insert Borrowing record for MemberID: " + borrowing.getMemberId());
                 conn.rollback();
                 return false;
             }
 
+            // Cập nhật trạng thái bản sao sách
             boolean bookUpdated = bookCopiesDAO.updateBookCopyStatus(borrowing.getBookCopyId(), "Borrowed");
             if (!bookUpdated) {
+                System.out.println("Failed to update BookCopy status for BookCopyId: " + borrowing.getBookCopyId());
                 conn.rollback();
                 return false;
             }
 
+            // Cập nhật trạng thái sách
             booksDAO.updateBookStatusBasedOnCopies(borrowing.getBookId());
 
+            // Thêm lịch sử mượn
             boolean historyAdded = borrowingHistoryDAO.addBorrowingHistory(borrowing);
             if (!historyAdded) {
+                System.out.println("Failed to add BorrowingHistory for MemberID: " + borrowing.getMemberId());
                 conn.rollback();
                 return false;
             }
@@ -95,6 +111,7 @@ public class BorrowingDAO extends LibraryContext {
             return true;
 
         } catch (SQLException e) {
+            System.out.println("SQLException in borrowBook: " + e.getMessage());
             e.printStackTrace();
             try {
                 if (conn != null) {
@@ -103,6 +120,7 @@ public class BorrowingDAO extends LibraryContext {
             } catch (SQLException se) {
                 se.printStackTrace();
             }
+            return false;
         } finally {
             try {
                 if (ps != null) {
@@ -115,7 +133,6 @@ public class BorrowingDAO extends LibraryContext {
                 se.printStackTrace();
             }
         }
-        return false;
     }
 
     public boolean returnBook(int idBorrow, Date returnDate) {
@@ -129,12 +146,13 @@ public class BorrowingDAO extends LibraryContext {
 
             borrowing = getBorrowingById(idBorrow);
             if (borrowing == null) {
+                System.out.println("Borrowing record not found for IdBorrow: " + idBorrow);
                 conn.rollback();
                 return false;
             }
 
-            // Check date validity using Date's before method
             if (returnDate.before(borrowing.getBorrowDate())) {
+                System.out.println("Return date " + returnDate + " is before borrow date " + borrowing.getBorrowDate());
                 return false;
             }
 
@@ -147,12 +165,14 @@ public class BorrowingDAO extends LibraryContext {
 
             int rowsAffected = ps.executeUpdate();
             if (rowsAffected == 0) {
+                System.out.println("Failed to update Borrowing record for IdBorrow: " + idBorrow);
                 conn.rollback();
                 return false;
             }
 
             boolean bookUpdated = bookCopiesDAO.updateBookCopyStatus(borrowing.getBookCopyId(), "Available");
             if (!bookUpdated) {
+                System.out.println("Failed to update BookCopy status for BookCopyId: " + borrowing.getBookCopyId());
                 conn.rollback();
                 return false;
             }
@@ -160,10 +180,10 @@ public class BorrowingDAO extends LibraryContext {
             BooksDAO booksDAO = new BooksDAO();
             booksDAO.updateBookStatusBasedOnCopies(borrowing.getBookId());
 
-            // Update return date in borrowing object for history
             borrowing.setReturnDate(returnDate);
             boolean historyAdded = borrowingHistoryDAO.updateReturnHistory(borrowing);
             if (!historyAdded) {
+                System.out.println("Failed to update BorrowingHistory for BookCopyId: " + borrowing.getBookCopyId());
                 conn.rollback();
                 return false;
             }
@@ -172,27 +192,22 @@ public class BorrowingDAO extends LibraryContext {
             return true;
 
         } catch (SQLException e) {
+            System.out.println("SQLException in returnBook: " + e.getMessage());
             e.printStackTrace();
             try {
-                if (conn != null) {
-                    conn.rollback();
-                }
+                if (conn != null) conn.rollback();
             } catch (SQLException se) {
                 se.printStackTrace();
             }
+            return false;
         } finally {
             try {
-                if (ps != null) {
-                    ps.close();
-                }
-                if (conn != null) {
-                    conn.setAutoCommit(true);
-                }
+                if (ps != null) ps.close();
+                if (conn != null) conn.setAutoCommit(true);
             } catch (SQLException se) {
                 se.printStackTrace();
             }
         }
-        return false;
     }
 
     public Borrowing getBorrowingById(int idBorrow) {
@@ -222,6 +237,22 @@ public class BorrowingDAO extends LibraryContext {
         borrowing.setStatus(rs.getString("Status"));
         borrowing.setCreatedAt(rs.getDate("CreatedAt"));
         return borrowing;
+    }
+
+    public Borrowing getBorrowingByMemberIdAndBookId(int memberId, int bookId) {
+        String query = "SELECT * FROM Borrowing WHERE MemberID = ? AND BookID = ? AND ReturnDate IS NULL";
+        try (PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, memberId);
+            ps.setInt(2, bookId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToBorrowing(rs);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public List<Borrowing> getAllBorrowingsByMemberId(int memberId) {

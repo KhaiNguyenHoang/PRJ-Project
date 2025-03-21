@@ -15,6 +15,7 @@ import model.BorrowingHistory;
 import model.Members;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -27,7 +28,7 @@ public class BorrowingServlet extends HttpServlet {
 
     // Centralized session check
     private Members getCurrentMember(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        Members currentMember = (Members) request.getSession().getAttribute("user");
+        Members currentMember = (Members) request.getSession().getAttribute("members");
         if (currentMember == null) {
             response.sendRedirect("/Auth/SignIn-SignUp.jsp");
         }
@@ -44,13 +45,15 @@ public class BorrowingServlet extends HttpServlet {
 
         try {
             // Always fetch borrowing history
-            List<BorrowingHistory> borrowingHistoryList = new BorrowingHistoryDAO().getBorrowingHistoryByMemberId(currentMember.getIdMember());
+            BorrowingHistoryDAO historyDAO = new BorrowingHistoryDAO();
+            List<BorrowingHistory> borrowingHistoryList = historyDAO.getBorrowingHistoryByMemberId(currentMember.getIdMember());
             request.setAttribute("borrowingHistoryList", borrowingHistoryList);
 
             // Handle book selection for borrowing form
             if (bookIdParam != null && !bookIdParam.isEmpty()) {
                 int bookId = Integer.parseInt(bookIdParam);
-                Books book = new BooksDAO().getBookById(bookId);
+                BooksDAO booksDAO = new BooksDAO();
+                Books book = booksDAO.getBookById(bookId);
                 if (book != null) {
                     request.setAttribute("selectedBook", book);
                 } else {
@@ -59,15 +62,19 @@ public class BorrowingServlet extends HttpServlet {
             }
 
             // Handle book search
-            if (keyword != null && !keyword.isEmpty()) {
-                List<Books> booksList = new BooksDAO().searchBooks(keyword);
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                BooksDAO booksDAO = new BooksDAO();
+                List<Books> booksList = booksDAO.searchBooks(keyword.trim());
                 request.setAttribute("booksList", booksList);
             }
 
         } catch (NumberFormatException e) {
-            request.setAttribute("errorMessage", "Invalid book ID.");
+            request.setAttribute("errorMessage", "Invalid book ID format.");
+        } catch (SQLException e) {
+            request.setAttribute("errorMessage", "Database error occurred while retrieving borrowing history.");
+            e.printStackTrace();
         } catch (Exception e) {
-            request.setAttribute("errorMessage", "An error occurred while processing your request.");
+            request.setAttribute("errorMessage", "An unexpected error occurred.");
             e.printStackTrace();
         }
 
@@ -84,42 +91,52 @@ public class BorrowingServlet extends HttpServlet {
             String bookIdStr = request.getParameter("bookId");
             String dueDateStr = request.getParameter("dueDate");
 
-            if (bookIdStr == null || dueDateStr == null || bookIdStr.isEmpty() || dueDateStr.isEmpty()) {
+            if (bookIdStr == null || dueDateStr == null || bookIdStr.trim().isEmpty() || dueDateStr.trim().isEmpty()) {
                 request.setAttribute("errorMessage", "Missing required parameters.");
             } else {
                 int bookId = Integer.parseInt(bookIdStr);
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                dateFormat.setLenient(false);
                 Date dueDate = dateFormat.parse(dueDateStr);
                 Date borrowDate = new Date();
 
-                BookCopiesDAO bookCopiesDAO = new BookCopiesDAO();
-                if (!bookCopiesDAO.hasAvailableCopy(bookId)) {
-                    request.setAttribute("errorMessage", "No available copies of the selected book.");
+                // Validate due date
+                if (dueDate.before(borrowDate)) {
+                    request.setAttribute("errorMessage", "Due date cannot be before today's date.");
                 } else {
-                    int bookCopyId = bookCopiesDAO.getFirstAvailableBookCopy(bookId).getIdCopy();
-                    Borrowing borrowing = new Borrowing(currentMember.getIdMember(), bookId, bookCopyId, borrowDate, dueDate, "Borrowed");
-
-                    BorrowingDAO borrowingDAO = new BorrowingDAO();
-                    boolean isSuccess = borrowingDAO.borrowBook(borrowing);
-
-                    if (isSuccess) {
-                        request.setAttribute("message", "Book borrowed successfully!");
+                    BookCopiesDAO bookCopiesDAO = new BookCopiesDAO();
+                    if (!bookCopiesDAO.hasAvailableCopy(bookId)) {
+                        request.setAttribute("errorMessage", "No available copies of the selected book.");
                     } else {
-                        request.setAttribute("errorMessage", "Failed to borrow the book. Please try again.");
+                        int bookCopyId = bookCopiesDAO.getFirstAvailableBookCopy(bookId).getIdCopy();
+                        Borrowing borrowing = new Borrowing(currentMember.getIdMember(), bookId, bookCopyId, borrowDate, dueDate, "Borrowed");
+
+                        BorrowingDAO borrowingDAO = new BorrowingDAO();
+                        boolean isSuccess = borrowingDAO.borrowBook(borrowing);
+
+                        if (isSuccess) {
+                            request.setAttribute("message", "Book borrowed successfully!");
+                        } else {
+                            request.setAttribute("errorMessage", "Failed to borrow the book. Check server logs for details.");
+                        }
                     }
                 }
             }
 
-            // Refresh borrowing history after borrowing attempt
-            List<BorrowingHistory> borrowingHistoryList = new BorrowingHistoryDAO().getBorrowingHistoryByMemberId(currentMember.getIdMember());
+            // Refresh borrowing history
+            BorrowingHistoryDAO historyDAO = new BorrowingHistoryDAO();
+            List<BorrowingHistory> borrowingHistoryList = historyDAO.getBorrowingHistoryByMemberId(currentMember.getIdMember());
             request.setAttribute("borrowingHistoryList", borrowingHistoryList);
 
         } catch (NumberFormatException e) {
-            request.setAttribute("errorMessage", "Invalid book ID.");
+            request.setAttribute("errorMessage", "Invalid book ID format.");
         } catch (ParseException e) {
             request.setAttribute("errorMessage", "Invalid due date format. Please use yyyy-MM-dd.");
+        } catch (SQLException e) {
+            request.setAttribute("errorMessage", "Database error occurred. Check server logs for details.");
+            e.printStackTrace();
         } catch (Exception e) {
-            request.setAttribute("errorMessage", "An error occurred while processing your request.");
+            request.setAttribute("errorMessage", "An unexpected error occurred. Check server logs for details.");
             e.printStackTrace();
         }
 
