@@ -5,15 +5,17 @@ import utils.LibraryContext;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class FinesDAO extends LibraryContext {
 
     public FinesDAO() {
-        super(); // Kết nối tới cơ sở dữ liệu thông qua lớp cha LibraryContext
+        super();
     }
 
-    // Thêm phạt vào bảng Fines
+    // Thêm khoản phạt mới
     public boolean addFine(int memberId, int borrowId, double amount, String paymentMethod) {
         String insertFineQuery = "INSERT INTO Fines (MemberID, BorrowID, Amount, Status, PaymentMethod, CreatedAt) " +
                 "VALUES (?, ?, ?, 'Unpaid', ?, GETDATE())";
@@ -26,10 +28,7 @@ public class FinesDAO extends LibraryContext {
             int rowsAffected = ps.executeUpdate();
             if (rowsAffected > 0) {
                 ResultSet rs = ps.getGeneratedKeys();
-                if (rs.next()) {
-                    int fineId = rs.getInt(1); // Lấy IdFine của phạt mới
-                    return true;
-                }
+                return rs.next();
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -37,12 +36,12 @@ public class FinesDAO extends LibraryContext {
         return false;
     }
 
-    // Cập nhật trạng thái phạt (khi thanh toán phạt)
+    // Cập nhật trạng thái phạt
     public boolean updateFineStatus(int fineId, String status, Date paidDate) {
         String updateFineQuery = "UPDATE Fines SET Status = ?, PaidDate = ? WHERE IdFine = ?";
         try (PreparedStatement ps = conn.prepareStatement(updateFineQuery)) {
             ps.setString(1, status);
-            ps.setTimestamp(2, new Timestamp(paidDate.getTime()));
+            ps.setTimestamp(2, paidDate != null ? new Timestamp(paidDate.getTime()) : null);
             ps.setInt(3, fineId);
 
             int rowsAffected = ps.executeUpdate();
@@ -53,10 +52,10 @@ public class FinesDAO extends LibraryContext {
         return false;
     }
 
-    // Lấy tất cả phạt của một thành viên
+    // Lấy tất cả khoản phạt theo MemberID
     public List<Fines> getFinesByMemberId(int memberId) {
         List<Fines> finesList = new ArrayList<>();
-        String query = "SELECT * " + "FROM Fines WHERE MemberID = ?";
+        String query = "SELECT * FROM Fines WHERE MemberID = ?";
         try (PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setInt(1, memberId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -70,7 +69,65 @@ public class FinesDAO extends LibraryContext {
         return finesList;
     }
 
-    // Map kết quả từ ResultSet thành đối tượng Fines
+    // Tạo khoản phạt nếu cần
+    public void createFineIfNeeded(int borrowId) {
+        String query = "SELECT MemberID, DueDate, ReturnDate FROM Borrowing WHERE IdBorrow = ?";
+        try (PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, borrowId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int memberId = rs.getInt("MemberID");
+                    Date dueDate = rs.getDate("DueDate");
+                    Date returnDate = rs.getDate("ReturnDate");
+                    Date currentDate = new Date();
+
+                    long daysLate;
+                    if (returnDate != null) {
+                        daysLate = calculateDaysBetween(dueDate, returnDate);
+                    } else {
+                        daysLate = calculateDaysBetween(dueDate, currentDate);
+                    }
+
+                    double amount = 0;
+                    if (daysLate > 30 && returnDate == null) {
+                        amount = 500000; // Phí cố định nếu quá 30 ngày chưa trả
+                    } else if (daysLate > 0) {
+                        amount = daysLate * 50000; // 50,000 VND/ngày
+                    }
+
+                    if (amount > 0 && !isFineExists(borrowId)) {
+                        addFine(memberId, borrowId, amount, "Other");
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Kiểm tra xem khoản phạt đã tồn tại chưa
+    private boolean isFineExists(int borrowId) {
+        String query = "SELECT COUNT(*) FROM Fines WHERE BorrowID = ?";
+        try (PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, borrowId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // Tính số ngày giữa hai ngày
+    private long calculateDaysBetween(Date startDate, Date endDate) {
+        long diffInMillies = Math.max(endDate.getTime() - startDate.getTime(), 0);
+        return TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
+    }
+
+    // Map ResultSet thành Fines
     private Fines mapResultSetToFines(ResultSet rs) throws SQLException {
         Fines fines = new Fines();
         fines.setIdFine(rs.getInt("IdFine"));

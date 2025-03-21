@@ -154,38 +154,6 @@
             max-width: 100%;
         }
 
-        .borrow-button {
-            background-color: #2ecc71;
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            cursor: pointer;
-            border-radius: 6px;
-            font-size: 1.1rem;
-            transition: background-color 0.3s ease;
-            margin-top: 20px;
-        }
-
-        .borrow-button:hover {
-            background-color: #27ae60;
-        }
-
-        .back-btn {
-            text-decoration: none;
-            font-size: 1.2rem;
-            margin-top: 30px;
-            display: inline-block;
-            padding: 12px 25px;
-            border-radius: 6px;
-            background-color: #ecf0f1;
-            color: #333;
-            transition: background-color 0.3s ease;
-        }
-
-        .back-btn:hover {
-            background-color: #bdc3c7;
-        }
-
         @media (max-width: 768px) {
             .book-info {
                 flex-direction: column;
@@ -201,6 +169,44 @@
                 gap: 10px;
             }
         }
+
+        .borrow-button {
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            margin-top: 20px;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .borrow-button:hover {
+            background-color: #27ae60;
+            transform: translateY(-3px);
+        }
+
+        .back-btn {
+            text-decoration: none;
+            font-size: 1.2rem;
+            margin-top: 30px;
+            display: inline-block;
+            padding: 12px 25px;
+            border-radius: 6px;
+            background-color: #ecf0f1;
+            color: #333;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            text-align: center;
+        }
+
+        .back-btn:hover {
+            background-color: #bdc3c7;
+            transform: translateY(-3px);
+        }
+
     </style>
 </head>
 <body>
@@ -305,15 +311,18 @@
                 <% } else { %>
                 <p>This book is not available in digital format or no PDF is provided.</p>
                 <% } %>
-
                 <!-- Borrow Book Button -->
-                <form action="BorrowBookServlet" method="post">
-                    <input type="hidden" name="bookId" value="<%=book.getIdBook()%>">
-                    <button type="submit" class="borrow-button">Borrow Book</button>
-                </form>
+                <div class="book-item list-group-item d-flex justify-content-between align-items-center">
+                    <!-- Borrow Book Button -->
+                    <a href="Borrowing?id=<%= book.getIdBook() %>" class="borrow-button">
+                        <i class="fas fa-book me-2"></i> Borrow Book
+                    </a>
 
-                <!-- Back to Search Button -->
-                <a href="SearchingBook" class="back-btn">Back to Search</a>
+                    <!-- Back to Search Button -->
+                    <a href="SearchingBook" class="back-btn">
+                        <i class="fas fa-arrow-left me-2"></i> Back to Search
+                    </a>
+                </div>
             </div>
             <%
             } else {

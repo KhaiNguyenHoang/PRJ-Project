@@ -214,7 +214,7 @@
                 <div class="book-item list-group-item">
                     <span><%= book.getTitle() %> - <%= book.getAuthor() %></span>
                     <a href="Borrowing?id=<%= book.getIdBook() %>" class="btn btn-primary"><i
-                            class="fas fa-book me-2"></i>Mượn</a>
+                            class="fas fa-book me-2"></i>Borrowing</a>
                 </div>
                 <%
                     }

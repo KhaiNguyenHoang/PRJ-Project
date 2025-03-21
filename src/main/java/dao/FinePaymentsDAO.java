@@ -12,10 +12,10 @@ import java.util.List;
 public class FinePaymentsDAO extends LibraryContext {
 
     public FinePaymentsDAO() {
-        super(); // Kết nối tới cơ sở dữ liệu thông qua lớp cha LibraryContext
+        super();
     }
 
-    // Thêm thanh toán phạt vào bảng FinePayments
+    // Thêm thanh toán phạt
     public boolean addFinePayment(int fineId, double amountPaid, String paymentMethod) {
         String insertPaymentQuery = "INSERT INTO FinePayments (FineID, AmountPaid, PaymentDate, PaymentMethod) " +
                 "VALUES (?, ?, GETDATE(), ?)";
@@ -32,10 +32,10 @@ public class FinePaymentsDAO extends LibraryContext {
         return false;
     }
 
-    // Lấy tất cả thanh toán phạt theo FineID
+    // Lấy tất cả thanh toán theo FineID
     public List<FinePayments> getFinePaymentsByFineId(int fineId) {
         List<FinePayments> finePaymentsList = new ArrayList<>();
-        String query = "SELECT * " + "FROM FinePayments WHERE FineID = ?";
+        String query = "SELECT * FROM FinePayments WHERE FineID = ?";
         try (PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setInt(1, fineId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -49,7 +49,7 @@ public class FinePaymentsDAO extends LibraryContext {
         return finePaymentsList;
     }
 
-    // Map kết quả từ ResultSet thành đối tượng FinePayments
+    // Map ResultSet thành FinePayments
     private FinePayments mapResultSetToFinePayments(ResultSet rs) throws SQLException {
         FinePayments finePayments = new FinePayments();
         finePayments.setIdPayment(rs.getInt("IdPayment"));
