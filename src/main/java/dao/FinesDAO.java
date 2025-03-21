@@ -121,6 +121,17 @@ public class FinesDAO extends LibraryContext {
         return false;
     }
 
+    public double getTotalFinesAmount() throws SQLException {
+        String query = "SELECT SUM(Amount) AS total FROM Fines WHERE Status = 'Unpaid'";
+        try (PreparedStatement ps = conn.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getDouble("total");
+            }
+        }
+        return 0.0;
+    }
+
     // Tính số ngày giữa hai ngày
     private long calculateDaysBetween(Date startDate, Date endDate) {
         long diffInMillies = Math.max(endDate.getTime() - startDate.getTime(), 0);

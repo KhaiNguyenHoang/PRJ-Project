@@ -270,4 +270,26 @@ public class BorrowingDAO extends LibraryContext {
         }
         return borrowings;
     }
+
+    public int getTotalBorrowedBooks() throws SQLException {
+        String query = "SELECT COUNT(DISTINCT BookID) AS total FROM Borrowing WHERE Status = 'Borrowed'";
+        try (PreparedStatement ps = conn.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+        }
+        return 0;
+    }
+
+    public int getTotalBorrowingMembers() throws SQLException {
+        String query = "SELECT COUNT(DISTINCT MemberID) AS total FROM Borrowing WHERE Status = 'Borrowed'";
+        try (PreparedStatement ps = conn.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+        }
+        return 0;
+    }
 }

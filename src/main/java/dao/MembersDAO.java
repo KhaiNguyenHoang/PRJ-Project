@@ -218,4 +218,15 @@ public class MembersDAO extends LibraryContext {
             return false;
         }
     }
+
+    public int getTotalMembers() throws SQLException {
+        String query = "SELECT COUNT(*) AS total FROM Members";
+        try (PreparedStatement ps = conn.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+        }
+        return 0;
+    }
 }

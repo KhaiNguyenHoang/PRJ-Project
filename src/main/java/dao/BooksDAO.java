@@ -227,4 +227,15 @@ public class BooksDAO extends LibraryContext {
         }
         return null;
     }
+
+    public int getTotalBooks() throws SQLException {
+        String query = "SELECT COUNT(*) AS total FROM Books";
+        try (PreparedStatement ps = conn.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+        }
+        return 0;
+    }
 }

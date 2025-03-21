@@ -5,6 +5,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import model.Account;
 import model.Members;
 
 import java.io.IOException;
@@ -23,18 +24,22 @@ public class HomePage extends HttpServlet {
     }
 
     private void forwardToHomePage(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        Members loggedInMember = (Members) request.getSession().getAttribute("user");
+        // Check if the session contains a logged-in member
+        Members loggedInMember = (Members) request.getSession().getAttribute("users");
+
         if (loggedInMember != null) {
-            try {
-                request.getRequestDispatcher("HomeHTML/HomeMemberHTML/index.jsp").forward(request, response);
-            } catch (ServletException | IOException e) {
-                e.printStackTrace();
-            }
+            // If logged in as member, forward to member homepage
+            request.getRequestDispatcher("HomeHTML/HomeMemberHTML/index.jsp").forward(request, response);
         } else {
-            try {
+            // Check if the session contains a logged-in staff account
+            Account loggedInAccount = (Account) request.getSession().getAttribute("user");
+
+            if (loggedInAccount != null) {
+                // If logged in as staff, forward to staff homepage
+                request.getRequestDispatcher("HomeHTML/HomeStaffHTML/index.jsp").forward(request, response);
+            } else {
+                // If not logged in, forward to sign-in page
                 request.getRequestDispatcher("/Auth/SignIn-SignUp.jsp").forward(request, response);
-            } catch (ServletException | IOException e) {
-                e.printStackTrace();
             }
         }
     }
