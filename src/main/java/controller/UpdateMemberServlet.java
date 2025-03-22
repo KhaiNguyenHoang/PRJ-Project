@@ -46,25 +46,20 @@ public class UpdateMemberServlet extends HttpServlet {
             request.setAttribute("errorMessage", "Failed to load members list.");
         }
 
-        // Nếu có memberId hoặc email trong query string, lấy thông tin thành viên để điền vào form
+        // Nếu có memberId trong query string, lấy thông tin thành viên để hiển thị form
         String memberIdParam = request.getParameter("memberId");
-        String email = request.getParameter("email");
-        if (memberIdParam != null || email != null) {
+        if (memberIdParam != null && !memberIdParam.trim().isEmpty()) {
             try {
-                Members member = null;
-                if (memberIdParam != null && !memberIdParam.trim().isEmpty()) {
-                    int memberId = Integer.parseInt(memberIdParam);
-                    member = membersDAO.getMemberById(memberId);
-                } else if (email != null && !email.trim().isEmpty()) {
-                    int memberId = membersDAO.getMemberIdByEmail(email);
-                    if (memberId != -1) {
-                        member = membersDAO.getMemberById(memberId);
-                    }
-                }
+                int memberId = Integer.parseInt(memberIdParam);
+                Members member = membersDAO.getMemberById(memberId);
                 if (member != null) {
                     request.setAttribute("memberToUpdate", member);
+                } else {
+                    request.setAttribute("errorMessage", "Member with ID " + memberId + " not found.");
+                    LOGGER.log(Level.WARNING, "Member not found for ID: {0}", memberId);
                 }
             } catch (NumberFormatException e) {
+                request.setAttribute("errorMessage", "Invalid Member ID format.");
                 LOGGER.log(Level.WARNING, "Invalid Member ID format: {0}", memberIdParam);
             }
         }
@@ -82,51 +77,39 @@ public class UpdateMemberServlet extends HttpServlet {
         }
 
         String memberIdParam = request.getParameter("memberId");
-        String email = request.getParameter("email");
         String fullName = request.getParameter("fullName");
         String phone = request.getParameter("phone");
         String address = request.getParameter("address");
+        String password = request.getParameter("password");
         MembersDAO membersDAO = new MembersDAO();
 
         try {
-            // Kiểm tra đầu vào: ít nhất một trong hai trường memberId hoặc email phải được cung cấp
-            if ((memberIdParam == null || memberIdParam.trim().isEmpty()) && (email == null || email.trim().isEmpty())) {
-                request.setAttribute("errorMessage", "Please provide either Member ID or Email.");
-                LOGGER.log(Level.WARNING, "No Member ID or Email provided in request");
+            // Kiểm tra memberId là bắt buộc trong POST
+            if (memberIdParam == null || memberIdParam.trim().isEmpty()) {
+                request.setAttribute("errorMessage", "Member ID is required.");
+                LOGGER.log(Level.WARNING, "No Member ID provided in POST request");
             } else {
-                Members member = null;
-                int memberId = -1;
+                int memberId = Integer.parseInt(memberIdParam);
+                Members member = membersDAO.getMemberById(memberId);
 
-                // Xử lý theo memberId nếu có
-                if (memberIdParam != null && !memberIdParam.trim().isEmpty()) {
-                    memberId = Integer.parseInt(memberIdParam);
-                    member = membersDAO.getMemberById(memberId);
-                    if (member == null) {
-                        request.setAttribute("errorMessage", "Member with ID " + memberId + " not found.");
-                        LOGGER.log(Level.WARNING, "Member not found for ID: {0}", memberId);
-                    }
-                }
-                // Nếu không có memberId hoặc member không tìm thấy, thử email
-                else if (email != null && !email.trim().isEmpty()) {
-                    memberId = membersDAO.getMemberIdByEmail(email);
-                    if (memberId != -1) {
-                        member = membersDAO.getMemberById(memberId);
-                    }
-                    if (member == null) {
-                        request.setAttribute("errorMessage", "Member with email " + email + " not found.");
-                        LOGGER.log(Level.WARNING, "Member not found for email: {0}", email);
-                    }
-                }
-
-                // Nếu tìm thấy thành viên, cập nhật thông tin
-                if (member != null) {
+                if (member == null) {
+                    request.setAttribute("errorMessage", "Member with ID " + memberId + " not found.");
+                    LOGGER.log(Level.WARNING, "Member not found for ID: {0}", memberId);
+                } else {
+                    // Cập nhật thông tin (Member ID và Email không thay đổi)
                     member.setFullName(fullName != null && !fullName.trim().isEmpty() ? fullName : member.getFullName());
-                    member.setEmail(email != null && !email.trim().isEmpty() ? email : member.getEmail());
                     member.setPhone(phone != null && !phone.trim().isEmpty() ? phone : member.getPhone());
                     member.setAddress(address != null && !address.trim().isEmpty() ? address : member.getAddress());
 
+                    // Xử lý password: nếu không nhập thì giữ nguyên, nếu có thì cập nhật
+                    if (password != null && !password.trim().isEmpty()) {
+                        member.setPasswordHash(membersDAO.hashPassword(password)); // Giả định password được lưu dưới dạng hash
+                        LOGGER.log(Level.INFO, "Password updated for member ID: {0}", memberId);
+                    }
+
+                    // Gọi DAO để cập nhật
                     membersDAO.updateMember(member);
-                    request.setAttribute("message", "Member " + (memberIdParam != null ? "with ID " + memberId : "with email " + email) + " has been updated successfully.");
+                    request.setAttribute("message", "Member with ID " + memberId + " has been updated successfully.");
                     LOGGER.log(Level.INFO, "Member {0} updated successfully", member.getEmail());
                 }
             }
@@ -147,6 +130,7 @@ public class UpdateMemberServlet extends HttpServlet {
             request.setAttribute("errorMessage", "Failed to refresh members list.");
         }
 
+        // Sau khi cập nhật, không hiển thị lại form
         request.getRequestDispatcher(JSP_PATH).forward(request, response);
     }
 }

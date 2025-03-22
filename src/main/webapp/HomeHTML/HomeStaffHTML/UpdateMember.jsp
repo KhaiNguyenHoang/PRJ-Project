@@ -253,6 +253,12 @@
             background: #343a40;
         }
 
+        .btn-table {
+            padding: 5px 15px;
+            font-size: 0.9rem;
+            border-radius: 5px;
+        }
+
         .table-container {
             margin-top: 20px;
         }
@@ -338,7 +344,7 @@
         return;
     }
     MembersDAO membersDAO = new MembersDAO();
-    List<Members> membersList = membersDAO.getAllMembers();
+    List<Members> membersList = (List<Members>) request.getAttribute("membersList");
     Members memberToUpdate = (Members) request.getAttribute("memberToUpdate");
 %>
 <!-- Loading Overlay -->
@@ -427,58 +433,61 @@
         <% } %>
 
         <div class="row">
-            <!-- Update Member Form -->
+            <!-- Update Member Form (Hiển thị khi có memberToUpdate) -->
+            <% if (memberToUpdate != null) { %>
             <div class="col-lg-6">
                 <div class="card" id="update-member">
                     <div class="card-header">
-                        <i class="fas fa-user-edit"></i> Update a Member
+                        <i class="fas fa-user-edit"></i> Update Member
                     </div>
                     <div class="card-body">
                         <form action="UpdateMember" method="post" id="updateForm">
                             <div class="mb-3">
-                                <label for="memberId" class="form-label"><i class="fas fa-id-card me-2"></i>Member ID
-                                    (Optional)</label>
+                                <label for="memberId" class="form-label"><i class="fas fa-id-card me-2"></i>Member
+                                    ID</label>
                                 <input type="number" id="memberId" name="memberId" class="form-control"
-                                       placeholder="Enter Member ID"
-                                       value="<%= memberToUpdate != null ? memberToUpdate.getIdMember() : "" %>">
+                                       value="<%= memberToUpdate.getIdMember() %>" readonly>
                             </div>
                             <div class="mb-3">
-                                <label for="email" class="form-label"><i class="fas fa-envelope me-2"></i>Email
-                                    (Optional)</label>
+                                <label for="email" class="form-label"><i class="fas fa-envelope me-2"></i>Email</label>
                                 <input type="email" id="email" name="email" class="form-control"
-                                       placeholder="Enter Member Email"
-                                       value="<%= memberToUpdate != null ? memberToUpdate.getEmail() : "" %>">
+                                       value="<%= memberToUpdate.getEmail() %>" readonly>
                             </div>
                             <div class="mb-3">
                                 <label for="fullName" class="form-label"><i class="fas fa-user me-2"></i>Full
                                     Name</label>
                                 <input type="text" id="fullName" name="fullName" class="form-control"
-                                       placeholder="Enter Full Name"
-                                       value="<%= memberToUpdate != null ? memberToUpdate.getFullName() : "" %>">
+                                       value="<%= memberToUpdate.getFullName() %>" required>
                             </div>
                             <div class="mb-3">
                                 <label for="phone" class="form-label"><i class="fas fa-phone me-2"></i>Phone</label>
                                 <input type="text" id="phone" name="phone" class="form-control"
-                                       placeholder="Enter Phone Number"
-                                       value="<%= memberToUpdate != null && memberToUpdate.getPhone() != null ? memberToUpdate.getPhone() : "" %>">
+                                       value="<%= memberToUpdate.getPhone() != null ? memberToUpdate.getPhone() : "" %>">
                             </div>
                             <div class="mb-3">
                                 <label for="address" class="form-label"><i class="fas fa-map-marker-alt me-2"></i>Address</label>
                                 <input type="text" id="address" name="address" class="form-control"
-                                       placeholder="Enter Address"
-                                       value="<%= memberToUpdate != null && memberToUpdate.getAddress() != null ? memberToUpdate.getAddress() : "" %>">
+                                       value="<%= memberToUpdate.getAddress() != null ? memberToUpdate.getAddress() : "" %>">
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label"><i class="fas fa-lock me-2"></i>New Password
+                                    (Leave blank to keep current)</label>
+                                <input type="password" id="password" name="password" class="form-control"
+                                       placeholder="Enter new password (optional)">
                             </div>
                             <button type="submit" class="btn btn-secondary btn-custom"><i
                                     class="fas fa-user-edit me-2"></i>Update Member
                             </button>
-                            <a href="HomePage" class="btn btn-dark btn-custom"><i class="fas fa-arrow-left me-2"></i>Back</a>
+                            <a href="UpdateMember" class="btn btn-dark btn-custom"><i
+                                    class="fas fa-arrow-left me-2"></i>Back to List</a>
                         </form>
                     </div>
                 </div>
             </div>
+            <% } %>
 
             <!-- Members List -->
-            <div class="col-lg-6">
+            <div class="col-lg-<%= memberToUpdate != null ? "6" : "12" %>">
                 <div class="card" id="members-list">
                     <div class="card-header">
                         <i class="fas fa-users"></i> Members List
@@ -492,6 +501,7 @@
                                     <th>Full Name</th>
                                     <th>Email</th>
                                     <th>Status</th>
+                                    <th>Action</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -505,11 +515,19 @@
                                     </td>
                                     <td><%= member.getStatus() %>
                                     </td>
+                                    <td>
+                                        <a href="UpdateMember?memberId=<%= member.getIdMember() %>"
+                                           class="btn btn-secondary btn-table"><i class="fas fa-user-edit"></i>
+                                            Update</a>
+                                    </td>
                                 </tr>
                                 <% } %>
                                 </tbody>
                             </table>
                         </div>
+                        <% if (memberToUpdate == null) { %>
+                        <a href="HomePage" class="btn btn-dark btn-custom mt-3"><i class="fas fa-arrow-left me-2"></i>Back</a>
+                        <% } %>
                     </div>
                 </div>
             </div>
@@ -576,11 +594,10 @@
 
     // Form Validation
     document.getElementById('updateForm')?.addEventListener('submit', function (e) {
-        const memberId = document.getElementById('memberId').value;
-        const email = document.getElementById('email').value;
-        if (!memberId && !email) {
+        const fullName = document.getElementById('fullName').value;
+        if (!fullName.trim()) {
             e.preventDefault();
-            alert('Please provide either a Member ID or an Email.');
+            alert('Full Name is required.');
         }
     });
 </script>
