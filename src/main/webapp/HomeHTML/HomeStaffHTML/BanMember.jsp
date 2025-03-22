@@ -1,18 +1,15 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="model.Account" %>
-<%@ page import="dao.BooksDAO" %>
 <%@ page import="dao.MembersDAO" %>
-<%@ page import="dao.FinesDAO" %>
-<%@ page import="dao.BorrowingDAO" %>
-<%@ page import="java.text.SimpleDateFormat" %>
-<%@ page import="java.sql.SQLException" %>
+<%@ page import="model.Members" %>
+<%@ page import="java.util.List" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Staff Dashboard</title>
+    <title>Ban Member</title>
     <!-- Bootstrap 5.3 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
@@ -22,10 +19,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <!-- Animate.css -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* Giữ nguyên toàn bộ CSS từ mã cũ */
+        /* CSS giống index.jsp */
         * {
             margin: 0;
             padding: 0;
@@ -250,18 +245,6 @@
             filter: brightness(1.15);
         }
 
-        .btn-primary {
-            background: #007bff;
-        }
-
-        .btn-success {
-            background: #28a745;
-        }
-
-        .btn-danger {
-            background: #dc3545;
-        }
-
         .btn-warning {
             background: #ffc107;
         }
@@ -270,8 +253,27 @@
             background: #17a2b8;
         }
 
-        .btn-secondary {
-            background: #6c757d;
+        .btn-table {
+            padding: 5px 15px;
+            font-size: 0.9rem;
+            border-radius: 5px;
+        }
+
+        .table-container {
+            margin-top: 20px;
+        }
+
+        .table th {
+            background: #007bff;
+            color: #fff;
+        }
+
+        .dark-mode .table th {
+            background: #2d3436;
+        }
+
+        .custom-theme .table th {
+            background: #ff7e5f;
         }
 
         .search-bar {
@@ -319,36 +321,6 @@
         .search-bar .suggestions a:hover {
             background: #007bff;
             color: #fff;
-        }
-
-        .chart-container {
-            position: relative;
-            height: 350px;
-            width: 100%;
-        }
-
-        .notification-panel {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            width: 300px;
-            max-height: 400px;
-            overflow-y: auto;
-            z-index: 2000;
-        }
-
-        .notification {
-            background: #fff;
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            animation: fadeIn 0.5s ease;
-        }
-
-        .dark-mode .notification {
-            background: #343a40;
-            color: #e9ecef;
         }
 
         .loading-overlay {
@@ -408,17 +380,6 @@
             .dashboard-title {
                 font-size: 2rem;
             }
-
-            .btn-custom {
-                font-size: 1rem;
-                padding: 12px 20px;
-            }
-
-            .notification-panel {
-                width: 100%;
-                right: 0;
-                padding: 0 10px;
-            }
         }
     </style>
 </head>
@@ -426,32 +387,11 @@
 <%
     Account account = (Account) session.getAttribute("account");
     if (account == null) {
-        account = new Account(1, "John Doe", "john.doe@example.com", "johndoe", "hashedpassword", 1);
+        response.sendRedirect("/Auth/SignIn-SignUp.jsp");
+        return;
     }
-    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-
-    // Khởi tạo DAO
-    BooksDAO booksDAO = new BooksDAO();
-    BorrowingDAO borrowingDAO = new BorrowingDAO();
-    FinesDAO finesDAO = new FinesDAO();
     MembersDAO membersDAO = new MembersDAO();
-
-    // Lấy dữ liệu cho biểu đồ
-    int totalBooks = 0;
-    int totalBorrowedBooks = 0;
-    int totalBorrowingMembers = 0;
-    int totalMembers = 0;
-    double totalFinesAmount = 0;
-
-    try {
-        totalBooks = booksDAO.getTotalBooks();
-        totalBorrowedBooks = borrowingDAO.getTotalBorrowedBooks();
-        totalBorrowingMembers = borrowingDAO.getTotalBorrowingMembers();
-        totalFinesAmount = finesDAO.getTotalFinesAmount();
-        totalMembers = membersDAO.getTotalMembers();
-    } catch (SQLException e) {
-        e.printStackTrace();
-    }
+    List<Members> membersList = membersDAO.getAllMembers();
 %>
 <!-- Loading Overlay -->
 <div class="loading-overlay" id="loadingOverlay">
@@ -473,10 +413,10 @@
                 <a class="nav-link" href="DeleteBook.jsp"><i class="fas fa-trash-alt"></i> <span>Delete</span></a>
             </div>
         </li>
-        <li class="nav-item">
+        <li class="nav-item active">
             <a class="nav-link" href="#member-management"><i class="fas fa-users"></i> <span>Members</span></a>
             <div class="sub-menu">
-                <a class="nav-link" href="BanMember.jsp"><i class="fas fa-ban"></i> <span>Ban</span></a>
+                <a class="nav-link" href="BanMember"><i class="fas fa-ban"></i> <span>Ban</span></a>
                 <a class="nav-link" href="UnbanMember.jsp"><i class="fas fa-check-circle"></i> <span>Unban</span></a>
                 <a class="nav-link" href="UpdateMemberInfo.jsp"><i class="fas fa-user-edit"></i> <span>Update</span></a>
             </div>
@@ -510,9 +450,6 @@
                     </p>
                     <p><strong>Role ID:</strong> <%= account.getRoleId() %>
                     </p>
-                    <p>
-                        <strong>Created:</strong> <%= account.getCreatedAt() != null ? sdf.format(account.getCreatedAt()) : "N/A" %>
-                    </p>
                 </li>
                 <li><a class="dropdown-item" href="#">Settings</a></li>
                 <li><a class="dropdown-item" href="#" id="toggleLightMode">Light Mode</a></li>
@@ -527,95 +464,90 @@
 <!-- Main Content -->
 <div class="main-content" id="mainContent">
     <div class="container-fluid">
-        <h1 class="dashboard-title">Staff Dashboard</h1>
+        <h1 class="dashboard-title">Ban Member</h1>
 
-        <!-- Search Bar -->
-        <div class="search-bar">
-            <input type="text" id="searchInput" placeholder="Search books, members, fines...">
-            <div class="suggestions" id="suggestions"></div>
+        <!-- Messages -->
+        <% String message = (String) request.getAttribute("message"); %>
+        <% String errorMessage = (String) request.getAttribute("errorMessage"); %>
+        <% if (message != null) { %>
+        <div class="alert alert-success"><i class="fas fa-check-circle me-2"></i><%= message %>
         </div>
+        <% } %>
+        <% if (errorMessage != null) { %>
+        <div class="alert alert-danger"><i class="fas fa-exclamation-triangle me-2"></i><%= errorMessage %>
+        </div>
+        <% } %>
 
         <div class="row">
-            <!-- Statistics Card -->
-            <div class="col-lg-12">
-                <div class="card" id="statsCard">
+            <!-- Ban Member Form -->
+            <div class="col-lg-6">
+                <div class="card" id="ban-member">
                     <div class="card-header">
-                        <i class="fas fa-chart-bar"></i> Library Statistics
+                        <i class="fas fa-ban"></i> Ban a Member
                     </div>
                     <div class="card-body">
-                        <div class="chart-container">
-                            <canvas id="statsChart"></canvas>
+                        <form action="BanMember" method="post" id="banForm">
+                            <div class="mb-3">
+                                <label for="memberId" class="form-label"><i class="fas fa-id-card me-2"></i>Member ID
+                                    (Optional)</label>
+                                <input type="number" id="memberId" name="memberId" class="form-control"
+                                       placeholder="Enter Member ID">
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label"><i class="fas fa-envelope me-2"></i>Email
+                                    (Optional)</label>
+                                <input type="email" id="email" name="email" class="form-control"
+                                       placeholder="Enter Member Email">
+                            </div>
+                            <button type="submit" class="btn btn-warning btn-custom"><i class="fas fa-ban me-2"></i>Ban
+                                Member
+                            </button>
+                            <a href="HomePage" class="btn btn-back btn-custom btn-dark"><i
+                                    class="fas fa-arrow-left me-2"></i>Back</a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Members List -->
+            <div class="col-lg-6">
+                <div class="card" id="members-list">
+                    <div class="card-header">
+                        <i class="fas fa-users"></i> Members List
+                    </div>
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table class="table table-striped">
+                                <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Full Name</th>
+                                    <th>Email</th>
+                                    <th>Status</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <% for (Members member : membersList) { %>
+                                <tr>
+                                    <td><%= member.getIdMember() %>
+                                    </td>
+                                    <td><%= member.getFullName() %>
+                                    </td>
+                                    <td><%= member.getEmail() %>
+                                    </td>
+                                    <td><%= member.getStatus() %>
+                                    </td>
+                                </tr>
+                                <% } %>
+                                </tbody>
+                            </table>
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Book Management -->
-            <div class="col-lg-6">
-                <div class="card" id="book-management">
-                    <div class="card-header">
-                        <i class="fas fa-book"></i> Book Management
-                    </div>
-                    <div class="card-body">
-                        <a href="AddBook" class="btn btn-primary btn-custom"><i class="fas fa-plus"></i> Add New
-                            Book</a>
-                        <a href="ManageBook" class="btn btn-success btn-custom"><i class="fas fa-edit"></i> Manage
-                            Books</a>
-                        <a href="DeleteBook" class="btn btn-danger btn-custom"><i class="fas fa-trash-alt"></i>
-                            Delete Book</a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Member Management -->
-            <div class="col-lg-6">
-                <div class="card" id="member-management">
-                    <div class="card-header">
-                        <i class="fas fa-users"></i> Member Management
-                    </div>
-                    <div class="card-body">
-                        <a href="BanMember" class="btn btn-warning btn-custom"><i class="fas fa-ban"></i> Ban Member</a>
-                        <a href="UnbanMember.jsp" class="btn btn-info btn-custom"><i class="fas fa-check-circle"></i>
-                            Unban Member</a>
-                        <a href="UpdateMemberInfo.jsp" class="btn btn-secondary btn-custom"><i
-                                class="fas fa-user-edit"></i> Update Member</a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Borrowing History -->
-            <div class="col-lg-6">
-                <div class="card" id="borrowing-history">
-                    <div class="card-header">
-                        <i class="fas fa-history"></i> Borrowing History
-                    </div>
-                    <div class="card-body">
-                        <a href="BorrowingHistory.jsp" class="btn btn-info btn-custom"><i class="fas fa-eye"></i> View
-                            Borrowing History</a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Fine & Payment -->
-            <div class="col-lg-6">
-                <div class="card" id="fine-payment">
-                    <div class="card-header">
-                        <i class="fas fa-money-bill-alt"></i> Fine & Payment
-                    </div>
-                    <div class="card-body">
-                        <a href="ManageFines.jsp" class="btn btn-danger btn-custom"><i
-                                class="fas fa-money-check-alt"></i> Manage Fines</a>
-                        <a href="ViewPayments.jsp" class="btn btn-success btn-custom"><i class="fas fa-credit-card"></i>
-                            View Payments</a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<!-- Notification Panel -->
-<div class="notification-panel" id="notificationPanel"></div>
 
 <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
@@ -674,92 +606,14 @@
         setTheme(localStorage.getItem('theme'));
     }
 
-    // Chart.js
-    const ctx = document.getElementById('statsChart').getContext('2d');
-    const statsChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ['Total Books', 'Total Members', 'Borrowed Books', 'Borrowing Members', 'Fines Amount'],
-            datasets: [
-                {
-                    label: 'Total',
-                    data: [<%= totalBooks %>, <%= totalMembers %>, <%= totalBorrowedBooks %>, <%= totalBorrowingMembers %>, <%= totalFinesAmount %>],
-                    backgroundColor: ['#007bff', '#28a745', '#ffc107', '#17a2b8', '#dc3545'],
-                    borderWidth: 1
-                },
-                {
-                    type: 'line',
-                    label: 'Trend',
-                    data: [<%= totalBooks %>, <%= totalMembers %>, <%= totalBorrowedBooks %>, <%= totalBorrowingMembers %>, <%= totalFinesAmount %>],
-                    borderColor: '#6c757d',
-                    fill: false,
-                    tension: 0.4
-                }
-            ]
-        },
-        options: {
-            scales: {
-                y: {beginAtZero: true}
-            },
-            plugins: {
-                legend: {display: true}
-            }
-        }
-    });
-
-    // Search Bar
-    const searchInput = document.getElementById('searchInput');
-    const suggestions = document.getElementById('suggestions');
-    const searchItems = [
-        'Add Book', 'Manage Books', 'Delete Book',
-        'Ban Member', 'Unban Member', 'Update Member',
-        'View Borrowing History',
-        'Manage Fines', 'View Payments'
-    ];
-    searchInput.addEventListener('input', () => {
-        const query = searchInput.value.toLowerCase();
-        suggestions.innerHTML = '';
-        if (query) {
-            const filtered = searchItems.filter(item => item.toLowerCase().includes(query));
-            filtered.forEach(item => {
-                const a = document.createElement('a');
-                a.href = '#';
-                a.textContent = item;
-                suggestions.appendChild(a);
-            });
-            suggestions.style.display = 'block';
-        } else {
-            suggestions.style.display = 'none';
-        }
-    });
-
-    // Real-time Notifications (giả lập)
-    const notificationPanel = document.getElementById('notificationPanel');
-    const addNotification = (message) => {
-        const notification = document.createElement('div');
-        notification.className = 'notification';
-        notification.textContent = message;
-        notificationPanel.insertBefore(notification, notificationPanel.firstChild);
-        setTimeout(() => notification.remove(), 5000);
-    };
-
-    setInterval(() => {
-        const messages = [
-            'New book added!',
-            'Member banned successfully.',
-            'Fine payment received.',
-            'Borrowing history updated.'
-        ];
-        addNotification(messages[Math.floor(Math.random() * messages.length)]);
-    }, 10000);
-
-    // Smooth Scroll
-    document.querySelectorAll('.nav-link[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
+    // Form Validation
+    document.getElementById('banForm')?.addEventListener('submit', function (e) {
+        const memberId = document.getElementById('memberId').value;
+        const email = document.getElementById('email').value;
+        if (!memberId && !email) {
             e.preventDefault();
-            const targetId = this.getAttribute('href').substring(1);
-            document.getElementById(targetId).scrollIntoView({behavior: 'smooth'});
-        });
+            alert('Please provide either a Member ID or an Email.');
+        }
     });
 </script>
 </body>
