@@ -17,6 +17,12 @@ public class FinePaymentsDAO extends LibraryContext {
 
     // Thêm thanh toán phạt
     public boolean addFinePayment(int fineId, double amountPaid, String paymentMethod) {
+        // Kiểm tra số tiền hợp lệ
+        if (amountPaid <= 0) {
+            System.out.println("Số tiền thanh toán phải lớn hơn 0.");
+            return false;
+        }
+
         // Đảm bảo paymentMethod hợp lệ theo CHECK constraint
         if (!isValidPaymentMethod(paymentMethod)) {
             paymentMethod = "Other"; // Giá trị mặc định nếu không hợp lệ
@@ -30,7 +36,12 @@ public class FinePaymentsDAO extends LibraryContext {
             ps.setString(3, paymentMethod);
 
             int rowsAffected = ps.executeUpdate();
-            return rowsAffected > 0;
+            if (rowsAffected > 0) {
+                return true;
+            } else {
+                System.out.println("Không thể thêm bản ghi thanh toán cho FineID: " + fineId);
+                return false;
+            }
         } catch (SQLException e) {
             System.out.println("SQLException in addFinePayment: " + e.getMessage());
             e.printStackTrace();
@@ -50,7 +61,7 @@ public class FinePaymentsDAO extends LibraryContext {
     // Lấy tất cả thanh toán theo FineID
     public List<FinePayments> getFinePaymentsByFineId(int fineId) {
         List<FinePayments> finePaymentsList = new ArrayList<>();
-        String query = "SELECT * FROM FinePayments WHERE FineID = ?";
+        String query = "SELECT * FROM FinePayments WHERE FineID = ? ORDER BY PaymentDate DESC";
         try (PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setInt(1, fineId);
             try (ResultSet rs = ps.executeQuery()) {

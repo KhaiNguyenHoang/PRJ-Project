@@ -17,9 +17,8 @@ public class FinesDAO extends LibraryContext {
 
     // Thêm khoản phạt mới
     public boolean addFine(int memberId, int borrowId, double amount, String paymentMethod) {
-        // Đảm bảo paymentMethod hợp lệ theo CHECK constraint
         if (!isValidPaymentMethod(paymentMethod)) {
-            paymentMethod = "Other"; // Giá trị mặc định nếu không hợp lệ
+            paymentMethod = "Other";
         }
 
         String insertFineQuery = "INSERT INTO Fines (MemberID, BorrowID, Amount, Status, PaymentMethod, CreatedAt) " +
@@ -43,16 +42,64 @@ public class FinesDAO extends LibraryContext {
         }
     }
 
-    // Kiểm tra PaymentMethod hợp lệ
-    private boolean isValidPaymentMethod(String paymentMethod) {
-        return paymentMethod != null &&
-                (paymentMethod.equals("Cash") ||
-                        paymentMethod.equals("Credit Card") ||
-                        paymentMethod.equals("Online") ||
-                        paymentMethod.equals("Other"));
+    // Thanh toán khoản phạt và ghi vào FinePayments
+    public boolean payFine(int fineId, double amountPaid, String paymentMethod) {
+        PreparedStatement updateFinePs = null;
+        FinePaymentsDAO finePaymentsDAO = new FinePaymentsDAO();
+
+        if (!isValidPaymentMethod(paymentMethod)) {
+            paymentMethod = "Other";
+        }
+        if (amountPaid <= 0) {
+            System.out.println("Số tiền thanh toán phải lớn hơn 0.");
+            return false;
+        }
+
+        try {
+            conn.setAutoCommit(false);
+
+            // Bước 1: Cập nhật trạng thái khoản phạt thành 'Paid'
+            String updateFineQuery = "UPDATE Fines SET Status = 'Paid', PaidDate = GETDATE() WHERE IdFine = ? AND Status = 'Unpaid'";
+            updateFinePs = conn.prepareStatement(updateFineQuery);
+            updateFinePs.setInt(1, fineId);
+            int rowsAffectedFine = updateFinePs.executeUpdate();
+            if (rowsAffectedFine == 0) {
+                System.out.println("Không thể cập nhật khoản phạt IdFine: " + fineId + " - Có thể đã thanh toán hoặc không tồn tại.");
+                conn.rollback();
+                return false;
+            }
+
+            // Bước 2: Ghi thanh toán vào FinePayments
+            boolean paymentAdded = finePaymentsDAO.addFinePayment(fineId, amountPaid, paymentMethod);
+            if (!paymentAdded) {
+                System.out.println("Không thể ghi thanh toán cho IdFine: " + fineId);
+                conn.rollback();
+                return false;
+            }
+
+            conn.commit();
+            return true;
+
+        } catch (SQLException e) {
+            System.out.println("SQLException in payFine: " + e.getMessage());
+            e.printStackTrace();
+            try {
+                if (conn != null) conn.rollback();
+            } catch (SQLException se) {
+                se.printStackTrace();
+            }
+            return false;
+        } finally {
+            try {
+                if (updateFinePs != null) updateFinePs.close();
+                if (conn != null) conn.setAutoCommit(true);
+            } catch (SQLException se) {
+                se.printStackTrace();
+            }
+        }
     }
 
-    // Cập nhật trạng thái phạt
+    // Cập nhật trạng thái phạt (phương thức cũ, giữ lại nếu cần)
     public boolean updateFineStatus(int fineId, String status, Date paidDate) {
         String updateFineQuery = "UPDATE Fines SET Status = ?, PaidDate = ? WHERE IdFine = ?";
         try (PreparedStatement ps = conn.prepareStatement(updateFineQuery)) {
@@ -108,13 +155,13 @@ public class FinesDAO extends LibraryContext {
 
                     double amount = 0;
                     if (daysLate > 30 && returnDate == null) {
-                        amount = 500; // Phí cố định 500 USD nếu quá 30 ngày chưa trả
+                        amount = 500; // 500 USD nếu quá 30 ngày chưa trả
                     } else if (daysLate > 0) {
                         amount = daysLate * 50; // 50 USD/ngày trễ
                     }
 
                     if (amount > 0 && !isFineExists(borrowId)) {
-                        addFine(memberId, borrowId, amount, "Other"); // Sử dụng 'Other' làm mặc định
+                        addFine(memberId, borrowId, amount, "Other");
                     }
                 }
             }
@@ -143,7 +190,7 @@ public class FinesDAO extends LibraryContext {
 
     // Tính tổng số tiền phạt chưa thanh toán
     public double getTotalFinesAmount() throws SQLException {
-        String query = "SELECT COUNT(*) AS total FROM Fines WHERE Status = 'Unpaid'";
+        String query = "SELECT SUM(Amount) AS total FROM Fines WHERE Status = 'Unpaid'";
         try (PreparedStatement ps = conn.prepareStatement(query);
              ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
@@ -151,6 +198,15 @@ public class FinesDAO extends LibraryContext {
             }
         }
         return 0.0;
+    }
+
+    // Kiểm tra PaymentMethod hợp lệ
+    private boolean isValidPaymentMethod(String paymentMethod) {
+        return paymentMethod != null &&
+                (paymentMethod.equals("Cash") ||
+                        paymentMethod.equals("Credit Card") ||
+                        paymentMethod.equals("Online") ||
+                        paymentMethod.equals("Other"));
     }
 
     // Tính số ngày giữa hai ngày
