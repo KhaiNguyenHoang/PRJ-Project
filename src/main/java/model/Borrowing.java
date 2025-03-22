@@ -1,45 +1,42 @@
 package model;
 
-import java.util.Date;
+import java.sql.Timestamp;
 
 public class Borrowing {
     private int idBorrow;
     private int memberId;
-    private int bookId;
-    private int bookCopyId;
-    private Date borrowDate;
-    private Date dueDate;
-    private Date returnDate;
+    private int bookCopyId; // Chỉ sử dụng BookCopyId, không có BookId
+    private Timestamp borrowDate;
+    private Timestamp dueDate;
+    private Timestamp returnDate;
     private String status;
-    private Date createdAt;
+    private Timestamp createdAt;
 
     // Constructors
     public Borrowing() {
     }
 
-    public Borrowing(int memberId, int bookId, int bookCopyId, Date borrowDate, Date dueDate, String status) {
+    public Borrowing(int memberId, int bookCopyId, Timestamp borrowDate, Timestamp dueDate, String status) {
         this.memberId = memberId;
-        this.bookId = bookId;
         this.bookCopyId = bookCopyId;
         this.borrowDate = borrowDate;
         this.dueDate = dueDate;
         this.status = status;
     }
 
-    public Borrowing(int idBorrow, int memberId, int bookId, int bookCopyId, Date borrowDate, Date dueDate, String status) {
+    public Borrowing(int idBorrow, int memberId, int bookCopyId, Timestamp borrowDate, Timestamp dueDate, String status) {
         this.idBorrow = idBorrow;
         this.memberId = memberId;
-        this.bookId = bookId;
         this.bookCopyId = bookCopyId;
         this.borrowDate = borrowDate;
         this.dueDate = dueDate;
         this.status = status;
     }
 
-    public Borrowing(int idBorrow, int memberId, int bookId, int bookCopyId, Date borrowDate, Date dueDate, Date returnDate, String status, Date createdAt) {
+    public Borrowing(int idBorrow, int memberId, int bookCopyId, Timestamp borrowDate, Timestamp dueDate,
+                     Timestamp returnDate, String status, Timestamp createdAt) {
         this.idBorrow = idBorrow;
         this.memberId = memberId;
-        this.bookId = bookId;
         this.bookCopyId = bookCopyId;
         this.borrowDate = borrowDate;
         this.dueDate = dueDate;
@@ -65,14 +62,6 @@ public class Borrowing {
         this.memberId = memberId;
     }
 
-    public int getBookId() {
-        return bookId;
-    }
-
-    public void setBookId(int bookId) {
-        this.bookId = bookId;
-    }
-
     public int getBookCopyId() {
         return bookCopyId;
     }
@@ -81,27 +70,27 @@ public class Borrowing {
         this.bookCopyId = bookCopyId;
     }
 
-    public Date getBorrowDate() {
+    public Timestamp getBorrowDate() {
         return borrowDate;
     }
 
-    public void setBorrowDate(Date borrowDate) {
+    public void setBorrowDate(Timestamp borrowDate) {
         this.borrowDate = borrowDate;
     }
 
-    public Date getDueDate() {
+    public Timestamp getDueDate() {
         return dueDate;
     }
 
-    public void setDueDate(Date dueDate) {
+    public void setDueDate(Timestamp dueDate) {
         this.dueDate = dueDate;
     }
 
-    public Date getReturnDate() {
+    public Timestamp getReturnDate() {
         return returnDate;
     }
 
-    public void setReturnDate(Date returnDate) {
+    public void setReturnDate(Timestamp returnDate) {
         this.returnDate = returnDate;
     }
 
@@ -113,11 +102,11 @@ public class Borrowing {
         this.status = status;
     }
 
-    public Date getCreatedAt() {
+    public Timestamp getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Date createdAt) {
+    public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
     }
 }

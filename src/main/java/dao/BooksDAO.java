@@ -304,17 +304,46 @@ public class BooksDAO extends LibraryContext {
         return 0;
     }
 
-    // Xóa sách theo IdBook
     public boolean deleteBook(int idBook) {
-        String deleteQuery = "DELETE FROM Books WHERE IdBook = ?";
-        try (PreparedStatement ps = conn.prepareStatement(deleteQuery)) {
-            ps.setInt(1, idBook);
-            int rowsAffected = ps.executeUpdate();
-            return rowsAffected > 0; // Trả về true nếu xóa thành công
+        try {
+            // Bắt đầu giao dịch
+            conn.setAutoCommit(false);
+
+            // 1. Xóa các bản ghi trong Fines liên quan đến Borrowing của sách (vì ON DELETE NO ACTION)
+            String deleteFinesQuery = "DELETE FROM Fines WHERE BorrowID IN (SELECT IdBorrow FROM Borrowing WHERE BookCopyId IN (SELECT IdCopy FROM BookCopies WHERE BookID = ?))";
+            try (PreparedStatement psFines = conn.prepareStatement(deleteFinesQuery)) {
+                psFines.setInt(1, idBook);
+                psFines.executeUpdate();
+            }
+
+            // 2. Xóa sách trong Books
+            // Các bảng BookCopies, Borrowing, BorrowingHistory, BooksDetail sẽ tự động xóa nhờ ON DELETE CASCADE
+            String deleteBookQuery = "DELETE FROM Books WHERE IdBook = ?";
+            try (PreparedStatement psBook = conn.prepareStatement(deleteBookQuery)) {
+                psBook.setInt(1, idBook);
+                int rowsAffected = psBook.executeUpdate();
+                if (rowsAffected > 0) {
+                    conn.commit(); // Xác nhận giao dịch nếu thành công
+                    return true;
+                } else {
+                    conn.rollback(); // Hoàn tác nếu không có hàng nào bị xóa
+                    return false;
+                }
+            }
         } catch (SQLException e) {
-            System.out.println("SQLException in deleteBook: " + e.getMessage());
+            try {
+                conn.rollback(); // Hoàn tác giao dịch nếu có lỗi
+            } catch (SQLException rollbackEx) {
+                rollbackEx.printStackTrace();
+            }
             e.printStackTrace();
-            return false; // Trả về false nếu có lỗi (ví dụ: vi phạm khóa ngoại)
+            return false;
+        } finally {
+            try {
+                conn.setAutoCommit(true); // Khôi phục chế độ tự động commit
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

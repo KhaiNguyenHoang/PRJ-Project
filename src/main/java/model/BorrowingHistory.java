@@ -1,23 +1,21 @@
 package model;
 
-import java.util.Date;
+import java.sql.Timestamp;
 
 public class BorrowingHistory {
     private int idHistory;
-    private int memberId; // Liên kết với Members
-    private int bookId;   // Liên kết với Books
-    private int bookCopyId; // Liên kết với BookCopies
-    private Date borrowDate;
-    private Date returnDate;
+    private int memberId;
+    private int bookCopyId;
+    private Timestamp borrowDate;
+    private Timestamp returnDate;
+    private transient String bookTitle; // Transient để không ánh xạ trực tiếp vào cơ sở dữ liệu
 
     // Constructors
     public BorrowingHistory() {
     }
 
-    public BorrowingHistory(int idHistory, int memberId, int bookId, int bookCopyId, Date borrowDate, Date returnDate) {
-        this.idHistory = idHistory;
+    public BorrowingHistory(int memberId, int bookCopyId, Timestamp borrowDate, Timestamp returnDate) {
         this.memberId = memberId;
-        this.bookId = bookId;
         this.bookCopyId = bookCopyId;
         this.borrowDate = borrowDate;
         this.returnDate = returnDate;
@@ -40,14 +38,6 @@ public class BorrowingHistory {
         this.memberId = memberId;
     }
 
-    public int getBookId() {
-        return bookId;
-    }
-
-    public void setBookId(int bookId) {
-        this.bookId = bookId;
-    }
-
     public int getBookCopyId() {
         return bookCopyId;
     }
@@ -56,19 +46,27 @@ public class BorrowingHistory {
         this.bookCopyId = bookCopyId;
     }
 
-    public Date getBorrowDate() {
+    public Timestamp getBorrowDate() {
         return borrowDate;
     }
 
-    public void setBorrowDate(Date borrowDate) {
+    public void setBorrowDate(Timestamp borrowDate) {
         this.borrowDate = borrowDate;
     }
 
-    public Date getReturnDate() {
+    public Timestamp getReturnDate() {
         return returnDate;
     }
 
-    public void setReturnDate(Date returnDate) {
+    public void setReturnDate(Timestamp returnDate) {
         this.returnDate = returnDate;
+    }
+
+    public String getBookTitle() {
+        return bookTitle;
+    }
+
+    public void setBookTitle(String bookTitle) {
+        this.bookTitle = bookTitle;
     }
 }

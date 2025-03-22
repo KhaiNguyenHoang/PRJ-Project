@@ -13,18 +13,22 @@ import model.Members;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Date;
+import java.sql.Timestamp;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @WebServlet(name = "ReturningServlet", value = "/Returning")
 public class ReturningServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private static final String JSP_PATH = "HomeHTML/HomeMemberHTML/Borrowing.jsp";
+    private static final Logger LOGGER = Logger.getLogger(ReturningServlet.class.getName());
 
     // Centralized session check
     private Members getCurrentMember(HttpServletRequest request, HttpServletResponse response) throws IOException {
         Members currentMember = (Members) request.getSession().getAttribute("members");
         if (currentMember == null) {
+            LOGGER.log(Level.WARNING, "No member found in session, redirecting to login");
             response.sendRedirect("/Auth/SignIn-SignUp.jsp");
         }
         return currentMember;
@@ -36,40 +40,44 @@ public class ReturningServlet extends HttpServlet {
         if (currentMember == null) return;
 
         try {
-            // Extract historyId from the form
-            String historyIdStr = request.getParameter("historyId");
-            if (historyIdStr == null || historyIdStr.trim().isEmpty()) {
+            // Extract borrowId from the form (sửa từ historyId sang borrowId cho phù hợp)
+            String borrowIdStr = request.getParameter("borrowId");
+            if (borrowIdStr == null || borrowIdStr.trim().isEmpty()) {
                 request.setAttribute("errorMessage", "Invalid borrowing record ID.");
                 refreshBorrowingHistory(request, currentMember);
                 request.getRequestDispatcher(JSP_PATH).forward(request, response);
                 return;
             }
 
-            int historyId = Integer.parseInt(historyIdStr);
-            Date returnDate = new Date(); // Current date as return date
+            int borrowId = Integer.parseInt(borrowIdStr);
+            Timestamp returnDate = new Timestamp(System.currentTimeMillis()); // Current timestamp as return date
 
             // Process the return
             BorrowingDAO borrowingDAO = new BorrowingDAO();
-            BorrowingHistoryDAO historyDAO = new BorrowingHistoryDAO();
+            Borrowing borrowing = borrowingDAO.getBorrowingById(borrowId);
 
-            // Find the BorrowingHistory record
-            BorrowingHistory history = getBorrowingHistoryById(historyDAO, historyId, currentMember.getIdMember());
-            if (history == null) {
-                request.setAttribute("errorMessage", "Borrowing history record not found or does not belong to you.");
-            } else if (history.getReturnDate() != null) {
+            if (borrowing == null) {
+                request.setAttribute("errorMessage", "Borrowing record not found.");
+                LOGGER.log(Level.WARNING, "Borrowing record not found for borrowId: {0}", borrowId);
+            } else if (borrowing.getMemberId() != currentMember.getIdMember()) {
+                request.setAttribute("errorMessage", "This borrowing record does not belong to you.");
+                LOGGER.log(Level.WARNING, "Member {0} attempted to return a book not borrowed by them: borrowId {1}",
+                        new Object[]{currentMember.getIdMember(), borrowId});
+            } else if (borrowing.getReturnDate() != null) {
                 request.setAttribute("errorMessage", "This book has already been returned.");
+                LOGGER.log(Level.WARNING, "Book already returned for borrowId: {0}", borrowId);
+            } else if (!borrowing.getStatus().equals("Borrowed")) {
+                request.setAttribute("errorMessage", "This book is not currently borrowed.");
+                LOGGER.log(Level.WARNING, "Book not in Borrowed state for borrowId: {0}", borrowId);
             } else {
-                // Use the new method to find the active Borrowing record
-                Borrowing borrowing = borrowingDAO.getBorrowingByMemberIdAndBookId(currentMember.getIdMember(), history.getBookId());
-                if (borrowing == null) {
-                    request.setAttribute("errorMessage", "No active borrowing record found for this book.");
+                boolean isSuccess = borrowingDAO.returnBook(borrowId, returnDate);
+                if (isSuccess) {
+                    request.setAttribute("message", "Book returned successfully!");
+                    LOGGER.log(Level.INFO, "Book returned successfully for borrowId: {0} by member: {1}",
+                            new Object[]{borrowId, currentMember.getIdMember()});
                 } else {
-                    boolean isSuccess = borrowingDAO.returnBook(borrowing.getIdBorrow(), returnDate);
-                    if (isSuccess) {
-                        request.setAttribute("message", "Book returned successfully!");
-                    } else {
-                        request.setAttribute("errorMessage", "Failed to return the book. Check server logs for details.");
-                    }
+                    request.setAttribute("errorMessage", "Failed to return the book. Please try again.");
+                    LOGGER.log(Level.SEVERE, "Failed to return book for borrowId: {0}", borrowId);
                 }
             }
 
@@ -78,15 +86,12 @@ public class ReturningServlet extends HttpServlet {
 
         } catch (NumberFormatException e) {
             request.setAttribute("errorMessage", "Invalid borrowing record ID format.");
+            LOGGER.log(Level.WARNING, "Invalid borrowId format: {0}", request.getParameter("borrowId"));
             refreshBorrowingHistory(request, currentMember);
-        } catch (SQLException e) {
-            request.setAttribute("errorMessage", "Database error occurred while processing the return. Check server logs for details.");
-            refreshBorrowingHistory(request, currentMember);
-            e.printStackTrace();
         } catch (Exception e) {
-            request.setAttribute("errorMessage", "An unexpected error occurred while processing the return. Check server logs for details.");
+            request.setAttribute("errorMessage", "An unexpected error occurred while processing the return.");
+            LOGGER.log(Level.SEVERE, "Unexpected error while returning book", e);
             refreshBorrowingHistory(request, currentMember);
-            e.printStackTrace();
         }
 
         // Forward back to Borrowing.jsp to display the result
@@ -107,18 +112,7 @@ public class ReturningServlet extends HttpServlet {
             request.setAttribute("borrowingHistoryList", borrowingHistoryList);
         } catch (SQLException e) {
             request.setAttribute("errorMessage", "Failed to refresh borrowing history: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error refreshing borrowing history for member: {0}", currentMember.getIdMember());
         }
-    }
-
-    // Helper method to get BorrowingHistory by IdHistory and verify member
-    private BorrowingHistory getBorrowingHistoryById(BorrowingHistoryDAO historyDAO, int historyId, int memberId) throws SQLException {
-        List<BorrowingHistory> historyList = historyDAO.getBorrowingHistoryByMemberId(memberId);
-        for (BorrowingHistory history : historyList) {
-            if (history.getIdHistory() == historyId) {
-                return history;
-            }
-        }
-        return null;
     }
 }

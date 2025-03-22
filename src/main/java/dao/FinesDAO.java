@@ -154,9 +154,7 @@ public class FinesDAO extends LibraryContext {
                     }
 
                     double amount = 0;
-                    if (daysLate > 30 && returnDate == null) {
-                        amount = 500; // 500 USD nếu quá 30 ngày chưa trả
-                    } else if (daysLate > 0) {
+                    if (daysLate > 0) {
                         amount = daysLate * 50; // 50 USD/ngày trễ
                     }
 

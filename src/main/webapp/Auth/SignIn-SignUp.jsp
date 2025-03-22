@@ -375,8 +375,8 @@
 
                 <!-- Dropdown cho Role -->
                 <select name="roleIdStaff" class="role-type-select">
-                    <option value="3">Admin</option>
-                    <option value="4">Staff</option>
+                    <option value="1">Admin</option>
+                    <option value="2">Staff</option>
                 </select>
             </div>
 
