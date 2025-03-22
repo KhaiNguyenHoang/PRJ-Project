@@ -287,6 +287,19 @@
             box-shadow: 0 4px 10px rgba(255, 126, 95, 0.3);
         }
 
+        .btn-back {
+            background: #6c757d;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            transition: background 0.3s ease;
+        }
+
+        .btn-back:hover {
+            background: #5a6268;
+        }
+
         #pdfUpload {
             display: none;
             margin-top: 15px;
@@ -314,9 +327,6 @@
 <body>
 <%
     Account account = (Account) session.getAttribute("account");
-    if (account == null) {
-        account = new Account(1, "John Doe", "john.doe@example.com", "johndoe", "hashedpassword", 1);
-    }
     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 %>
 
@@ -328,7 +338,7 @@
     </div>
     <ul class="nav flex-column">
         <li class="nav-item">
-            <a class="nav-link" href="StaffDashboard.jsp#book-management"><i class="fas fa-book"></i> <span>Books</span></a>
+            <a class="nav-link" href="HomePage#book-management"><i class="fas fa-book"></i> <span>Books</span></a>
             <div class="sub-menu">
                 <a class="nav-link" href="AddBook.jsp"><i class="fas fa-plus"></i> <span>Add Book</span></a>
                 <a class="nav-link" href="ManageBooks.jsp"><i class="fas fa-edit"></i> <span>Manage</span></a>
@@ -336,7 +346,7 @@
             </div>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="StaffDashboard.jsp#member-management"><i class="fas fa-users"></i>
+            <a class="nav-link" href="HomePage#member-management"><i class="fas fa-users"></i>
                 <span>Members</span></a>
             <div class="sub-menu">
                 <a class="nav-link" href="BanMember.jsp"><i class="fas fa-ban"></i> <span>Ban</span></a>
@@ -345,13 +355,15 @@
             </div>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="StaffDashboard.jsp#borrowing-history"><i class="fas fa-history"></i> <span>Borrowing History</span></a>
+            <a class="nav-link" href="HomePage#borrowing-history"><i class="fas fa-history"></i>
+                <span>Borrowing History</span></a>
             <div class="sub-menu">
                 <a class="nav-link" href="BorrowingHistory.jsp"><i class="fas fa-eye"></i> <span>View History</span></a>
             </div>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="StaffDashboard.jsp#fine-payment"><i class="fas fa-money-bill-alt"></i> <span>Fine & Payment</span></a>
+            <a class="nav-link" href="HomePage#fine-payment"><i class="fas fa-money-bill-alt"></i>
+                <span>Fine & Payment</span></a>
             <div class="sub-menu">
                 <a class="nav-link" href="ManageFines.jsp"><i class="fas fa-money-check-alt"></i>
                     <span>Manage Fines</span></a>
@@ -390,19 +402,27 @@
 <div class="main-content" id="mainContent">
     <div class="container-fluid">
         <div class="form-container animate__animated animate__fadeIn">
-            <h2>Add New Book</h2>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">Add New Book</h2>
+                <a href="HomePage" class="btn btn-back"><i class="fas fa-arrow-left me-2"></i>Back</a>
+            </div>
             <form action="AddBook" method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
                 <div class="form-group">
                     <label for="title">Title</label>
-                    <input type="text" class="form-control" id="title" name="title" placeholder="Enter book title">
+                    <input type="text" class="form-control" id="title" name="title" placeholder="Enter book title"
+                           required>
+                    <div class="invalid-feedback">Please enter a title.</div>
                 </div>
                 <div class="form-group">
                     <label for="author">Author</label>
-                    <input type="text" class="form-control" id="author" name="author" placeholder="Enter author name">
+                    <input type="text" class="form-control" id="author" name="author" placeholder="Enter author name"
+                           required>
+                    <div class="invalid-feedback">Please enter an author.</div>
                 </div>
                 <div class="form-group">
                     <label for="isbn">ISBN</label>
-                    <input type="text" class="form-control" id="isbn" name="isbn" placeholder="Enter ISBN">
+                    <input type="text" class="form-control" id="isbn" name="isbn" placeholder="Enter ISBN" required>
+                    <div class="invalid-feedback">Please enter an ISBN.</div>
                 </div>
                 <div class="form-group">
                     <label for="publisher">Publisher</label>
@@ -442,11 +462,13 @@
                             }
                         %>
                     </select>
+                    <div class="invalid-feedback">Please select a category.</div>
                 </div>
                 <div class="form-group">
                     <label for="copiesAvailable">Copies Available</label>
                     <input type="number" class="form-control" id="copiesAvailable" name="copiesAvailable"
-                           placeholder="Enter number of copies" min="1">
+                           placeholder="Enter number of copies" min="1" required>
+                    <div class="invalid-feedback">Please enter the number of copies (minimum 1).</div>
                 </div>
                 <div class="form-group">
                     <label for="isDigital">Is Digital</label>
@@ -458,10 +480,12 @@
                 <div class="form-group">
                     <label for="imageFile">Image File (PNG only)</label>
                     <input type="file" class="form-control" id="imageFile" name="imageFile" accept="image/png" required>
+                    <div class="invalid-feedback">Please upload a PNG image.</div>
                 </div>
                 <div class="form-group" id="pdfUpload">
                     <label for="pdfFile">PDF File (for digital books, max 100MB)</label>
                     <input type="file" class="form-control" id="pdfFile" name="pdfFile" accept=".pdf">
+                    <div class="invalid-feedback">Please upload a PDF file for digital books.</div>
                 </div>
                 <div class="form-group">
                     <label for="description">Description</label>
