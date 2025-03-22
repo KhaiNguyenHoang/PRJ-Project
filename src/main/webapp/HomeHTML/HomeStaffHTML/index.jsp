@@ -557,7 +557,7 @@
                         <i class="fas fa-book"></i> Book Management
                     </div>
                     <div class="card-body">
-                        <a href="AddBook.jsp" class="btn btn-primary btn-custom"><i class="fas fa-plus"></i> Add New
+                        <a href="AddBook" class="btn btn-primary btn-custom"><i class="fas fa-plus"></i> Add New
                             Book</a>
                         <a href="ManageBooks.jsp" class="btn btn-success btn-custom"><i class="fas fa-edit"></i> Manage
                             Books</a>
