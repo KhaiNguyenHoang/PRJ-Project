@@ -16,6 +16,56 @@ public class BooksDAO extends LibraryContext {
         super(); // Kết nối tới cơ sở dữ liệu thông qua lớp cha LibraryContext
     }
 
+    // Cập nhật sách (không sửa Id, ISBN, CopiesAvailable)
+    public boolean updateBook(Books book, String description, String pdfPath) {
+        String updateBookSQL = "UPDATE Books SET Title = ?, Author = ?, Publisher = ?, YearPublished = ?, CategoryId = ?, IsDigital = ?, FilePath = ?, Status = ? WHERE Id = ?";
+        String updateDetailSQL = "UPDATE BookDetails SET Description = ?, PdfPath = ? WHERE BookId = ?";
+
+        try {
+            conn.setAutoCommit(false);
+
+            // Cập nhật Books
+            PreparedStatement psBook = conn.prepareStatement(updateBookSQL);
+            psBook.setString(1, book.getTitle());
+            psBook.setString(2, book.getAuthor());
+            psBook.setString(3, book.getPublisher());
+            psBook.setInt(4, book.getYearPublished());
+            psBook.setInt(5, book.getCategoryId());
+            psBook.setBoolean(6, book.isDigital());
+            psBook.setString(7, book.getFilePath());
+            psBook.setString(8, book.getStatus());
+            psBook.setInt(9, book.getIdBook());
+            int rowsAffected = psBook.executeUpdate();
+
+            if (rowsAffected > 0) {
+                // Cập nhật BookDetails
+                PreparedStatement psDetail = conn.prepareStatement(updateDetailSQL);
+                psDetail.setString(1, description);
+                psDetail.setString(2, pdfPath);
+                psDetail.setInt(3, book.getIdBook());
+                psDetail.executeUpdate();
+
+                conn.commit();
+                return true;
+            }
+            conn.rollback();
+            return false;
+        } catch (SQLException e) {
+            try {
+                conn.rollback();
+            } catch (SQLException rollbackEx) {
+                rollbackEx.printStackTrace();
+            }
+            throw new RuntimeException("Error updating book: " + e.getMessage(), e);
+        } finally {
+            try {
+                conn.setAutoCommit(true);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     // Thêm sách mới
     public boolean addBook(Books book, String Description, String PdfPath) {
         String insertBookQuery = "INSERT INTO Books (Title, Author, ISBN, Publisher, YearPublished, CategoryID, CopiesAvailable, IsDigital, FilePath, Status) " +

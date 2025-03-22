@@ -25,7 +25,7 @@ public class HomePage extends HttpServlet {
 
     private void forwardToHomePage(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         // Check if the session contains a logged-in member
-        Members loggedInMember = (Members) request.getSession().getAttribute("users");
+        Members loggedInMember = (Members) request.getSession().getAttribute("members");
 
         if (loggedInMember != null) {
             // If logged in as member, forward to member homepage

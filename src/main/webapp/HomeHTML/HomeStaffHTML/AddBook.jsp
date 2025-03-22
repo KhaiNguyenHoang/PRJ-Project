@@ -1,6 +1,9 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="model.Account" %>
 <%@ page import="java.text.SimpleDateFormat" %>
+<%@ page import="java.util.List" %>
+<%@ page import="dao.CategoryDAO" %>
+<%@ page import="model.BookCategories" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,7 +21,6 @@
     <!-- Animate.css -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
     <style>
-        /* Giữ nguyên style từ trước, chỉ thêm phần cho PDF upload */
         * {
             margin: 0;
             padding: 0;
@@ -162,14 +164,17 @@
             padding: 30px;
             max-width: 700px;
             margin: 0 auto;
+            transition: all 0.3s ease;
         }
 
         .dark-mode .form-container {
             background: #343a40;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
         }
 
         .custom-theme .form-container {
             background: #fff3e0;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
         }
 
         .form-container h2 {
@@ -177,16 +182,34 @@
             font-weight: 700;
             margin-bottom: 30px;
             text-align: center;
+            color: #007bff;
+        }
+
+        .dark-mode .form-container h2 {
+            color: #00a8ff;
+        }
+
+        .custom-theme .form-container h2 {
+            color: #ff7e5f;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         .form-group label {
             font-weight: 600;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             display: block;
+            color: #495057;
+        }
+
+        .dark-mode .form-group label {
+            color: #e9ecef;
+        }
+
+        .custom-theme .form-group label {
+            color: #4a2c2a;
         }
 
         .form-group input, .form-group textarea, .form-group select {
@@ -195,6 +218,13 @@
             border: 1px solid #ced4da;
             border-radius: 8px;
             font-size: 1rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+            outline: none;
         }
 
         .dark-mode .form-group input, .dark-mode .form-group textarea, .dark-mode .form-group select {
@@ -203,9 +233,20 @@
             color: #e9ecef;
         }
 
+        .dark-mode .form-group input:focus, .dark-mode .form-group textarea:focus, .dark-mode .form-group select:focus {
+            border-color: #00a8ff;
+            box-shadow: 0 0 5px rgba(0, 168, 255, 0.5);
+        }
+
         .custom-theme .form-group input, .custom-theme .form-group textarea, .custom-theme .form-group select {
             background: #fef9e7;
             border-color: #fcb69f;
+            color: #4a2c2a;
+        }
+
+        .custom-theme .form-group input:focus, .custom-theme .form-group textarea:focus, .custom-theme .form-group select:focus {
+            border-color: #ff7e5f;
+            box-shadow: 0 0 5px rgba(255, 126, 95, 0.5);
         }
 
         .btn-submit {
@@ -218,15 +259,37 @@
             font-weight: 500;
             cursor: pointer;
             transition: all 0.3s ease;
+            display: block;
+            width: 100%;
         }
 
         .btn-submit:hover {
-            transform: scale(1.03);
-            filter: brightness(1.15);
+            background: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+        }
+
+        .dark-mode .btn-submit {
+            background: #00a8ff;
+        }
+
+        .dark-mode .btn-submit:hover {
+            background: #007bbb;
+            box-shadow: 0 4px 10px rgba(0, 168, 255, 0.3);
+        }
+
+        .custom-theme .btn-submit {
+            background: #ff7e5f;
+        }
+
+        .custom-theme .btn-submit:hover {
+            background: #e66a4e;
+            box-shadow: 0 4px 10px rgba(255, 126, 95, 0.3);
         }
 
         #pdfUpload {
             display: none;
+            margin-top: 15px;
         }
 
         @media (max-width: 768px) {
@@ -326,63 +389,83 @@
 <!-- Main Content -->
 <div class="main-content" id="mainContent">
     <div class="container-fluid">
-        <div class="form-container">
+        <div class="form-container animate__animated animate__fadeIn">
             <h2>Add New Book</h2>
-            <form action="AddBook" method="POST" enctype="multipart/form-data">
+            <form action="AddBook" method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
                 <div class="form-group">
                     <label for="title">Title</label>
-                    <input type="text" id="title" name="title" placeholder="Enter book title" required>
+                    <input type="text" class="form-control" id="title" name="title" placeholder="Enter book title">
                 </div>
                 <div class="form-group">
                     <label for="author">Author</label>
-                    <input type="text" id="author" name="author" placeholder="Enter author name" required>
+                    <input type="text" class="form-control" id="author" name="author" placeholder="Enter author name">
                 </div>
                 <div class="form-group">
                     <label for="isbn">ISBN</label>
-                    <input type="text" id="isbn" name="isbn" placeholder="Enter ISBN" required>
+                    <input type="text" class="form-control" id="isbn" name="isbn" placeholder="Enter ISBN">
                 </div>
                 <div class="form-group">
                     <label for="publisher">Publisher</label>
-                    <input type="text" id="publisher" name="publisher" placeholder="Enter publisher" required>
+                    <input type="text" class="form-control" id="publisher" name="publisher"
+                           placeholder="Enter publisher">
                 </div>
                 <div class="form-group">
                     <label for="yearPublished">Year Published</label>
-                    <input type="number" id="yearPublished" name="yearPublished" placeholder="Enter year" min="1800"
-                           max="<%= java.time.Year.now().getValue() %>" required>
+                    <input type="number" class="form-control" id="yearPublished" name="yearPublished"
+                           placeholder="Enter year" min="1800" max="<%= java.time.Year.now().getValue() %>">
                 </div>
                 <div class="form-group">
                     <label for="categoryId">Category</label>
-                    <select id="categoryId" name="categoryId" required>
+                    <select class="form-control" id="categoryId" name="categoryId" required>
                         <option value="" disabled selected>Select a category</option>
-                        <option value="1">Fiction</option>
-                        <option value="2">Non-Fiction</option>
-                        <option value="3">Science</option>
-                        <!-- Thêm các danh mục khác nếu cần -->
+                        <%
+                            try {
+                                CategoryDAO categoryDAO = new CategoryDAO();
+                                List<BookCategories> categories = categoryDAO.getAllCategories();
+                                if (categories != null && !categories.isEmpty()) {
+                                    for (BookCategories category : categories) {
+                        %>
+                        <option value="<%= category.getIdCategory() %>"><%= category.getCategoryName() %>
+                        </option>
+                        <%
+                            }
+                        } else {
+                        %>
+                        <option value="" disabled>No categories available</option>
+                        <%
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        %>
+                        <option value="" disabled>Error loading categories</option>
+                        <%
+                            }
+                        %>
                     </select>
                 </div>
                 <div class="form-group">
                     <label for="copiesAvailable">Copies Available</label>
-                    <input type="number" id="copiesAvailable" name="copiesAvailable"
-                           placeholder="Enter number of copies" min="1" required>
+                    <input type="number" class="form-control" id="copiesAvailable" name="copiesAvailable"
+                           placeholder="Enter number of copies" min="1">
                 </div>
                 <div class="form-group">
-                    <label for="isDigital">Is Digital?</label>
-                    <select id="isDigital" name="isDigital" required>
+                    <label for="isDigital">Is Digital</label>
+                    <select class="form-control" id="isDigital" name="isDigital">
                         <option value="false">No</option>
                         <option value="true">Yes</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="imageFile">Image File</label>
-                    <input type="file" id="imageFile" name="imageFile" accept="image/*" required>
+                    <label for="imageFile">Image File (PNG only)</label>
+                    <input type="file" class="form-control" id="imageFile" name="imageFile" accept="image/png" required>
                 </div>
                 <div class="form-group" id="pdfUpload">
-                    <label for="pdfFile">PDF File (for digital books)</label>
-                    <input type="file" id="pdfFile" name="pdfFile" accept=".pdf">
+                    <label for="pdfFile">PDF File (for digital books, max 100MB)</label>
+                    <input type="file" class="form-control" id="pdfFile" name="pdfFile" accept=".pdf">
                 </div>
                 <div class="form-group">
                     <label for="description">Description</label>
-                    <textarea id="description" name="description" rows="4"
+                    <textarea class="form-control" id="description" name="description" rows="4"
                               placeholder="Enter book description"></textarea>
                 </div>
                 <button type="submit" class="btn-submit">Add Book</button>
@@ -438,16 +521,37 @@
     }
 
     // Show/Hide PDF upload based on isDigital
-    document.getElementById('isDigital').addEventListener('change', function () {
-        const pdfUpload = document.getElementById('pdfUpload');
-        if (this.value === 'true') {
-            pdfUpload.style.display = 'block';
-            document.getElementById('pdfFile').setAttribute('required', 'true');
+    const isDigitalSelect = document.getElementById('isDigital');
+    const pdfUploadDiv = document.getElementById('pdfUpload');
+    const pdfFileInput = document.getElementById('pdfFile');
+
+    function togglePdfUpload() {
+        if (isDigitalSelect.value === 'true') {
+            pdfUploadDiv.style.display = 'block';
+            pdfFileInput.setAttribute('required', 'true');
         } else {
-            pdfUpload.style.display = 'none';
-            document.getElementById('pdfFile').removeAttribute('required');
+            pdfUploadDiv.style.display = 'none';
+            pdfFileInput.removeAttribute('required');
         }
-    });
+    }
+
+    isDigitalSelect.addEventListener('change', togglePdfUpload);
+    togglePdfUpload(); // Gọi ngay khi tải trang để đồng bộ trạng thái ban đầu
+
+    // Bootstrap form validation
+    (function () {
+        'use strict';
+        const forms = document.querySelectorAll('.needs-validation');
+        Array.prototype.slice.call(forms).forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
 </script>
 </body>
 </html>
