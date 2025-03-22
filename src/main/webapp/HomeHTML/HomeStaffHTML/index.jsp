@@ -590,7 +590,7 @@
                         <i class="fas fa-history"></i> Borrowing History
                     </div>
                     <div class="card-body">
-                        <a href="BorrowingHistory.jsp" class="btn btn-info btn-custom"><i class="fas fa-eye"></i> View
+                        <a href="BorrowingHistory" class="btn btn-info btn-custom"><i class="fas fa-eye"></i> View
                             Borrowing History</a>
                     </div>
                 </div>

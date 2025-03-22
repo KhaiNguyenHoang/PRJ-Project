@@ -274,6 +274,24 @@ public class BooksDAO extends LibraryContext {
         return booksList;
     }
 
+    public String getBookTitleByBorrowingHistoryID(int id) {
+        String query = "SELECT BorrowingHistory.IdHistory, Books.Title\n" +
+                "FROM     BookCopies INNER JOIN\n" +
+                "                  Books ON BookCopies.BookID = Books.IdBook INNER JOIN\n" +
+                "                  BorrowingHistory ON BookCopies.IdCopy = BorrowingHistory.BookCopyId WHERE BorrowingHistory.IdHistory= ?";
+        try (PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("Title");
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error retrieving book title by borrowing history ID: " + e.getMessage(), e);
+        }
+        return null;
+    }
+
     private Books mapResultSetToBooks(ResultSet rs) throws SQLException {
         Books book = new Books();
         book.setIdBook(rs.getInt("IdBook"));

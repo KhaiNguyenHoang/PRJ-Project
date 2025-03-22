@@ -371,4 +371,18 @@ public class BorrowingDAO extends LibraryContext {
         }
         return 0;
     }
+
+    public List<Borrowing> getAllBorrowingHistory() {
+        List<Borrowing> borrowingList = new ArrayList<>();
+        String query = "SELECT * FROM Borrowing";
+        try (PreparedStatement ps = conn.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                borrowingList.add(mapResultSetToBorrowing(rs));
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error retrieving borrowing history", e);
+        }
+        return borrowingList;
+    }
 }
