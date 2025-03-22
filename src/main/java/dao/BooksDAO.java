@@ -303,4 +303,18 @@ public class BooksDAO extends LibraryContext {
         }
         return 0;
     }
+
+    // Xóa sách theo IdBook
+    public boolean deleteBook(int idBook) {
+        String deleteQuery = "DELETE FROM Books WHERE IdBook = ?";
+        try (PreparedStatement ps = conn.prepareStatement(deleteQuery)) {
+            ps.setInt(1, idBook);
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0; // Trả về true nếu xóa thành công
+        } catch (SQLException e) {
+            System.out.println("SQLException in deleteBook: " + e.getMessage());
+            e.printStackTrace();
+            return false; // Trả về false nếu có lỗi (ví dụ: vi phạm khóa ngoại)
+        }
+    }
 }

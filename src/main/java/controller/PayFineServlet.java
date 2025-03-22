@@ -1,4 +1,4 @@
-package controll;
+package controller;
 
 import dao.FinesDAO;
 import jakarta.servlet.ServletException;
@@ -31,7 +31,7 @@ public class PayFineServlet extends HttpServlet {
         FinesDAO finesDAO = new FinesDAO();
 
         // Try to pay the fine
-        boolean isSuccess = finesDAO.updateFineStatus(fineId, "Paid", (java.sql.Date) paidDate);
+        boolean isSuccess = finesDAO.updateFineStatus(fineId, "Paid", paidDate);
 
         if (isSuccess) {
             response.sendRedirect("Borrowing.jsp?message=Fine paid successfully!");

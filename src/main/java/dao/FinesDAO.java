@@ -190,7 +190,7 @@ public class FinesDAO extends LibraryContext {
 
     // Tính tổng số tiền phạt chưa thanh toán
     public double getTotalFinesAmount() throws SQLException {
-        String query = "SELECT SUM(Amount) AS total FROM Fines WHERE Status = 'Unpaid'";
+        String query = "SELECT COUNT(Amount) AS total FROM Fines WHERE Status = 'Unpaid'";
         try (PreparedStatement ps = conn.prepareStatement(query);
              ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {

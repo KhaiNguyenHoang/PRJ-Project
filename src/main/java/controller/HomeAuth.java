@@ -1,4 +1,4 @@
-package controll;
+package controller;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -7,18 +7,16 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.util.logging.Logger;
 
-@WebServlet(name = "LogoutAuth", value = "/logoutauth")
-public class LogoutAuth extends HttpServlet {
+@WebServlet(name = "controll.HomeAuth", value = "/homeAuth")
+public class HomeAuth extends HttpServlet {
 
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         try {
-            // Forward to the logout page
-            request.getRequestDispatcher("/Auth/Logout.jsp").forward(request, response);
-        } catch (Exception e) {
-            Logger.getLogger(LogoutAuth.class.getName()).log(java.util.logging.Level.SEVERE, null, e);
+            request.getRequestDispatcher("/Auth/SignIn-SignUp.jsp").forward(request, response);
+        } catch (ServletException | IOException e) {
+            e.printStackTrace();
         }
     }
 }

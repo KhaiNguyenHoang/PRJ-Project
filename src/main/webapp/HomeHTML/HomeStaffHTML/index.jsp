@@ -561,7 +561,7 @@
                             Book</a>
                         <a href="ManageBook" class="btn btn-success btn-custom"><i class="fas fa-edit"></i> Manage
                             Books</a>
-                        <a href="DeleteBook.jsp" class="btn btn-danger btn-custom"><i class="fas fa-trash-alt"></i>
+                        <a href="DeleteBook" class="btn btn-danger btn-custom"><i class="fas fa-trash-alt"></i>
                             Delete Book</a>
                     </div>
                 </div>

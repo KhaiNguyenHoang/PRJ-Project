@@ -1,4 +1,4 @@
-package controll;
+package controller;
 
 import dao.AccountDAO;
 import dao.MembersDAO;

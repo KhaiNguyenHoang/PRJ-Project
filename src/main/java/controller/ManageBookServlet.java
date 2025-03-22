@@ -1,4 +1,4 @@
-package controll;
+package controller;
 
 import dao.BooksDAO;
 import dao.CategoryDAO;
