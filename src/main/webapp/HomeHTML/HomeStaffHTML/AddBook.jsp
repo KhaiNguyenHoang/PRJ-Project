@@ -18,6 +18,7 @@
     <!-- Animate.css -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
     <style>
+        /* Giữ nguyên style từ trước, chỉ thêm phần cho PDF upload */
         * {
             margin: 0;
             padding: 0;
@@ -188,7 +189,7 @@
             display: block;
         }
 
-        .form-group input, .form-group textarea {
+        .form-group input, .form-group textarea, .form-group select {
             width: 100%;
             padding: 12px;
             border: 1px solid #ced4da;
@@ -196,13 +197,13 @@
             font-size: 1rem;
         }
 
-        .dark-mode .form-group input, .dark-mode .form-group textarea {
+        .dark-mode .form-group input, .dark-mode .form-group textarea, .dark-mode .form-group select {
             background: #495057;
             border-color: #6c757d;
             color: #e9ecef;
         }
 
-        .custom-theme .form-group input, .custom-theme .form-group textarea {
+        .custom-theme .form-group input, .custom-theme .form-group textarea, .custom-theme .form-group select {
             background: #fef9e7;
             border-color: #fcb69f;
         }
@@ -222,6 +223,10 @@
         .btn-submit:hover {
             transform: scale(1.03);
             filter: brightness(1.15);
+        }
+
+        #pdfUpload {
+            display: none;
         }
 
         @media (max-width: 768px) {
@@ -323,7 +328,7 @@
     <div class="container-fluid">
         <div class="form-container">
             <h2>Add New Book</h2>
-            <form action="AddBookServlet" method="POST">
+            <form action="AddBook" method="POST" enctype="multipart/form-data">
                 <div class="form-group">
                     <label for="title">Title</label>
                     <input type="text" id="title" name="title" placeholder="Enter book title" required>
@@ -337,8 +342,43 @@
                     <input type="text" id="isbn" name="isbn" placeholder="Enter ISBN" required>
                 </div>
                 <div class="form-group">
-                    <label for="quantity">Quantity</label>
-                    <input type="number" id="quantity" name="quantity" placeholder="Enter quantity" min="1" required>
+                    <label for="publisher">Publisher</label>
+                    <input type="text" id="publisher" name="publisher" placeholder="Enter publisher" required>
+                </div>
+                <div class="form-group">
+                    <label for="yearPublished">Year Published</label>
+                    <input type="number" id="yearPublished" name="yearPublished" placeholder="Enter year" min="1800"
+                           max="<%= java.time.Year.now().getValue() %>" required>
+                </div>
+                <div class="form-group">
+                    <label for="categoryId">Category</label>
+                    <select id="categoryId" name="categoryId" required>
+                        <option value="" disabled selected>Select a category</option>
+                        <option value="1">Fiction</option>
+                        <option value="2">Non-Fiction</option>
+                        <option value="3">Science</option>
+                        <!-- Thêm các danh mục khác nếu cần -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="copiesAvailable">Copies Available</label>
+                    <input type="number" id="copiesAvailable" name="copiesAvailable"
+                           placeholder="Enter number of copies" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="isDigital">Is Digital?</label>
+                    <select id="isDigital" name="isDigital" required>
+                        <option value="false">No</option>
+                        <option value="true">Yes</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="imageFile">Image File</label>
+                    <input type="file" id="imageFile" name="imageFile" accept="image/*" required>
+                </div>
+                <div class="form-group" id="pdfUpload">
+                    <label for="pdfFile">PDF File (for digital books)</label>
+                    <input type="file" id="pdfFile" name="pdfFile" accept=".pdf">
                 </div>
                 <div class="form-group">
                     <label for="description">Description</label>
@@ -396,6 +436,18 @@
     if (localStorage.getItem('theme')) {
         setTheme(localStorage.getItem('theme'));
     }
+
+    // Show/Hide PDF upload based on isDigital
+    document.getElementById('isDigital').addEventListener('change', function () {
+        const pdfUpload = document.getElementById('pdfUpload');
+        if (this.value === 'true') {
+            pdfUpload.style.display = 'block';
+            document.getElementById('pdfFile').setAttribute('required', 'true');
+        } else {
+            pdfUpload.style.display = 'none';
+            document.getElementById('pdfFile').removeAttribute('required');
+        }
+    });
 </script>
 </body>
 </html>
