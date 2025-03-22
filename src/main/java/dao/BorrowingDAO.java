@@ -1,11 +1,13 @@
 package dao;
 
 import model.Borrowing;
+import model.Fines;
 import utils.LibraryContext;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -17,23 +19,62 @@ public class BorrowingDAO extends LibraryContext {
     }
 
     public static void main(String[] args) {
+        BorrowingDAO borrowingDAO = new BorrowingDAO();
+        FinesDAO finesDAO = new FinesDAO();
+        BookCopiesDAO bookCopiesDAO = new BookCopiesDAO();
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+
         try {
-            // Use current date as java.util.Date
-            Date today = new Date();
-            BookCopiesDAO bookCopiesDAO = new BookCopiesDAO();
-            // Create Borrowing object with proper constructor
-            Borrowing borrowing = new Borrowing(8, 38, bookCopiesDAO.getFirstAvailableBookCopy(38).getIdCopy(), today, today, "Borrowed");
+            // Bước 1: Giả lập mượn sách
+            System.out.println("=== BƯỚC 1: MƯỢN SÁCH ===");
+            Date borrowDate = sdf.parse("01/03/2025");
+            Date dueDate = sdf.parse("10/03/2025");
+            int memberId = 11;
+            int bookId = 52;
+            int bookCopyId = bookCopiesDAO.getFirstAvailableBookCopy(bookId).getIdCopy();
 
-            // Initialize BorrowingDAO and borrow book
-            BorrowingDAO borrowingDAO = new BorrowingDAO();
-            boolean isSuccess = borrowingDAO.borrowBook(borrowing);
-
-            if (isSuccess) {
-                System.out.println("Book return successfully.");
+            Borrowing borrowing = new Borrowing(0, memberId, bookId, bookCopyId, borrowDate, dueDate, "Borrowed");
+            boolean borrowSuccess = borrowingDAO.borrowBook(borrowing);
+            if (borrowSuccess) {
+                System.out.println("Thành viên " + memberId + " đã mượn sách ID " + bookId + " thành công.");
+                System.out.println("Ngày mượn: " + sdf.format(borrowDate) + ", Ngày đến hạn: " + sdf.format(dueDate));
             } else {
-                System.out.println("Failed to return book.");
+                System.out.println("Không thể mượn sách.");
+                return;
             }
+
+            // Bước 2: Giả lập trả sách trễ
+            System.out.println("\n=== BƯỚC 2: TRẢ SÁCH TRỄ ===");
+            Date returnDate = sdf.parse("15/03/2025");
+            int borrowId = borrowingDAO.getBorrowingByMemberIdAndBookId(memberId, bookId).getIdBorrow();
+            boolean returnSuccess = borrowingDAO.returnBook(borrowId, returnDate);
+            if (returnSuccess) {
+                System.out.println("Sách đã được trả thành công vào ngày " + sdf.format(returnDate));
+                System.out.println("Trễ hạn: " + borrowingDAO.calculateDaysBetween(dueDate, returnDate) + " ngày.");
+            } else {
+                System.out.println("Không thể trả sách.");
+                return;
+            }
+
+            // Bước 3: Kiểm tra khoản nợ
+            System.out.println("\n=== BƯỚC 3: KIỂM TRA KHOẢN NỢ ===");
+            List<Fines> finesList = finesDAO.getFinesByMemberId(memberId);
+            if (finesList.isEmpty()) {
+                System.out.println("Không có khoản phạt nào cho thành viên " + memberId);
+            } else {
+                System.out.println("Danh sách khoản phạt của thành viên " + memberId + ":");
+                for (Fines fine : finesList) {
+                    System.out.println(" - ID phạt: " + fine.getIdFine() +
+                            ", BorrowID: " + fine.getBorrowId() +
+                            ", Số tiền: " + fine.getAmount() + " USD" +
+                            ", Trạng thái: " + fine.getStatus() +
+                            ", Phương thức: " + fine.getPaymentMethod() +
+                            ", Ngày tạo: " + sdf.format(fine.getCreatedAt()));
+                }
+            }
+
         } catch (Exception e) {
+            System.out.println("Lỗi trong demo: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -47,26 +88,22 @@ public class BorrowingDAO extends LibraryContext {
         try {
             conn.setAutoCommit(false);
 
-            // Kiểm tra xem có bản sao sách nào khả dụng không
             if (!bookCopiesDAO.hasAvailableCopy(borrowing.getBookId())) {
                 System.out.println("No available copies for BookID: " + borrowing.getBookId());
                 return false;
             }
 
-            // Kiểm tra xem thành viên đã mượn sách này và chưa trả hay chưa
             Borrowing existingBorrowing = getBorrowingByMemberIdAndBookId(borrowing.getMemberId(), borrowing.getBookId());
             if (existingBorrowing != null) {
                 System.out.println("Member " + borrowing.getMemberId() + " has already borrowed BookID " + borrowing.getBookId() + " and not returned it.");
                 return false;
             }
 
-            // Kiểm tra tính hợp lệ của ngày
             if (borrowing.getDueDate().before(borrowing.getBorrowDate())) {
                 System.out.println("Due date " + borrowing.getDueDate() + " is before borrow date " + borrowing.getBorrowDate());
                 return false;
             }
 
-            // Thêm bản ghi mượn mới
             String borrowQuery = "INSERT INTO Borrowing (MemberID, BookID, BookCopyId, BorrowDate, DueDate, Status) " +
                     "VALUES (?, ?, ?, ?, ?, ?)";
             ps = conn.prepareStatement(borrowQuery);
@@ -88,7 +125,6 @@ public class BorrowingDAO extends LibraryContext {
                 return false;
             }
 
-            // Cập nhật trạng thái bản sao sách
             boolean bookUpdated = bookCopiesDAO.updateBookCopyStatus(borrowing.getBookCopyId(), "Borrowed");
             if (!bookUpdated) {
                 System.out.println("Failed to update BookCopy status for BookCopyId: " + borrowing.getBookCopyId());
@@ -96,10 +132,8 @@ public class BorrowingDAO extends LibraryContext {
                 return false;
             }
 
-            // Cập nhật trạng thái sách
             booksDAO.updateBookStatusBasedOnCopies(borrowing.getBookId());
 
-            // Thêm lịch sử mượn
             boolean historyAdded = borrowingHistoryDAO.addBorrowingHistory(borrowing);
             if (!historyAdded) {
                 System.out.println("Failed to add BorrowingHistory for MemberID: " + borrowing.getMemberId());
@@ -140,6 +174,7 @@ public class BorrowingDAO extends LibraryContext {
         Borrowing borrowing = null;
         BookCopiesDAO bookCopiesDAO = new BookCopiesDAO();
         BorrowingHistoryDAO borrowingHistoryDAO = new BorrowingHistoryDAO();
+        FinesDAO finesDAO = new FinesDAO();
 
         try {
             conn.setAutoCommit(false);
@@ -153,8 +188,12 @@ public class BorrowingDAO extends LibraryContext {
 
             if (returnDate.before(borrowing.getBorrowDate())) {
                 System.out.println("Return date " + returnDate + " is before borrow date " + borrowing.getBorrowDate());
+                conn.rollback();
                 return false;
             }
+
+            // Tự động tạo khoản phạt nếu cần
+            finesDAO.createFineIfNeeded(idBorrow);
 
             String updateReturnQuery = "UPDATE Borrowing SET ReturnDate = ?, Status = 'Returned' WHERE IdBorrow = ?";
             ps = conn.prepareStatement(updateReturnQuery);
@@ -210,6 +249,11 @@ public class BorrowingDAO extends LibraryContext {
         }
     }
 
+    private long calculateDaysBetween(Date startDate, Date endDate) {
+        long diffInMillies = Math.max(endDate.getTime() - startDate.getTime(), 0);
+        return java.util.concurrent.TimeUnit.DAYS.convert(diffInMillies, java.util.concurrent.TimeUnit.MILLISECONDS);
+    }
+
     public Borrowing getBorrowingById(int idBorrow) {
         String query = "SELECT * FROM Borrowing WHERE IdBorrow = ?";
         try (PreparedStatement ps = conn.prepareStatement(query)) {
@@ -231,7 +275,7 @@ public class BorrowingDAO extends LibraryContext {
         borrowing.setMemberId(rs.getInt("MemberID"));
         borrowing.setBookId(rs.getInt("BookID"));
         borrowing.setBookCopyId(rs.getInt("BookCopyId"));
-        borrowing.setBorrowDate(rs.getDate("BorrowDate")); // java.sql.Date is a subclass of java.util.Date
+        borrowing.setBorrowDate(rs.getDate("BorrowDate"));
         borrowing.setDueDate(rs.getDate("DueDate"));
         borrowing.setReturnDate(rs.getDate("ReturnDate"));
         borrowing.setStatus(rs.getString("Status"));

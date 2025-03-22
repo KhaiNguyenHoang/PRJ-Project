@@ -17,6 +17,11 @@ public class FinesDAO extends LibraryContext {
 
     // Thêm khoản phạt mới
     public boolean addFine(int memberId, int borrowId, double amount, String paymentMethod) {
+        // Đảm bảo paymentMethod hợp lệ theo CHECK constraint
+        if (!isValidPaymentMethod(paymentMethod)) {
+            paymentMethod = "Other"; // Giá trị mặc định nếu không hợp lệ
+        }
+
         String insertFineQuery = "INSERT INTO Fines (MemberID, BorrowID, Amount, Status, PaymentMethod, CreatedAt) " +
                 "VALUES (?, ?, ?, 'Unpaid', ?, GETDATE())";
         try (PreparedStatement ps = conn.prepareStatement(insertFineQuery, Statement.RETURN_GENERATED_KEYS)) {
@@ -30,10 +35,21 @@ public class FinesDAO extends LibraryContext {
                 ResultSet rs = ps.getGeneratedKeys();
                 return rs.next();
             }
+            return false;
         } catch (SQLException e) {
+            System.out.println("SQLException in addFine: " + e.getMessage());
             e.printStackTrace();
+            return false;
         }
-        return false;
+    }
+
+    // Kiểm tra PaymentMethod hợp lệ
+    private boolean isValidPaymentMethod(String paymentMethod) {
+        return paymentMethod != null &&
+                (paymentMethod.equals("Cash") ||
+                        paymentMethod.equals("Credit Card") ||
+                        paymentMethod.equals("Online") ||
+                        paymentMethod.equals("Other"));
     }
 
     // Cập nhật trạng thái phạt
@@ -47,15 +63,16 @@ public class FinesDAO extends LibraryContext {
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0;
         } catch (SQLException e) {
+            System.out.println("SQLException in updateFineStatus: " + e.getMessage());
             e.printStackTrace();
+            return false;
         }
-        return false;
     }
 
     // Lấy tất cả khoản phạt theo MemberID
     public List<Fines> getFinesByMemberId(int memberId) {
         List<Fines> finesList = new ArrayList<>();
-        String query = "SELECT * FROM Fines WHERE MemberID = ?";
+        String query = "SELECT * FROM Fines WHERE MemberID = ? ORDER BY CreatedAt DESC";
         try (PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setInt(1, memberId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -64,6 +81,7 @@ public class FinesDAO extends LibraryContext {
                 }
             }
         } catch (SQLException e) {
+            System.out.println("SQLException in getFinesByMemberId: " + e.getMessage());
             e.printStackTrace();
         }
         return finesList;
@@ -90,23 +108,24 @@ public class FinesDAO extends LibraryContext {
 
                     double amount = 0;
                     if (daysLate > 30 && returnDate == null) {
-                        amount = 500000; // Phí cố định nếu quá 30 ngày chưa trả
+                        amount = 500; // Phí cố định 500 USD nếu quá 30 ngày chưa trả
                     } else if (daysLate > 0) {
-                        amount = daysLate * 50000; // 50,000 VND/ngày
+                        amount = daysLate * 50; // 50 USD/ngày trễ
                     }
 
                     if (amount > 0 && !isFineExists(borrowId)) {
-                        addFine(memberId, borrowId, amount, "Other");
+                        addFine(memberId, borrowId, amount, "Other"); // Sử dụng 'Other' làm mặc định
                     }
                 }
             }
         } catch (SQLException e) {
+            System.out.println("SQLException in createFineIfNeeded: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
     // Kiểm tra xem khoản phạt đã tồn tại chưa
-    private boolean isFineExists(int borrowId) {
+    public boolean isFineExists(int borrowId) {
         String query = "SELECT COUNT(*) FROM Fines WHERE BorrowID = ?";
         try (PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setInt(1, borrowId);
@@ -116,13 +135,15 @@ public class FinesDAO extends LibraryContext {
                 }
             }
         } catch (SQLException e) {
+            System.out.println("SQLException in isFineExists: " + e.getMessage());
             e.printStackTrace();
         }
         return false;
     }
 
+    // Tính tổng số tiền phạt chưa thanh toán
     public double getTotalFinesAmount() throws SQLException {
-        String query = "SELECT SUM(Amount) AS total FROM Fines WHERE Status = 'Unpaid'";
+        String query = "SELECT COUNT(*) AS total FROM Fines WHERE Status = 'Unpaid'";
         try (PreparedStatement ps = conn.prepareStatement(query);
              ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {

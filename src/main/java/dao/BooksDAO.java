@@ -294,7 +294,7 @@ public class BooksDAO extends LibraryContext {
     }
 
     public int getTotalBooks() throws SQLException {
-        String query = "SELECT COUNT(*) AS total FROM Books WHERE DeletedAt IS NULL";
+        String query = "SELECT COUNT(*) AS total FROM Books";
         try (PreparedStatement ps = conn.prepareStatement(query);
              ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {

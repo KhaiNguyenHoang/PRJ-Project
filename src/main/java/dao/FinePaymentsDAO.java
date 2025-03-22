@@ -17,6 +17,11 @@ public class FinePaymentsDAO extends LibraryContext {
 
     // Thêm thanh toán phạt
     public boolean addFinePayment(int fineId, double amountPaid, String paymentMethod) {
+        // Đảm bảo paymentMethod hợp lệ theo CHECK constraint
+        if (!isValidPaymentMethod(paymentMethod)) {
+            paymentMethod = "Other"; // Giá trị mặc định nếu không hợp lệ
+        }
+
         String insertPaymentQuery = "INSERT INTO FinePayments (FineID, AmountPaid, PaymentDate, PaymentMethod) " +
                 "VALUES (?, ?, GETDATE(), ?)";
         try (PreparedStatement ps = conn.prepareStatement(insertPaymentQuery)) {
@@ -27,9 +32,19 @@ public class FinePaymentsDAO extends LibraryContext {
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0;
         } catch (SQLException e) {
+            System.out.println("SQLException in addFinePayment: " + e.getMessage());
             e.printStackTrace();
+            return false;
         }
-        return false;
+    }
+
+    // Kiểm tra PaymentMethod hợp lệ
+    private boolean isValidPaymentMethod(String paymentMethod) {
+        return paymentMethod != null &&
+                (paymentMethod.equals("Cash") ||
+                        paymentMethod.equals("Credit Card") ||
+                        paymentMethod.equals("Online") ||
+                        paymentMethod.equals("Other"));
     }
 
     // Lấy tất cả thanh toán theo FineID
@@ -44,6 +59,7 @@ public class FinePaymentsDAO extends LibraryContext {
                 }
             }
         } catch (SQLException e) {
+            System.out.println("SQLException in getFinePaymentsByFineId: " + e.getMessage());
             e.printStackTrace();
         }
         return finePaymentsList;
