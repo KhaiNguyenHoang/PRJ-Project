@@ -374,9 +374,6 @@
                     <% if (borrowingList != null && !borrowingList.isEmpty()) { %>
                     <% for (BorrowingHistory borrowing : borrowingList) { %>
                     <tr>
-                        <%
-
-                        %>
                         <td><%= request.getAttribute("memberName_" + borrowing.getIdHistory()) != null ? request.getAttribute("memberName_" + borrowing.getIdHistory()) : "Unknown" %>
                         </td>
                         <td><%= borrowing.getBookTitle() != null ? borrowing.getBookTitle() : "Unknown" %>
