@@ -85,9 +85,9 @@ public class AddBookServlet extends HttpServlet {
 
             int yearPublished;
             try {
-                yearPublished = yearPublishedStr != null ? Integer.parseInt(yearPublishedStr) : 2023;
+                yearPublished = yearPublishedStr != null ? Integer.parseInt(yearPublishedStr) : 2025;
             } catch (NumberFormatException e) {
-                yearPublished = 2023; // Giá trị mặc định
+                yearPublished = 2025; // Giá trị mặc định
             }
             book.setYearPublished(yearPublished);
 
