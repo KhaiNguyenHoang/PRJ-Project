@@ -9,6 +9,13 @@ public class BookDetail {
     public BookDetail() {
     }
 
+    public BookDetail(int idBooksDetail, int bookID, String description, String pdfPath) {
+        this.idBooksDetail = idBooksDetail;
+        this.bookID = bookID;
+        this.description = description;
+        this.pdfPath = pdfPath;
+    }
+
     public BookDetail(int bookID, String description, String pdfPath) {
         this.bookID = bookID;
         this.description = description;

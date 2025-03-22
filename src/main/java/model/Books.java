@@ -17,6 +17,7 @@ public class Books {
     private Date createdAt;
     private Date updatedAt;
     private Date deletedAt;
+    private BookDetail bookDetail;
 
     // Constructors
     public Books() {
@@ -51,6 +52,14 @@ public class Books {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.deletedAt = deletedAt;
+    }
+
+    public BookDetail getBookDetail() {
+        return bookDetail;
+    }
+
+    public void setBookDetail(BookDetail bookDetail) {
+        this.bookDetail = bookDetail;
     }
 
     // Getters and Setters

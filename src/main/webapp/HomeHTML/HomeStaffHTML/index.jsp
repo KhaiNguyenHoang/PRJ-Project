@@ -559,7 +559,7 @@
                     <div class="card-body">
                         <a href="AddBook" class="btn btn-primary btn-custom"><i class="fas fa-plus"></i> Add New
                             Book</a>
-                        <a href="ManageBooks.jsp" class="btn btn-success btn-custom"><i class="fas fa-edit"></i> Manage
+                        <a href="ManageBook" class="btn btn-success btn-custom"><i class="fas fa-edit"></i> Manage
                             Books</a>
                         <a href="DeleteBook.jsp" class="btn btn-danger btn-custom"><i class="fas fa-trash-alt"></i>
                             Delete Book</a>
