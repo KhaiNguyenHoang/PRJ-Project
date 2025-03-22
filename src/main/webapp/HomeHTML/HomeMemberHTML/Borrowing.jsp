@@ -2,12 +2,13 @@
 <%@ page session="true" %>
 <%@ page import="model.Books, model.BorrowingHistory, model.Borrowing, java.util.List, java.text.SimpleDateFormat" %>
 <%@ page import="dao.BorrowingDAO" %>
+<%@ page import="dao.BooksDAO" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý mượn sách</title>
+    <title>Book Borrowing Management</title>
     <!-- Owl Carousel -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css"
           rel="stylesheet"/>
@@ -146,11 +147,12 @@
 
 <!-- Main content -->
 <div class="container mt-5">
-    <h1 class="text-center mb-4"><i class="fas fa-book-reader me-2"></i>Quản lý mượn sách</h1>
+    <h1 class="text-center mb-4"><i class="fas fa-book-reader me-2"></i>Book Borrowing Management</h1>
 
     <!-- Messages -->
     <% String message = (String) request.getAttribute("message"); %>
     <% String errorMessage = (String) request.getAttribute("errorMessage"); %>
+    <% String infoMessage = (String) request.getAttribute("infoMessage"); %>
     <% if (message != null) { %>
     <div class="alert alert-success"><i class="fas fa-check-circle me-2"></i><%= message %>
     </div>
@@ -159,22 +161,26 @@
     <div class="alert alert-danger"><i class="fas fa-exclamation-triangle me-2"></i><%= errorMessage %>
     </div>
     <% } %>
+    <% if (infoMessage != null) { %>
+    <div class="alert alert-info"><i class="fas fa-info-circle me-2"></i><%= infoMessage %>
+    </div>
+    <% } %>
 
     <!-- Borrowing Form -->
     <% Books selectedBook = (Books) request.getAttribute("selectedBook"); %>
     <% if (selectedBook != null) { %>
     <div class="card">
         <div class="card-header">
-            <i class="fas fa-book me-2"></i>Mượn sách: <%= selectedBook.getTitle() %>
+            <i class="fas fa-book me-2"></i>Borrow Book: <%= selectedBook.getTitle() %>
         </div>
         <div class="card-body">
             <form action="Borrowing" method="post" id="borrowForm">
                 <input type="hidden" name="bookId" value="<%= selectedBook.getIdBook() %>">
                 <div class="mb-3">
-                    <label for="dueDate" class="form-label"><i class="fas fa-calendar-alt me-2"></i>Ngày đến hạn</label>
+                    <label for="dueDate" class="form-label"><i class="fas fa-calendar-alt me-2"></i>Due Date</label>
                     <input type="date" id="dueDate" name="dueDate" class="form-control" required>
                 </div>
-                <button type="submit" class="btn btn-primary"><i class="fas fa-plus me-2"></i>Mượn sách</button>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-plus me-2"></i>Borrow Book</button>
             </form>
         </div>
     </div>
@@ -183,24 +189,24 @@
     <!-- Search Form -->
     <div class="card mt-4">
         <div class="card-header">
-            <i class="fas fa-search me-2"></i>Tìm kiếm sách
+            <i class="fas fa-search me-2"></i>Search Books
         </div>
         <div class="card-body">
             <form action="Borrowing" method="get" class="search-form">
-                <input type="text" name="keyword" placeholder="Nhập từ khóa..."
+                <input type="text" name="keyword" placeholder="Enter keyword..."
                        value="<%= request.getParameter("keyword") != null ? request.getParameter("keyword") : "" %>"
                        required>
-                <button type="submit"><i class="fas fa-search me-2"></i>Tìm kiếm</button>
+                <button type="submit"><i class="fas fa-search me-2"></i>Search</button>
             </form>
             <% List<Books> booksList = (List<Books>) request.getAttribute("booksList"); %>
             <% if (booksList != null && !booksList.isEmpty()) { %>
-            <h5>Kết quả tìm kiếm:</h5>
+            <h5>Search Results:</h5>
             <div class="list-group">
                 <% for (Books book : booksList) { %>
                 <div class="book-item list-group-item">
                     <span><%= book.getTitle() %> - <%= book.getAuthor() %></span>
                     <a href="Borrowing?id=<%= book.getIdBook() %>" class="btn btn-primary"><i
-                            class="fas fa-book me-2"></i>Mượn</a>
+                            class="fas fa-book me-2"></i>Borrow</a>
                 </div>
                 <% } %>
             </div>
@@ -210,48 +216,53 @@
 
     <!-- Borrowing History -->
     <% List<BorrowingHistory> borrowingHistoryList = (List<BorrowingHistory>) request.getAttribute("borrowingHistoryList"); %>
-    <% if (borrowingHistoryList != null && !borrowingHistoryList.isEmpty()) { %>
+    <% if (borrowingHistoryList != null) { %>
     <div class="card mt-4">
         <div class="card-header">
-            <i class="fas fa-history me-2"></i>Lịch sử mượn sách
+            <i class="fas fa-history me-2"></i>Borrowing History
         </div>
         <div class="card-body">
+            <% if (!borrowingHistoryList.isEmpty()) { %>
             <table class="table table-striped">
                 <thead>
                 <tr>
-                    <th>Tiêu đề</th>
-                    <th>Ngày mượn</th>
-                    <th>Ngày trả</th>
-                    <th>Hành động</th>
+                    <th>Title</th>
+                    <th>Borrow Date</th>
+                    <th>Return Date</th>
+                    <th>Action</th>
                 </tr>
                 </thead>
                 <tbody>
-                <% BorrowingDAO borrowingDAO = new BorrowingDAO(); %>
+                <%
+                    BorrowingDAO borrowingDAO = new BorrowingDAO();
+                    BooksDAO booksDAO = new BooksDAO();
+                %>
                 <% SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm"); %>
                 <% for (BorrowingHistory history : borrowingHistoryList) { %>
-                <% Borrowing borrowing = borrowingDAO.getBorrowingByMemberIdAndBookCopyId(history.getMemberId(), history.getBookCopyId()); %>
+                <% Borrowing borrowing = history.getReturnDate() == null ? borrowingDAO.getBorrowingByMemberIdAndBookCopyId(history.getMemberId(), history.getBookCopyId()) : null; %>
                 <tr>
-                    <td><%= history.getBookTitle() %>
+                    <td><%= history.getBookTitle() != null ? history.getBookTitle() : "Unknown Title" %>
                     </td>
                     <td><%= dateFormat.format(history.getBorrowDate()) %>
                     </td>
-                    <td><%= history.getReturnDate() != null ? dateFormat.format(history.getReturnDate()) : "Chưa trả" %>
+                    <td><%= history.getReturnDate() != null ? dateFormat.format(history.getReturnDate()) : "Not Returned" %>
                     </td>
                     <td>
                         <% if (history.getReturnDate() == null && borrowing != null) { %>
                         <form action="Returning" method="post" style="display:inline;">
                             <input type="hidden" name="borrowId" value="<%= borrowing.getIdBorrow() %>">
-                            <button type="submit" class="btn btn-success"><i class="fas fa-undo me-2"></i>Trả sách
+                            <button type="submit" class="btn btn-success"><i class="fas fa-undo me-2"></i>Return Book
                             </button>
                         </form>
                         <% } else { %>
-                        <button class="btn btn-secondary" disabled><i class="fas fa-undo me-2"></i>Đã trả</button>
+                        <button class="btn btn-secondary" disabled><i class="fas fa-undo me-2"></i>Returned</button>
                         <% } %>
                     </td>
                 </tr>
                 <% } %>
                 </tbody>
             </table>
+            <% } %>
         </div>
     </div>
     <% } %>
@@ -271,7 +282,7 @@
         today.setHours(0, 0, 0, 0);
         if (dueDate < today) {
             e.preventDefault();
-            alert('Ngày đến hạn không thể trước ngày hiện tại!');
+            alert('Due date cannot be earlier than today!');
         }
     });
 </script>

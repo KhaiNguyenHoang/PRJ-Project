@@ -30,6 +30,10 @@ public class ReturningServlet extends HttpServlet {
         if (currentMember == null) {
             LOGGER.log(Level.WARNING, "No member found in session, redirecting to login");
             response.sendRedirect("/Auth/SignIn-SignUp.jsp");
+        } else if (!"active".equalsIgnoreCase(currentMember.getStatus())) {
+            LOGGER.log(Level.WARNING, "Member {0} is not active, redirecting to login", currentMember.getIdMember());
+            request.getSession().invalidate();
+            response.sendRedirect("/Auth/SignIn-SignUp.jsp");
         }
         return currentMember;
     }
@@ -40,7 +44,7 @@ public class ReturningServlet extends HttpServlet {
         if (currentMember == null) return;
 
         try {
-            // Extract borrowId from the form (sửa từ historyId sang borrowId cho phù hợp)
+            // Extract borrowId from the form
             String borrowIdStr = request.getParameter("borrowId");
             if (borrowIdStr == null || borrowIdStr.trim().isEmpty()) {
                 request.setAttribute("errorMessage", "Invalid borrowing record ID.");
@@ -66,7 +70,7 @@ public class ReturningServlet extends HttpServlet {
             } else if (borrowing.getReturnDate() != null) {
                 request.setAttribute("errorMessage", "This book has already been returned.");
                 LOGGER.log(Level.WARNING, "Book already returned for borrowId: {0}", borrowId);
-            } else if (!borrowing.getStatus().equals("Borrowed")) {
+            } else if (!"Borrowed".equalsIgnoreCase(borrowing.getStatus())) {
                 request.setAttribute("errorMessage", "This book is not currently borrowed.");
                 LOGGER.log(Level.WARNING, "Book not in Borrowed state for borrowId: {0}", borrowId);
             } else {
@@ -75,8 +79,10 @@ public class ReturningServlet extends HttpServlet {
                     request.setAttribute("message", "Book returned successfully!");
                     LOGGER.log(Level.INFO, "Book returned successfully for borrowId: {0} by member: {1}",
                             new Object[]{borrowId, currentMember.getIdMember()});
+                    BorrowingHistoryDAO historyDAO = new BorrowingHistoryDAO();
+                    historyDAO.deleteBorrowingHistory();
                 } else {
-                    request.setAttribute("errorMessage", "Failed to return the book. Please try again.");
+                    request.setAttribute("errorMessage", "Failed to return the book. Please try again or contact support.");
                     LOGGER.log(Level.SEVERE, "Failed to return book for borrowId: {0}", borrowId);
                 }
             }
@@ -89,7 +95,7 @@ public class ReturningServlet extends HttpServlet {
             LOGGER.log(Level.WARNING, "Invalid borrowId format: {0}", request.getParameter("borrowId"));
             refreshBorrowingHistory(request, currentMember);
         } catch (Exception e) {
-            request.setAttribute("errorMessage", "An unexpected error occurred while processing the return.");
+            request.setAttribute("errorMessage", "An unexpected error occurred while processing the return: " + e.getMessage());
             LOGGER.log(Level.SEVERE, "Unexpected error while returning book", e);
             refreshBorrowingHistory(request, currentMember);
         }
@@ -110,8 +116,11 @@ public class ReturningServlet extends HttpServlet {
             BorrowingHistoryDAO historyDAO = new BorrowingHistoryDAO();
             List<BorrowingHistory> borrowingHistoryList = historyDAO.getBorrowingHistoryByMemberId(currentMember.getIdMember());
             request.setAttribute("borrowingHistoryList", borrowingHistoryList);
+            if (borrowingHistoryList.isEmpty()) {
+                request.setAttribute("infoMessage", "You have no borrowing history yet.");
+            }
         } catch (SQLException e) {
-            request.setAttribute("errorMessage", "Failed to refresh borrowing history: " + e.getMessage());
+            request.setAttribute("errorMessage", "Failed to load borrowing history: " + e.getMessage());
             LOGGER.log(Level.SEVERE, "Error refreshing borrowing history for member: {0}", currentMember.getIdMember());
         }
     }
