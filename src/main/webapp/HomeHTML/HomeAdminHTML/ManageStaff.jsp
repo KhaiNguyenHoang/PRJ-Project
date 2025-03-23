@@ -300,7 +300,6 @@
                         <strong>Created:</strong> <%= account.getCreatedAt() != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format(account.getCreatedAt()) : "N/A" %>
                     </p>
                 </li>
-                <li><a class="dropdown-item" href="#">Settings</a></li>
                 <li><a class="dropdown-item" href="#" id="toggleLightMode">Light Mode</a></li>
                 <li><a class="dropdown-item" href="#" id="toggleDarkMode">Dark Mode</a></li>
                 <li><a class="dropdown-item" href="#" id="toggleCustomTheme">Custom Theme</a></li>

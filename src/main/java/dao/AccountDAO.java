@@ -29,7 +29,7 @@ public class AccountDAO extends LibraryContext {
 
     public boolean deleteAccountById(int id) {
         String sql = "DELETE FROM Account WHERE IdAccount = ?";
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try ( PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, id);
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
@@ -42,7 +42,7 @@ public class AccountDAO extends LibraryContext {
     public boolean forgetPassword(String email, String newPassword) {
         String passwordHash = hashPassword(newPassword);
         String query = "UPDATE Account SET PasswordHash = ? WHERE Emails = ?";
-        try (PreparedStatement statement = conn.prepareStatement(query)) {
+        try ( PreparedStatement statement = conn.prepareStatement(query)) {
             statement.setString(1, passwordHash);
             statement.setString(2, email);
             statement.executeUpdate();
@@ -52,10 +52,11 @@ public class AccountDAO extends LibraryContext {
             return false;
         }
     }
+
     public List<Account> getAllAccounts() {
         List<Account> accounts = new ArrayList<>();
         String query = "SELECT * " + "FROM Account";
-        try (PreparedStatement statement = conn.prepareStatement(query)) {
+        try ( PreparedStatement statement = conn.prepareStatement(query)) {
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
                 Account account = new Account(
@@ -104,9 +105,9 @@ public class AccountDAO extends LibraryContext {
             return false;
         }
         String passwordHash = hashPassword(password);
-        String query = "INSERT INTO Account (FullName, Emails, Username, PasswordHash, Role_ID, CreatedAt, UpdatedAt) " +
-                "VALUES (?, ?, ?, ?, ?, GETDATE(), GETDATE())";
-        try (PreparedStatement statement = conn.prepareStatement(query)) {
+        String query = "INSERT INTO Account (FullName, Emails, Username, PasswordHash, Role_ID, CreatedAt, UpdatedAt) "
+                + "VALUES (?, ?, ?, ?, ?, GETDATE(), GETDATE())";
+        try ( PreparedStatement statement = conn.prepareStatement(query)) {
             statement.setString(1, fullName);
             statement.setString(2, emails);
             statement.setString(3, username);
@@ -128,7 +129,7 @@ public class AccountDAO extends LibraryContext {
         }
         String passwordHash = hashPassword(password);
         String query = "SELECT * " + "FROM Account WHERE Emails = ? AND PasswordHash = ?";
-        try (PreparedStatement statement = conn.prepareStatement(query)) {
+        try ( PreparedStatement statement = conn.prepareStatement(query)) {
             // Set email and password parameters for the query
             statement.setString(1, emails);
             statement.setString(2, passwordHash);
@@ -156,7 +157,7 @@ public class AccountDAO extends LibraryContext {
     // Check if username exists
     public boolean checkUsernameExists(String username) {
         String query = "SELECT COUNT(*) FROM Account WHERE Username = ?";
-        try (PreparedStatement statement = conn.prepareStatement(query)) {
+        try ( PreparedStatement statement = conn.prepareStatement(query)) {
             statement.setString(1, username);
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
@@ -171,7 +172,7 @@ public class AccountDAO extends LibraryContext {
     // Check if email exists
     public boolean checkEmailExists(String email) {
         String query = "SELECT COUNT(*) FROM Account WHERE Emails = ?";
-        try (PreparedStatement statement = conn.prepareStatement(query)) {
+        try ( PreparedStatement statement = conn.prepareStatement(query)) {
             statement.setString(1, email);
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
@@ -186,7 +187,7 @@ public class AccountDAO extends LibraryContext {
     // Delete account
     public void deleteAccount(int accountId) {
         String query = "DELETE FROM Account WHERE IdAccount = ?";
-        try (PreparedStatement statement = conn.prepareStatement(query)) {
+        try ( PreparedStatement statement = conn.prepareStatement(query)) {
             statement.setInt(1, accountId);
             statement.executeUpdate();
         } catch (SQLException e) {
@@ -194,17 +195,38 @@ public class AccountDAO extends LibraryContext {
         }
     }
 
-    // Update account information
+// Update account information
     public boolean updateAccountByEmail(String email, String fullName, String username, String password) {
-        String passwordHash = hashPassword(password);
+        String passwordHash = "";
+
+        // If password is empty or null, fetch the existing hash
+        if (password == null || password.trim().isEmpty()) {
+            String sql = "SELECT PasswordHash FROM Account WHERE Emails = ?";
+            try ( PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setString(1, email);
+                try ( ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        passwordHash = rs.getString("PasswordHash");
+                    } else {
+                        return false; // Email not found
+                    }
+                }
+            } catch (SQLException e) {
+            }
+        } else {
+            // If password is provided, hash it
+            passwordHash = hashPassword(password);
+        }
+
+        // Update the account with the determined password hash
         String query = "UPDATE Account SET FullName = ?, Username = ?, PasswordHash = ? WHERE Emails = ?";
-        try (PreparedStatement statement = conn.prepareStatement(query)) {
+        try ( PreparedStatement statement = conn.prepareStatement(query)) {
             statement.setString(1, fullName);
             statement.setString(2, username);
             statement.setString(3, passwordHash);
             statement.setString(4, email);
-            statement.executeUpdate();
-            return true;
+            int rowsAffected = statement.executeUpdate();
+            return rowsAffected > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
@@ -215,8 +237,7 @@ public class AccountDAO extends LibraryContext {
     public List<Account> getAccounts() {
         List<Account> accounts = new ArrayList<>();
         String query = "SELECT IdAccount, FullName, Emails, Username, PasswordHash, Role_ID, CreatedAt, UpdatedAt FROM Account";
-        try (PreparedStatement statement = conn.prepareStatement(query);
-             ResultSet resultSet = statement.executeQuery()) {
+        try ( PreparedStatement statement = conn.prepareStatement(query);  ResultSet resultSet = statement.executeQuery()) {
             while (resultSet.next()) {
                 accounts.add(new Account(
                         resultSet.getInt(ID_ACCOUNT),
@@ -239,7 +260,7 @@ public class AccountDAO extends LibraryContext {
     // Get account by ID
     public Account getAccountById(int accountId) {
         String query = "SELECT * " + "FROM Account WHERE IdAccount = ?";
-        try (PreparedStatement statement = conn.prepareStatement(query)) {
+        try ( PreparedStatement statement = conn.prepareStatement(query)) {
             statement.setInt(1, accountId);
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
@@ -264,7 +285,7 @@ public class AccountDAO extends LibraryContext {
     // Get account by Username
     public Account getAccountByUsername(String username) {
         String query = "SELECT * " + "FROM Account WHERE Username = ?";
-        try (PreparedStatement statement = conn.prepareStatement(query)) {
+        try ( PreparedStatement statement = conn.prepareStatement(query)) {
             statement.setString(1, username);
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {

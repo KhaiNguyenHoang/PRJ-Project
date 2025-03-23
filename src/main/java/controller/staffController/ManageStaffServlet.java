@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 @WebServlet(name = "ManageStaffServlet", value = "/ManageStaff")
 public class ManageStaffServlet extends HttpServlet {
+
     private static final Logger LOGGER = Logger.getLogger(ManageStaffServlet.class.getName());
     private AccountDAO accountDAO;
 
@@ -84,8 +85,9 @@ public class ManageStaffServlet extends HttpServlet {
             String username = request.getParameter("username");
             String password = request.getParameter("password");
 
-            if (email == null || email.trim().isEmpty() || fullName == null || fullName.trim().isEmpty() ||
-                    username == null || username.trim().isEmpty()) {
+            // Validate required fields
+            if (email == null || email.trim().isEmpty() || fullName == null || fullName.trim().isEmpty()
+                    || username == null || username.trim().isEmpty()) {
                 LOGGER.warning("Invalid input data for updating staff with email: " + email);
                 request.setAttribute("error", "All fields except password are required.");
                 doGet(request, response);
@@ -94,23 +96,16 @@ public class ManageStaffServlet extends HttpServlet {
 
             try {
                 int id = Integer.parseInt(idStr);
-                Account existingStaff = accountDAO.getAllAccounts().stream()
-                        .filter(acc -> acc.getIdAccount() == id && acc.getRoleId() == 2)
-                        .findFirst()
-                        .orElse(null);
+                Account existingStaff = accountDAO.getAccountById(id); // More efficient than filtering all accounts
 
-                if (existingStaff == null) {
+                if (existingStaff == null || existingStaff.getRoleId() != 2) {
                     LOGGER.warning("Staff not found with ID: " + id);
-                    request.setAttribute("error", "Staff with ID " + id + " not found.");
+                    request.setAttribute("error", "Staff with ID " + id + " not found or not a staff member.");
                     doGet(request, response);
                     return;
                 }
 
-                // Nếu password để trống thì giữ nguyên password cũ
-                if (password == null || password.trim().isEmpty()) {
-                    password = existingStaff.getPasswordHash();
-                }
-
+                // Update the account (password can be empty)
                 boolean success = accountDAO.updateAccountByEmail(email, fullName, username, password);
                 if (success) {
                     LOGGER.info("Staff updated successfully with ID: " + id);
@@ -122,12 +117,14 @@ public class ManageStaffServlet extends HttpServlet {
                     request.setAttribute("staff", existingStaff);
                     request.getRequestDispatcher("HomeHTML/HomeAdminHTML/EditStaff.jsp").forward(request, response);
                 }
+            } catch (NumberFormatException e) {
+                LOGGER.log(Level.WARNING, "Invalid staff ID: " + idStr, e);
+                request.setAttribute("error", "Invalid staff ID.");
+                doGet(request, response);
             } catch (Exception e) {
                 LOGGER.log(Level.SEVERE, "Error updating staff: " + e.getMessage(), e);
                 request.setAttribute("error", "An error occurred while updating staff.");
-                request.setAttribute("staff", accountDAO.getAllAccounts().stream()
-                        .filter(acc -> acc.getIdAccount() == Integer.parseInt(idStr))
-                        .findFirst().orElse(null));
+                request.setAttribute("staff", accountDAO.getAccountById(Integer.parseInt(idStr)));
                 request.getRequestDispatcher("HomeHTML/HomeAdminHTML/EditStaff.jsp").forward(request, response);
             }
         } else {
