@@ -465,7 +465,7 @@
 <%
     Account account = (Account) session.getAttribute("account");
     if (account == null || account.getRoleId() != 1) { // Chỉ Admin (Role_ID = 1) được thêm staff
-        response.sendRedirect("Auth/SignIn-SignUp.jsp");
+        response.sendRedirect("HomePage");
         return;
     }
 %>
@@ -477,11 +477,11 @@
     </div>
     <ul class="nav flex-column">
         <li class="nav-item">
-            <a class="nav-link" href="AdminDashboard.jsp#dashboard-overview"><i class="fas fa-tachometer-alt"></i>
+            <a class="nav-link" href="HomePage#dashboard-overview"><i class="fas fa-tachometer-alt"></i>
                 <span>Overview</span></a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="AdminDashboard.jsp#book-management"><i class="fas fa-book"></i> <span>Books</span></a>
+            <a class="nav-link" href="HomePage#book-management"><i class="fas fa-book"></i> <span>Books</span></a>
             <div class="sub-menu">
                 <a class="nav-link" href="AddBook"><i class="fas fa-plus"></i> <span>Add Book</span></a>
                 <a class="nav-link" href="ManageBook"><i class="fas fa-edit"></i> <span>Manage</span></a>
@@ -489,7 +489,7 @@
             </div>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="AdminDashboard.jsp#member-management"><i class="fas fa-users"></i>
+            <a class="nav-link" href="HomePage#member-management"><i class="fas fa-users"></i>
                 <span>Members</span></a>
             <div class="sub-menu">
                 <a class="nav-link" href="BanMember"><i class="fas fa-ban"></i> <span>Ban</span></a>
@@ -498,13 +498,13 @@
             </div>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="AdminDashboard.jsp#borrowing-history"><i class="fas fa-history"></i> <span>Borrowing</span></a>
+            <a class="nav-link" href="HomePage#borrowing-history"><i class="fas fa-history"></i> <span>Borrowing</span></a>
             <div class="sub-menu">
                 <a class="nav-link" href="BorrowingHistory"><i class="fas fa-eye"></i> <span>View History</span></a>
             </div>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="AdminDashboard.jsp#fine-payment"><i class="fas fa-money-bill-alt"></i>
+            <a class="nav-link" href="HomePage#fine-payment"><i class="fas fa-money-bill-alt"></i>
                 <span>Fines</span></a>
             <div class="sub-menu">
                 <a class="nav-link" href="StaffManageFine"><i class="fas fa-money-check-alt"></i>
@@ -512,7 +512,7 @@
             </div>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="AdminDashboard.jsp#staff-management"><i class="fas fa-user-tie"></i>
+            <a class="nav-link" href="HomePage#staff-management"><i class="fas fa-user-tie"></i>
                 <span>Staff</span></a>
             <div class="sub-menu">
                 <a class="nav-link" href="AddStaff"><i class="fas fa-plus"></i> <span>Add Staff</span></a>
@@ -567,10 +567,17 @@
                         <!-- Hiển thị thông báo lỗi từ Servlet -->
                         <%
                             String error = (String) request.getAttribute("error");
+                            String success = (String) request.getAttribute("success");
                             if (error != null) {
                         %>
                         <div class="alert alert-danger" role="alert">
                             <%= error %>
+                        </div>
+                        <%
+                        } else if (success != null) {
+                        %>
+                        <div class="alert alert-success" role="alert">
+                            <%= success %>
                         </div>
                         <%
                             }
@@ -606,7 +613,7 @@
 
                             <button type="submit" class="btn-custom btn-primary"><i class="fas fa-plus"></i> Add Staff
                             </button>
-                            <a href="AdminDashboard.jsp" class="btn-custom btn-secondary"><i
+                            <a href="HomePage" class="btn-custom btn-secondary"><i
                                     class="fas fa-arrow-left"></i> Back to Dashboard</a>
                         </form>
                     </div>

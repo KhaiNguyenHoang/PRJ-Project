@@ -72,7 +72,8 @@ public class AddStaffServlet extends HttpServlet {
             boolean success = accountDAO.registerAccount(fullName, email, username, password, roleId);
             if (success) {
                 LOGGER.info("Staff added successfully with email: " + email);
-                response.sendRedirect("AdminDashboard.jsp?success=Staff+added+successfully");
+                request.setAttribute("success", "Adding staff successful!");
+                request.getRequestDispatcher("HomeHTML/HomeAdminHTML/AddStaff.jsp").forward(request, response);
             } else {
                 LOGGER.warning("Failed to add staff. Username or email may already exist: " + username + ", " + email);
                 String errorMessage;
