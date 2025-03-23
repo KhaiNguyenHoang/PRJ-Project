@@ -121,7 +121,7 @@
         %>
 
         <button type="submit">Reset Password</button>
-        <a class="forgot" href="login.jsp">Back to Login</a>
+        <a class="forgot" href="HomePage">Back to Login</a>
     </form>
 </div>
 </body>
