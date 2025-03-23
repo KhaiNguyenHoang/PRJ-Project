@@ -9,7 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-@WebServlet(name = "LogoutAuth", value = "/logoutauth")
+@WebServlet(name = "LogoutAuth", value = "/logoutAuth")
 public class LogoutAuth extends HttpServlet {
 
     @Override

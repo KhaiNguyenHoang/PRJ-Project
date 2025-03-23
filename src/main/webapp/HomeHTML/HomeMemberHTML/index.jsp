@@ -77,7 +77,7 @@
                                 <a class="nav-link" href="MemberAccount"> Account </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="logoutauth"> Logout</a>
+                                <a class="nav-link" href="logoutAuth"> Logout</a>
                             </li>
                         </ul>
                         <div class="user_option">
