@@ -20,7 +20,6 @@
     <!-- Animate.css -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
     <style>
-        /* CSS giữ nguyên từ file gốc, chỉ thêm hoặc chỉnh sửa phần cần thiết */
         * {
             margin: 0;
             padding: 0;
@@ -257,15 +256,24 @@
             padding: 5px 15px;
             font-size: 0.9rem;
             border-radius: 5px;
+            white-space: nowrap;
         }
 
         .table-container {
             margin-top: 20px;
+            overflow-x: auto; /* Hỗ trợ cuộn ngang trên màn hình nhỏ */
+        }
+
+        .table {
+            width: 100%;
+            min-width: 1200px; /* Đảm bảo bảng đủ rộng để hiển thị tất cả cột */
         }
 
         .table th {
             background: #007bff;
             color: #fff;
+            font-weight: 600;
+            padding: 12px;
         }
 
         .dark-mode .table th {
@@ -276,14 +284,23 @@
             background: #ff7e5f;
         }
 
-        /* Căn chỉnh bảng */
         .table th, .table td {
             vertical-align: middle;
-            white-space: nowrap; /* Ngăn xuống dòng cho các cột, đặc biệt là ngày tháng */
+            white-space: nowrap; /* Ngăn xuống dòng */
+            padding: 10px 15px;
+            text-align: center; /* Căn giữa nội dung */
         }
 
         .table td select {
-            width: auto; /* Đảm bảo select không quá rộng */
+            width: 120px; /* Độ rộng cố định cho select */
+            padding: 5px;
+        }
+
+        .table td form {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+            align-items: center;
         }
 
         .loading-overlay {
@@ -343,6 +360,15 @@
             .dashboard-title {
                 font-size: 2rem;
             }
+
+            .table td select {
+                width: 100px; /* Thu nhỏ select trên mobile */
+            }
+
+            .btn-table {
+                padding: 4px 10px;
+                font-size: 0.8rem;
+            }
         }
     </style>
 </head>
@@ -358,6 +384,9 @@
 <div class="loading-overlay" id="loadingOverlay">
     <div class="spinner"></div>
 </div>
+<%
+    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+%>
 
 <!-- Sidebar -->
 <div class="sidebar" id="sidebar">
@@ -367,22 +396,30 @@
     </div>
     <ul class="nav flex-column">
         <li class="nav-item">
-            <a class="nav-link" href="#book-management"><i class="fas fa-book"></i> <span>Books</span></a>
+            <a class="nav-link" href="HomePage#book-management"><i class="fas fa-book"></i> <span>Books</span></a>
             <div class="sub-menu">
-                <a class="nav-link" href="AddBook.jsp"><i class="fas fa-plus"></i> <span>Add Book</span></a>
-                <a class="nav-link" href="ManageBooks.jsp"><i class="fas fa-edit"></i> <span>Manage</span></a>
+                <a class="nav-link" href="AddBook"><i class="fas fa-plus"></i> <span>Add Book</span></a>
+                <a class="nav-link" href="ManageBook"><i class="fas fa-edit"></i> <span>Manage</span></a>
+                <a class="nav-link" href="DeleteBook"><i class="fas fa-trash-alt"></i> <span>Delete</span></a>
             </div>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#member-management"><i class="fas fa-users"></i> <span>Members</span></a>
+            <a class="nav-link" href="HomePage#member-management"><i class="fas fa-users"></i> <span>Members</span></a>
             <div class="sub-menu">
                 <a class="nav-link" href="BanMember"><i class="fas fa-ban"></i> <span>Ban</span></a>
                 <a class="nav-link" href="UnbanMember"><i class="fas fa-check-circle"></i> <span>Unban</span></a>
                 <a class="nav-link" href="UpdateMember"><i class="fas fa-user-edit"></i> <span>Update</span></a>
             </div>
         </li>
+        <li class="nav-item">
+            <a class="nav-link" href="HomePage#borrowing-history"><i class="fas fa-history"></i>
+                <span>Borrowing History</span></a>
+            <div class="sub-menu">
+                <a class="nav-link" href="BorrowingHistory"><i class="fas fa-eye"></i> <span>View History</span></a>
+            </div>
+        </li>
         <li class="nav-item active">
-            <a class="nav-link" href="#fine-payment"><i class="fas fa-money-bill-alt"></i>
+            <a class="nav-link" href="HomePage#fine-payment"><i class="fas fa-money-bill-alt"></i>
                 <span>Fine & Payment</span></a>
             <div class="sub-menu">
                 <a class="nav-link" href="StaffManageFine"><i class="fas fa-money-check-alt"></i>
@@ -400,14 +437,15 @@
                     </p>
                     <p><strong>Email:</strong> <%= account.getEmails() %>
                     </p>
-                    <p><strong>Role:</strong> <%= account.getRoleId() %>
+                    <p>
+                        <strong>Created:</strong> <%= account.getCreatedAt() != null ? sdf.format(account.getCreatedAt()) : "N/A" %>
                     </p>
                 </li>
                 <li><a class="dropdown-item" href="#">Settings</a></li>
                 <li><a class="dropdown-item" href="#" id="toggleLightMode">Light Mode</a></li>
                 <li><a class="dropdown-item" href="#" id="toggleDarkMode">Dark Mode</a></li>
                 <li><a class="dropdown-item" href="#" id="toggleCustomTheme">Custom Theme</a></li>
-                <li><a class="dropdown-item" href="/logoutauth">Logout</a></li>
+                <li><a class="dropdown-item" href="logout">Logout</a></li>
             </ul>
         </li>
     </ul>
@@ -446,13 +484,6 @@
                         <!-- Search and Filter -->
                         <form action="StaffManageFine" method="get" class="mb-4">
                             <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="search" class="form-label"><i class="fas fa-search me-2"></i>Search by
-                                        Member ID or Borrow ID</label>
-                                    <input type="text" id="search" name="search" class="form-control"
-                                           value="<%= request.getAttribute("searchKeyword") != null ? request.getAttribute("searchKeyword") : "" %>"
-                                           placeholder="Enter keyword...">
-                                </div>
                                 <div class="col-md-4 mb-3">
                                     <label for="status" class="form-label"><i class="fas fa-filter me-2"></i>Filter by
                                         Status</label>
@@ -496,7 +527,7 @@
                                 <tbody>
                                 <% List<Fines> finesList = (List<Fines>) request.getAttribute("finesList"); %>
                                 <% SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm"); %>
-                                <% if (finesList != null) { %>
+                                <% if (finesList != null && !finesList.isEmpty()) { %>
                                 <% for (Fines fine : finesList) { %>
                                 <tr>
                                     <td><%= fine.getIdFine() %>
@@ -517,22 +548,21 @@
                                     <td>
                                         <% if ("Unpaid".equalsIgnoreCase(fine.getStatus())) { %>
                                         <span class="text-danger"><i
-                                                class="fas fa-exclamation-circle"></i> Unpaid</span>
+                                                class="fas fa-exclamation-circle me-1"></i>Unpaid</span>
                                         <% } else { %>
-                                        <span class="text-success"><i class="fas fa-check-circle"></i> Paid</span>
+                                        <span class="text-success"><i class="fas fa-check-circle me-1"></i>Paid</span>
                                         <% } %>
                                     </td>
                                     <td>
                                         <% if ("Unpaid".equalsIgnoreCase(fine.getStatus())) { %>
-                                        <form action="StaffManageFine" method="post" style="display:inline;">
+                                        <form action="StaffManageFine" method="post" class="payment-form">
                                             <input type="hidden" name="fineId" value="<%= fine.getIdFine() %>">
                                             <input type="hidden" name="action" value="confirmPayment">
                                             <input type="hidden" name="search"
                                                    value="<%= request.getAttribute("searchKeyword") != null ? request.getAttribute("searchKeyword") : "" %>">
                                             <input type="hidden" name="status"
                                                    value="<%= request.getAttribute("filterStatus") != null ? request.getAttribute("filterStatus") : "" %>">
-                                            <select name="paymentMethod" class="form-select d-inline-block w-auto"
-                                                    required>
+                                            <select name="paymentMethod" class="form-select" required>
                                                 <option value="" disabled selected>Select</option>
                                                 <option value="Cash">Cash</option>
                                                 <option value="Credit Card">Credit Card</option>
@@ -540,13 +570,19 @@
                                                 <option value="Other">Other</option>
                                             </select>
                                             <button type="submit" class="btn btn-secondary btn-table"><i
-                                                    class="fas fa-money-check-alt"></i> Pay
+                                                    class="fas fa-money-check-alt me-1"></i>Pay
                                             </button>
                                         </form>
+                                        <% } else { %>
+                                        <span class="text-muted">-</span>
                                         <% } %>
                                     </td>
                                 </tr>
                                 <% } %>
+                                <% } else { %>
+                                <tr>
+                                    <td colspan="10" class="text-center">No fines available.</td>
+                                </tr>
                                 <% } %>
                                 </tbody>
                             </table>
