@@ -24,13 +24,6 @@
 <link href="HomeHTML/HomeMemberHTML/css/style.css" rel="stylesheet"/>
 <link href="HomeHTML/HomeMemberHTML/css/responsive.css" rel="stylesheet"/>
 </head>
-<%
-    Members loggedInMember = (Members) session.getAttribute("user");
-    if (loggedInMember == null) {
-        response.sendRedirect("Login"); // Redirect to login page if not logged in
-        return; // Ensure no further code execution after redirect
-    }
-%>
 <body>
 <div class="hero_area">
     <!-- header section strats -->
