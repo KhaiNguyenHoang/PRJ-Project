@@ -24,35 +24,30 @@ public class AccountServlet extends HttpServlet {
             String phone = request.getParameter("phone").trim();
             String address = request.getParameter("address").trim();
 
-            // Validate that all fields are filled
             if (fullName.isEmpty() || email.isEmpty() || phone.isEmpty() || address.isEmpty()) {
                 request.setAttribute(ERROR_ATTRIBUTE, "empty_field");
                 request.getRequestDispatcher("HomeHTML/HomeMemberHTML/MemberAccount.jsp").forward(request, response);
                 return;
             }
 
-            // Validate email format
             if (!isValidEmail(email)) {
                 request.setAttribute(ERROR_ATTRIBUTE, "invalid_email");
                 request.getRequestDispatcher("HomeHTML/HomeMemberHTML/MemberAccount.jsp").forward(request, response);
                 return;
             }
 
-            // Validate phone number format
             if (!isValidPhone(phone)) {
                 request.setAttribute(ERROR_ATTRIBUTE, "invalid_phone");
                 request.getRequestDispatcher("HomeHTML/HomeMemberHTML/MemberAccount.jsp").forward(request, response);
                 return;
             }
 
-            // Retrieve logged-in member
             Members loggedInMember = (Members) request.getSession().getAttribute("user");
             if (loggedInMember == null) {
-                response.sendRedirect("/Auth/SignIn-SignUp.jsp");
+                response.sendRedirect("HomePage");
                 return;
             }
 
-            // Update member information
             loggedInMember.setFullName(fullName);
             loggedInMember.setEmail(email);
             loggedInMember.setPhone(phone);
@@ -74,14 +69,12 @@ public class AccountServlet extends HttpServlet {
             String newPassword = request.getParameter("newPassword").trim();
             String confirmNewPassword = request.getParameter("confirmNewPassword").trim();
 
-            // Retrieve logged-in member
             Members loggedInMember = (Members) request.getSession().getAttribute("user");
             if (loggedInMember == null) {
-                response.sendRedirect("/Auth/SignIn-SignUp.jsp");
+                response.sendRedirect("HomePage");
                 return;
             }
 
-            // Validate password fields
             if (currentPassword.isEmpty() || newPassword.isEmpty() || confirmNewPassword.isEmpty()) {
                 request.setAttribute("error-password", "empty_password_field");
                 request.getRequestDispatcher("HomeHTML/HomeMemberHTML/MemberAccount.jsp").forward(request, response);
@@ -94,48 +87,54 @@ public class AccountServlet extends HttpServlet {
                 return;
             }
 
-            if (!loggedInMember.getPasswordHash().equals(new MembersDAO().hashPassword(currentPassword))) {
+            MembersDAO membersDAO = new MembersDAO();
+            if (!loggedInMember.getPasswordHash().equals(membersDAO.hashPassword(currentPassword))) {
                 request.setAttribute("error-password", "incorrect_current_password");
                 request.getRequestDispatcher("HomeHTML/HomeMemberHTML/MemberAccount.jsp").forward(request, response);
                 return;
             }
 
-            MembersDAO membersDAO = new MembersDAO();
-
-            // Check if current password matches
             if (membersDAO.changePassword(currentPassword, newPassword)) {
                 request.setAttribute("success-password", "password_changed_successfully");
-                request.getRequestDispatcher("HomeHTML/HomeMemberHTML/MemberAccount.jsp").forward(request, response);
             } else {
                 request.setAttribute("error-password", "password_change_failed");
-                request.getRequestDispatcher("HomeHTML/HomeMemberHTML/MemberAccount.jsp").forward(request, response);
             }
+            request.getRequestDispatcher("HomeHTML/HomeMemberHTML/MemberAccount.jsp").forward(request, response);
         } else if ("deactiveAccount".equalsIgnoreCase(action)) {
-            String passwordHash = request.getAttribute("confirmPassword").toString();
+            // Get the confirmation password from parameters, not attributes
+            String confirmPassword = request.getParameter("confirmPassword");
+
             // Retrieve logged-in member
             Members loggedInMember = (Members) request.getSession().getAttribute("user");
             if (loggedInMember == null) {
-                response.sendRedirect("/Auth/SignIn-SignUp.jsp");
+                response.sendRedirect("HomePage");
                 return;
             }
 
             // Validate password field
-            if (passwordHash.isEmpty()) {
+            if (confirmPassword == null || confirmPassword.trim().isEmpty()) {
                 request.setAttribute("error-deactive", "empty_password_field");
                 request.getRequestDispatcher("HomeHTML/HomeMemberHTML/MemberAccount.jsp").forward(request, response);
                 return;
             }
 
             MembersDAO membersDAO = new MembersDAO();
-            // Check if current password matches
-            if (membersDAO.deactiveAccount(loggedInMember.getIdMember(), passwordHash)) {
-                request.setAttribute("success-deactive", "deactive_successfully");
-                response.setHeader("Refresh", "10; URL=/Auth/SignIn-SignUp.jsp"); // Redirect after 10 seconds
+
+            // Verify the password matches the stored hash
+            String hashedConfirmPassword = membersDAO.hashPassword(confirmPassword);
+            if (!loggedInMember.getPasswordHash().equals(hashedConfirmPassword)) {
+                request.setAttribute("error-deactive", "incorrect_password");
                 request.getRequestDispatcher("HomeHTML/HomeMemberHTML/MemberAccount.jsp").forward(request, response);
-            } else {
-                request.setAttribute("error-deactive", "deactive_failed");
-                request.getRequestDispatcher("HomeHTML/HomeMemberHTML/MemberAccount.jsp").forward(request, response);
+                return;
             }
+
+            // Deactivate the account using the provided method
+            membersDAO.deactiveAccount(loggedInMember.getIdMember());
+
+            // Clear session and set success message
+            request.getSession().invalidate();  // Log out the user
+            request.setAttribute("success-deactive", "deactive_successfully");
+            request.getRequestDispatcher("HomePage").forward(request, response);
         }
     }
 

@@ -214,16 +214,13 @@ public class MembersDAO extends LibraryContext {
         }
     }
 
-    public boolean deactiveAccount(int idMember, String passwordHash) {
-        String sql = "UPDATE members SET status = 'Expired' WHERE idMember = ? AND passwordHash = ?";
+    public void deactiveAccount(int idMember) {
+        String sql = "UPDATE members SET status = 'expired' WHERE idMember = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, idMember);
-            ps.setString(2, hashPassword(passwordHash));
-            int rowsAffected = ps.executeUpdate();
-            return rowsAffected > 0;
+            ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+            e.printStackTrace();  // Log the exception (consider better logging in production)
         }
     }
 
