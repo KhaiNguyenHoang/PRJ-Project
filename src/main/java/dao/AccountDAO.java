@@ -128,23 +128,6 @@ public class AccountDAO extends LibraryContext {
         return null;
     }
 
-
-    // Forgot Password - Method to reset password
-    public boolean resetPassword(String email, String newPassword) {
-        String passwordHash = hashPassword(newPassword);
-        String query = "UPDATE Account SET PasswordHash = ?, UpdatedAt = GETDATE() WHERE Emails = ?";
-
-        try (PreparedStatement statement = conn.prepareStatement(query)) {
-            statement.setString(1, passwordHash);
-            statement.setString(2, email);
-            int rowsUpdated = statement.executeUpdate();
-            return rowsUpdated > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
     // Check if username exists
     public boolean checkUsernameExists(String username) {
         String query = "SELECT COUNT(*) FROM Account WHERE Username = ?";
@@ -187,16 +170,19 @@ public class AccountDAO extends LibraryContext {
     }
 
     // Update account information
-    public void updateAccount(int accountId, String username, String password) {
+    public boolean updateAccountByEmail(String email, String fullName, String username, String password) {
         String passwordHash = hashPassword(password);
-        String query = "UPDATE Account SET Username = ?, PasswordHash = ? WHERE IdAccount = ?";
+        String query = "UPDATE Account SET FullName = ?, Username = ?, PasswordHash = ? WHERE Emails = ?";
         try (PreparedStatement statement = conn.prepareStatement(query)) {
-            statement.setString(1, username);
-            statement.setString(2, passwordHash);
-            statement.setInt(3, accountId);
+            statement.setString(1, fullName);
+            statement.setString(2, username);
+            statement.setString(3, passwordHash);
+            statement.setString(4, email);
             statement.executeUpdate();
+            return true;
         } catch (SQLException e) {
             e.printStackTrace();
+            return false;
         }
     }
 
