@@ -25,6 +25,7 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* CSS giữ nguyên từ mã cũ */
         * {
             margin: 0;
             padding: 0;
@@ -50,7 +51,6 @@
             color: #4b2e2e;
         }
 
-        /* Sidebar nâng cấp */
         .sidebar {
             position: fixed;
             top: 0;
@@ -162,7 +162,6 @@
             font-size: 0.95rem;
         }
 
-        /* Main Content */
         .main-content {
             margin-left: 300px;
             padding: 50px;
@@ -496,7 +495,7 @@
 <%
     Account account = (Account) session.getAttribute("account");
     if (account == null) {
-        account = new Account(1, "Admin User", "admin@example.com", "admin", "hashedpassword", 2); // Role 2 là Admin
+        account = new Account(1, "Admin User", "admin@example.com", "admin", "hashedpassword", 1); // Role 1 là Admin
     }
     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 
@@ -568,6 +567,15 @@
                     <span>Manage Fines</span></a>
             </div>
         </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#staff-management"><i class="fas fa-user-tie"></i> <span>Staff</span></a>
+            <div class="sub-menu">
+                <a class="nav-link" href="AddStaff"><i class="fas fa-plus"></i> <span>Add Staff</span></a>
+                <a class="nav-link" href="ManageStaff"><i class="fas fa-edit"></i> <span>Manage Staff</span></a>
+                <a class="nav-link" href="DeleteStaff"><i class="fas fa-trash-alt"></i> <span>Delete Staff</span></a>
+                <a class="nav-link" href="StaffActivity"><i class="fas fa-history"></i> <span>Staff Activity</span></a>
+            </div>
+        </li>
         <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown"
                aria-expanded="false">
@@ -624,6 +632,9 @@
                             </button>
                             <button class="btn btn-danger" onclick="location.href='StaffManageFine'"><i
                                     class="fas fa-money-bill"></i> Fines
+                            </button>
+                            <button class="btn btn-info" onclick="location.href='ManageStaff'"><i
+                                    class="fas fa-user-tie"></i> Staff
                             </button>
                         </div>
                     </div>
@@ -684,6 +695,24 @@
                     <div class="card-body">
                         <a href="StaffManageFine" class="btn btn-danger btn-custom"><i
                                 class="fas fa-money-check-alt"></i> Manage Fines</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Staff Management (Đặt ở cuối) -->
+            <div class="col-lg-6" id="staff-management">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-user-tie"></i> Staff Management
+                    </div>
+                    <div class="card-body">
+                        <a href="AddStaff" class="btn btn-primary btn-custom"><i class="fas fa-plus"></i> Add New Staff</a>
+                        <a href="ManageStaff" class="btn btn-success btn-custom"><i class="fas fa-edit"></i> Manage
+                            Staff</a>
+                        <a href="DeleteStaff" class="btn btn-danger btn-custom"><i class="fas fa-trash-alt"></i> Delete
+                            Staff</a>
+                        <a href="StaffActivity" class="btn btn-info btn-custom"><i class="fas fa-history"></i> Staff
+                            Activity</a>
                     </div>
                 </div>
             </div>
@@ -795,7 +824,9 @@
         'Add Book', 'Manage Books', 'Delete Book',
         'Ban Member', 'Unban Member', 'Update Member',
         'View Borrowing History',
-        'Manage Fines', 'View Payments', 'System Settings'
+        'Manage Fines', 'View Payments',
+        'Add Staff', 'Manage Staff', 'Delete Staff', 'Staff Activity',
+        'System Settings'
     ];
     searchInput.addEventListener('input', () => {
         const query = searchInput.value.toLowerCase();
@@ -829,6 +860,7 @@
             {text: 'New book added to the library!', icon: 'fas fa-book'},
             {text: 'Member account updated.', icon: 'fas fa-user-edit'},
             {text: 'Fine payment processed.', icon: 'fas fa-money-bill'},
+            {text: 'New staff added.', icon: 'fas fa-user-tie'},
             {text: 'System backup completed.', icon: 'fas fa-database'}
         ];
         const random = messages[Math.floor(Math.random() * messages.length)];
