@@ -35,8 +35,12 @@ public class HomePage extends HttpServlet {
             Account loggedInAccount = (Account) request.getSession().getAttribute("user");
 
             if (loggedInAccount != null) {
-                // If logged in as staff, forward to staff homepage
-                request.getRequestDispatcher("HomeHTML/HomeStaffHTML/index.jsp").forward(request, response);
+                if (loggedInAccount.getRoleId() == 1) {
+                    // If logged in as admin, forward to admin homepage
+                    request.getRequestDispatcher("HomeHTML/HomeAdminHTML/index.jsp").forward(request, response);
+                } else if (loggedInAccount.getRoleId() == 2) {
+                    request.getRequestDispatcher("HomeHTML/HomeStaffHTML/index.jsp").forward(request, response);
+                }
             } else {
                 // If not logged in, forward to sign-in page
                 request.getRequestDispatcher("/Auth/SignIn-SignUp.jsp").forward(request, response);
