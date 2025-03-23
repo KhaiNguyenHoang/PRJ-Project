@@ -10,7 +10,7 @@
 
     // If no member is logged in, redirect to the Login page
     if (currentMember == null) {
-        response.sendRedirect("/Auth/SignIn-SignUp.jsp");
+        response.sendRedirect("HomePage");
         return;  // Prevent further page processing after redirect
     }
 %>
@@ -272,7 +272,8 @@
             <div class="book-details">
                 <div class="book-info">
                     <!-- Book Cover Image -->
-                    <img src="<%=book.getFilePath()%>" alt="Cover of <%=book.getTitle()%>" class="book-cover"/>
+                    <img src="<%= book.getFilePath()%>" alt="Cover of <%=book.getTitle()%>"
+                         class="book-cover"/>
                     <!-- Book Information -->
                     <div>
                         <h2><%=book.getTitle()%>
