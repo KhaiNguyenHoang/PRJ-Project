@@ -285,35 +285,33 @@
         <li class="nav-item">
             <a class="nav-link" href="HomePage#book-management"><i class="fas fa-book"></i> <span>Books</span></a>
             <div class="sub-menu">
-                <a class="nav-link" href="AddBook.jsp"><i class="fas fa-plus"></i> <span>Add Book</span></a>
-                <a class="nav-link" href="ManageBooks.jsp"><i class="fas fa-edit"></i> <span>Manage</span></a>
-                <a class="nav-link" href="DeleteBook.jsp"><i class="fas fa-trash-alt"></i> <span>Delete</span></a>
+                <a class="nav-link" href="AddBook"><i class="fas fa-plus"></i> <span>Add Book</span></a>
+                <a class="nav-link" href="ManageBook"><i class="fas fa-edit"></i> <span>Manage</span></a>
+                <a class="nav-link" href="DeleteBook"><i class="fas fa-trash-alt"></i> <span>Delete</span></a>
             </div>
         </li>
         <li class="nav-item">
             <a class="nav-link" href="HomePage#member-management"><i class="fas fa-users"></i>
                 <span>Members</span></a>
             <div class="sub-menu">
-                <a class="nav-link" href="BanMember.jsp"><i class="fas fa-ban"></i> <span>Ban</span></a>
-                <a class="nav-link" href="UnbanMember.jsp"><i class="fas fa-check-circle"></i> <span>Unban</span></a>
-                <a class="nav-link" href="UpdateMemberInfo.jsp"><i class="fas fa-user-edit"></i> <span>Update</span></a>
+                <a class="nav-link" href="BanMember"><i class="fas fa-ban"></i> <span>Ban</span></a>
+                <a class="nav-link" href="UnbanMember"><i class="fas fa-check-circle"></i> <span>Unban</span></a>
+                <a class="nav-link" href="UpdateMember"><i class="fas fa-user-edit"></i> <span>Update</span></a>
             </div>
         </li>
         <li class="nav-item">
             <a class="nav-link" href="HomePage#borrowing-history"><i class="fas fa-history"></i>
                 <span>Borrowing History</span></a>
             <div class="sub-menu">
-                <a class="nav-link" href="BorrowingHistory.jsp"><i class="fas fa-eye"></i> <span>View History</span></a>
+                <a class="nav-link" href="BorrowingHistory"><i class="fas fa-eye"></i> <span>View History</span></a>
             </div>
         </li>
         <li class="nav-item">
             <a class="nav-link" href="HomePage#fine-payment"><i class="fas fa-money-bill-alt"></i>
                 <span>Fine & Payment</span></a>
             <div class="sub-menu">
-                <a class="nav-link" href="ManageFines.jsp"><i class="fas fa-money-check-alt"></i>
+                <a class="nav-link" href="StaffManageFine"><i class="fas fa-money-check-alt"></i>
                     <span>Manage Fines</span></a>
-                <a class="nav-link" href="ViewPayments.jsp"><i class="fas fa-credit-card"></i>
-                    <span>View Payments</span></a>
             </div>
         </li>
         <li class="nav-item dropdown">
@@ -327,8 +325,6 @@
                     </p>
                     <p><strong>Email:</strong> <%= account.getEmails() %>
                     </p>
-                    <p><strong>Role ID:</strong> <%= account.getRoleId() %>
-                    </p>
                     <p>
                         <strong>Created:</strong> <%= account.getCreatedAt() != null ? sdf.format(account.getCreatedAt()) : "N/A" %>
                     </p>
@@ -337,7 +333,7 @@
                 <li><a class="dropdown-item" href="#" id="toggleLightMode">Light Mode</a></li>
                 <li><a class="dropdown-item" href="#" id="toggleDarkMode">Dark Mode</a></li>
                 <li><a class="dropdown-item" href="#" id="toggleCustomTheme">Custom Theme</a></li>
-                <li><a class="dropdown-item" href="#">Logout</a></li>
+                <li><a class="dropdown-item" href="logout">Logout</a></li>
             </ul>
         </li>
     </ul>

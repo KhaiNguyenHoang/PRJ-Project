@@ -18,12 +18,7 @@ public class BorrowingHistoryDAO extends LibraryContext {
     public BorrowingHistoryDAO() {
         super(); // Initializes the database connection from LibraryContext
     }
-
-    public static void main(String[] args) {
-        BorrowingHistoryDAO borrowingHistoryDAO = new BorrowingHistoryDAO();
-        borrowingHistoryDAO.deleteBorrowingHistory();
-    }
-
+    
     /**
      * Adds a new borrowing history record when a book is borrowed.
      */

@@ -1,14 +1,12 @@
 package dao;
 
 import model.Borrowing;
-import model.Fines;
 import utils.LibraryContext;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -19,66 +17,6 @@ public class BorrowingDAO extends LibraryContext {
 
     public BorrowingDAO() {
         super();
-    }
-
-    // Main method for testing (đã sửa)
-    public static void main(String[] args) {
-        BorrowingDAO borrowingDAO = new BorrowingDAO();
-        FinesDAO finesDAO = new FinesDAO();
-        BookCopiesDAO bookCopiesDAO = new BookCopiesDAO();
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-
-        try {
-            // Bước 1: Giả lập mượn sách
-            System.out.println("=== STEP 1: BORROW BOOK ===");
-            Timestamp borrowDate = new Timestamp(sdf.parse("01/03/2025").getTime());
-            Timestamp dueDate = new Timestamp(sdf.parse("10/03/2025").getTime());
-            int memberId = 11;
-            int bookCopyId = bookCopiesDAO.getFirstAvailableBookCopy(1).getIdCopy();
-
-            Borrowing borrowing = new Borrowing(memberId, bookCopyId, borrowDate, dueDate, "Borrowed");
-            boolean borrowSuccess = borrowingDAO.borrowBook(borrowing);
-            if (borrowSuccess) {
-                System.out.println("Member " + memberId + " borrowed book copy ID " + bookCopyId + " successfully.");
-                System.out.println("Borrow Date: " + sdf.format(borrowDate) + ", Due Date: " + sdf.format(dueDate));
-            } else {
-                System.out.println("Failed to borrow book.");
-                return;
-            }
-
-            // Bước 2: Giả lập trả sách trễ
-            System.out.println("\n=== STEP 2: RETURN BOOK LATE ===");
-            Timestamp returnDate = new Timestamp(sdf.parse("15/03/2025").getTime());
-            int borrowId = borrowing.getIdBorrow();
-            boolean returnSuccess = borrowingDAO.returnBook(borrowId, returnDate);
-            if (returnSuccess) {
-                System.out.println("Book returned successfully on " + sdf.format(returnDate));
-                System.out.println("Overdue: " + borrowingDAO.calculateDaysBetween(dueDate, returnDate) + " days.");
-            } else {
-                System.out.println("Failed to return book.");
-                return;
-            }
-
-            // Bước 3: Kiểm tra khoản nợ
-            System.out.println("\n=== STEP 3: CHECK FINES ===");
-            List<Fines> finesList = finesDAO.getFinesByMemberId(memberId);
-            if (finesList.isEmpty()) {
-                System.out.println("No fines found for member " + memberId);
-            } else {
-                System.out.println("List of fines for member " + memberId + ":");
-                for (Fines fine : finesList) {
-                    System.out.println(" - Fine ID: " + fine.getIdFine() +
-                            ", BorrowID: " + fine.getBorrowId() +
-                            ", Amount: " + fine.getAmount() + " USD" +
-                            ", Status: " + fine.getStatus() +
-                            ", Payment Method: " + fine.getPaymentMethod() +
-                            ", Created At: " + sdf.format(fine.getCreatedAt()));
-                }
-            }
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error in demo", e);
-            System.out.println("Error in demo: " + e.getMessage());
-        }
     }
 
     /**

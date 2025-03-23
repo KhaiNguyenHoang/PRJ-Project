@@ -17,11 +17,6 @@ public class MembersDAO extends LibraryContext {
         super();
     }
 
-    public static void main(String[] args) {
-        MembersDAO membersDAO = new MembersDAO();
-        membersDAO.banMemberByEmail("member2@gmail.com");
-    }
-
     // Helper method to map ResultSet to Members object
     private Members mapResultSetToMember(ResultSet rs) throws SQLException {
         return new Members(

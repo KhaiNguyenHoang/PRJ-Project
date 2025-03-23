@@ -8,11 +8,54 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class FinesDAO extends LibraryContext {
+    private static final Logger LOGGER = Logger.getLogger(FinesDAO.class.getName());
 
     public FinesDAO() {
         super();
+    }
+
+    // Thanh toán khoản phạt và ghi vào FinePayments
+    public boolean payFine(int fineId, double amountPaid, String paymentMethod) {
+        if (amountPaid <= 0) {
+            LOGGER.log(Level.WARNING, "Invalid amount paid: {0} for fineId: {1}", new Object[]{amountPaid, fineId});
+            return false;
+        }
+        if (!isValidPaymentMethod(paymentMethod)) {
+            paymentMethod = "Other";
+            LOGGER.log(Level.INFO, "Invalid payment method for fineId: {0}, defaulting to 'Other'", fineId);
+        }
+
+        FinePaymentsDAO finePaymentsDAO = new FinePaymentsDAO();
+
+        // Bước 1: Cập nhật Fines
+        String updateFineQuery = "UPDATE Fines SET Status = 'Paid', PaidDate = GETDATE(), PaymentMethod = ? WHERE IdFine = ? AND Status = 'Unpaid'";
+        try (PreparedStatement ps = conn.prepareStatement(updateFineQuery)) {
+            ps.setString(1, paymentMethod);
+            ps.setInt(2, fineId);
+            int rowsAffected = ps.executeUpdate();
+            if (rowsAffected == 0) {
+                LOGGER.log(Level.WARNING, "No rows updated for fineId: {0}. Already paid or not found.", fineId);
+                return false;
+            }
+            LOGGER.log(Level.INFO, "Updated Fines table for fineId: {0}", fineId);
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "SQLException in payFine while updating Fines for fineId: {0}", fineId);
+            return false;
+        }
+
+        // Bước 2: Ghi vào FinePayments
+        boolean paymentAdded = finePaymentsDAO.addFinePayment(fineId, amountPaid, paymentMethod);
+        if (!paymentAdded) {
+            LOGGER.log(Level.WARNING, "Failed to record payment for fineId: {0}", fineId);
+            return false;
+        }
+
+        LOGGER.log(Level.INFO, "Payment successful for fineId: {0}", fineId);
+        return true;
     }
 
     // Thêm khoản phạt mới
@@ -20,7 +63,6 @@ public class FinesDAO extends LibraryContext {
         if (!isValidPaymentMethod(paymentMethod)) {
             paymentMethod = "Other";
         }
-
         String insertFineQuery = "INSERT INTO Fines (MemberID, BorrowID, Amount, Status, PaymentMethod, CreatedAt) " +
                 "VALUES (?, ?, ?, 'Unpaid', ?, GETDATE())";
         try (PreparedStatement ps = conn.prepareStatement(insertFineQuery, Statement.RETURN_GENERATED_KEYS)) {
@@ -28,92 +70,80 @@ public class FinesDAO extends LibraryContext {
             ps.setInt(2, borrowId);
             ps.setDouble(3, amount);
             ps.setString(4, paymentMethod);
-
             int rowsAffected = ps.executeUpdate();
-            if (rowsAffected > 0) {
-                ResultSet rs = ps.getGeneratedKeys();
-                return rs.next();
-            }
-            return false;
+            return rowsAffected > 0 && ps.getGeneratedKeys().next();
         } catch (SQLException e) {
-            System.out.println("SQLException in addFine: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "SQLException in addFine", e);
             return false;
         }
     }
 
-    // Thanh toán khoản phạt và ghi vào FinePayments
-    public boolean payFine(int fineId, double amountPaid, String paymentMethod) {
-        PreparedStatement updateFinePs = null;
-        FinePaymentsDAO finePaymentsDAO = new FinePaymentsDAO();
-
-        if (!isValidPaymentMethod(paymentMethod)) {
-            paymentMethod = "Other";
-        }
-        if (amountPaid <= 0) {
-            System.out.println("Số tiền thanh toán phải lớn hơn 0.");
-            return false;
-        }
-
-        try {
-            conn.setAutoCommit(false);
-
-            // Bước 1: Cập nhật trạng thái khoản phạt thành 'Paid'
-            String updateFineQuery = "UPDATE Fines SET Status = 'Paid', PaidDate = GETDATE() WHERE IdFine = ? AND Status = 'Unpaid'";
-            updateFinePs = conn.prepareStatement(updateFineQuery);
-            updateFinePs.setInt(1, fineId);
-            int rowsAffectedFine = updateFinePs.executeUpdate();
-            if (rowsAffectedFine == 0) {
-                System.out.println("Không thể cập nhật khoản phạt IdFine: " + fineId + " - Có thể đã thanh toán hoặc không tồn tại.");
-                conn.rollback();
-                return false;
-            }
-
-            // Bước 2: Ghi thanh toán vào FinePayments
-            boolean paymentAdded = finePaymentsDAO.addFinePayment(fineId, amountPaid, paymentMethod);
-            if (!paymentAdded) {
-                System.out.println("Không thể ghi thanh toán cho IdFine: " + fineId);
-                conn.rollback();
-                return false;
-            }
-
-            conn.commit();
-            return true;
-
-        } catch (SQLException e) {
-            System.out.println("SQLException in payFine: " + e.getMessage());
-            e.printStackTrace();
-            try {
-                if (conn != null) conn.rollback();
-            } catch (SQLException se) {
-                se.printStackTrace();
-            }
-            return false;
-        } finally {
-            try {
-                if (updateFinePs != null) updateFinePs.close();
-                if (conn != null) conn.setAutoCommit(true);
-            } catch (SQLException se) {
-                se.printStackTrace();
-            }
-        }
-    }
-
-    // Cập nhật trạng thái phạt (phương thức cũ, giữ lại nếu cần)
+    // Cập nhật trạng thái phạt
     public boolean updateFineStatus(int fineId, String status, Date paidDate) {
         String updateFineQuery = "UPDATE Fines SET Status = ?, PaidDate = ? WHERE IdFine = ?";
         try (PreparedStatement ps = conn.prepareStatement(updateFineQuery)) {
             ps.setString(1, status);
             ps.setTimestamp(2, paidDate != null ? new Timestamp(paidDate.getTime()) : null);
             ps.setInt(3, fineId);
-
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0;
         } catch (SQLException e) {
-            System.out.println("SQLException in updateFineStatus: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "SQLException in updateFineStatus for fineId: {0}", fineId);
             return false;
         }
+    }
+
+    // Tìm kiếm khoản phạt theo MemberID hoặc BorrowID
+    public List<Fines> searchFinesByMemberIdOrBorrowId(String keyword) throws SQLException {
+        List<Fines> finesList = new ArrayList<>();
+        String sql = "SELECT * FROM Fines WHERE CAST(MemberID AS NVARCHAR) LIKE ? OR CAST(BorrowID AS NVARCHAR) LIKE ? ORDER BY CreatedAt DESC";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            String searchPattern = "%" + keyword + "%";
+            ps.setString(1, searchPattern);
+            ps.setString(2, searchPattern);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    finesList.add(mapResultSetToFines(rs));
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error searching fines with keyword: {0}", keyword);
+            throw e;
+        }
+        return finesList;
+    }
+
+    // Lấy tất cả khoản phạt
+    public List<Fines> getAllFines() throws SQLException {
+        List<Fines> finesList = new ArrayList<>();
+        String sql = "SELECT * FROM Fines ORDER BY CreatedAt DESC";
+        try (PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                finesList.add(mapResultSetToFines(rs));
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error retrieving all fines", e);
+            throw e;
+        }
+        return finesList;
+    }
+
+    // Lấy khoản phạt theo ID
+    public Fines getFinesById(int fineId) throws SQLException {
+        String sql = "SELECT * FROM Fines WHERE IdFine = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, fineId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToFines(rs);
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error retrieving fine by id: {0}", fineId);
+            throw e;
+        }
+        return null;
     }
 
     // Lấy tất cả khoản phạt theo MemberID
@@ -128,13 +158,12 @@ public class FinesDAO extends LibraryContext {
                 }
             }
         } catch (SQLException e) {
-            System.out.println("SQLException in getFinesByMemberId: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "SQLException in getFinesByMemberId: {0}", memberId);
         }
         return finesList;
     }
 
-    // Tạo khoản phạt nếu cần
+    // Tạo khoản phạt nếu cần (dựa trên Borrowing)
     public void createFineIfNeeded(int borrowId) {
         String query = "SELECT MemberID, DueDate, ReturnDate FROM Borrowing WHERE IdBorrow = ?";
         try (PreparedStatement ps = conn.prepareStatement(query)) {
@@ -164,8 +193,7 @@ public class FinesDAO extends LibraryContext {
                 }
             }
         } catch (SQLException e) {
-            System.out.println("SQLException in createFineIfNeeded: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "SQLException in createFineIfNeeded for borrowId: {0}", borrowId);
         }
     }
 
@@ -180,8 +208,7 @@ public class FinesDAO extends LibraryContext {
                 }
             }
         } catch (SQLException e) {
-            System.out.println("SQLException in isFineExists: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "SQLException in isFineExists for borrowId: {0}", borrowId);
         }
         return false;
     }
@@ -194,6 +221,9 @@ public class FinesDAO extends LibraryContext {
             if (rs.next()) {
                 return rs.getDouble("total");
             }
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error calculating total fines amount", e);
+            throw e;
         }
         return 0.0;
     }
