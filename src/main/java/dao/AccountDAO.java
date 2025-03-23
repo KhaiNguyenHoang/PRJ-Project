@@ -69,14 +69,14 @@ public class AccountDAO extends LibraryContext {
     }
 
     // Register a new account
-    public void registerAccount(String fullName, String emails, String username, String password, int roleId) {
+    public boolean registerAccount(String fullName, String emails, String username, String password, int roleId) {
         if (checkUsernameExists(username)) {
             System.out.println("Username already exists.");
-            return;
+            return false;
         }
         if (checkEmailExists(emails)) {
             System.out.println("Email already exists.");
-            return;
+            return false;
         }
         String passwordHash = hashPassword(password);
         String query = "INSERT INTO Account (FullName, Emails, Username, PasswordHash, Role_ID, CreatedAt, UpdatedAt) " +
@@ -88,8 +88,10 @@ public class AccountDAO extends LibraryContext {
             statement.setString(4, passwordHash);
             statement.setInt(5, roleId);
             statement.executeUpdate();
+            return true;
         } catch (SQLException e) {
             e.printStackTrace();
+            return false;
         }
     }
 

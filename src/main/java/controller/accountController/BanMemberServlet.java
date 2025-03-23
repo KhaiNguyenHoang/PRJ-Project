@@ -23,7 +23,7 @@ public class BanMemberServlet extends HttpServlet {
         // Kiểm tra quyền truy cập (giả định nhân viên đã đăng nhập với session attribute "staff")
         if (request.getSession().getAttribute("account") == null) {
             LOGGER.log(Level.WARNING, "Unauthorized access attempt to BanMemberServlet");
-            response.sendRedirect("/Auth/SignIn-SignUp.jsp");
+            response.sendRedirect("HomePage");
             return;
         }
 

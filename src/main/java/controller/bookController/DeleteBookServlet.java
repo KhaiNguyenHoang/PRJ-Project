@@ -6,6 +6,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import model.Account;
 import model.Books;
 
 import java.io.IOException;
@@ -31,6 +32,11 @@ public class DeleteBookServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        Account account = (Account) request.getSession().getAttribute("account");
+        if (account == null) {
+            response.sendRedirect("HomePage");
+            return;
+        }
         try {
             List<Books> booksList = booksDAO.getAllBooks();
             request.setAttribute("booksList", booksList);

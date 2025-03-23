@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
+import model.Account;
 import model.Books;
 
 import java.io.File;
@@ -39,6 +40,11 @@ public class AddBookServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        Account account = (Account) req.getSession().getAttribute("account");
+        if (account == null) {
+            resp.sendRedirect("HomePage");
+            return;
+        }
         req.getRequestDispatcher("HomeHTML/HomeStaffHTML/AddBook.jsp").forward(req, resp);
     }
 

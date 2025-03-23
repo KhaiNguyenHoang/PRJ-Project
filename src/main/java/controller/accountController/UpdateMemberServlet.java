@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 public class UpdateMemberServlet extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(UpdateMemberServlet.class.getName());
     private static final String JSP_PATH = "HomeHTML/HomeStaffHTML/UpdateMember.jsp";
-    private static final String LOGIN_PATH = "/Auth/SignIn-SignUp.jsp";
+    private static final String LOGIN_PATH = "HomePage";
 
     /**
      * Kiểm tra quyền truy cập của nhân viên

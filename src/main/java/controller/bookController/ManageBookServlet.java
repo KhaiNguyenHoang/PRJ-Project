@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
+import model.Account;
 import model.BookDetail;
 import model.Books;
 
@@ -43,6 +44,11 @@ public class ManageBookServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        Account account = (Account) req.getSession().getAttribute("account");
+        if (account == null) {
+            resp.sendRedirect("HomePage");
+            return;
+        }
         String action = req.getParameter("action");
         if (action == null || action.equals("list")) {
             // Hiển thị danh sách sách

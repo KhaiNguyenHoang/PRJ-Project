@@ -27,7 +27,7 @@ public class StaffManageFineServlet extends HttpServlet {
         Account currentStaff = (Account) request.getSession().getAttribute("account");
         if (currentStaff == null) {
             LOGGER.log(Level.WARNING, "No staff found in session, redirecting to login");
-            response.sendRedirect("/Auth/SignIn-SignUp.jsp");
+            response.sendRedirect("HomePage");
             return null;
         }
         return currentStaff;

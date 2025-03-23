@@ -14,7 +14,17 @@ public class HomeAuth extends HttpServlet {
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         try {
-            request.getRequestDispatcher("/Auth/SignIn-SignUp.jsp").forward(request, response);
+            request.getRequestDispatcher("Auth/SignIn-SignUp.jsp").forward(request, response);
+        } catch (ServletException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+
+    public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        try {
+            request.getRequestDispatcher("Auth/SignIn-SignUp.jsp").forward(request, response);
         } catch (ServletException | IOException e) {
             e.printStackTrace();
         }

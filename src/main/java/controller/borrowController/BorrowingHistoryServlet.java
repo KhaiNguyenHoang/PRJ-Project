@@ -20,7 +20,7 @@ import java.util.logging.Logger;
 public class BorrowingHistoryServlet extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(BorrowingHistoryServlet.class.getName());
     private static final String JSP_PATH = "HomeHTML/HomeStaffHTML/BorrowingHistory.jsp";
-    private static final String LOGIN_PATH = "Auth/SignIn-SignUp.jsp";
+    private static final String LOGIN_PATH = "HomePage";
 
     /**
      * Kiểm tra quyền truy cập của nhân viên
