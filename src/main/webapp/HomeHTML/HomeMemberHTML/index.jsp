@@ -1,15 +1,5 @@
 <%@ page import="model.Members" %>
 <%@ page session="true" %>
-<%
-    // Retrieve the current logged-in member from the session
-    Members currentMember = (Members) request.getSession().getAttribute("user");
-
-    // If no member is logged in, redirect to the Login page
-    if (currentMember == null) {
-        response.sendRedirect("/Auth/SignIn-SignUp.jsp");
-        return;  // Prevent further page processing after redirect
-    }
-%>
 <!DOCTYPE html>
 <title>HomePage-Member</title>
 <html lang="en">
