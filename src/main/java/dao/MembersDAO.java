@@ -171,6 +171,19 @@ public class MembersDAO extends LibraryContext {
         }
     }
 
+    public boolean forgetPassword(String email, String newPassword) {
+        String sql = "UPDATE members SET passwordHash = ? WHERE email = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, hashPassword(newPassword));
+            ps.setString(2, email);
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public void unbanMemberByEmail(String email) {
         String sql = "UPDATE members SET status = 'active' WHERE email = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {

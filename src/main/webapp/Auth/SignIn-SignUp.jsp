@@ -470,7 +470,7 @@
                     }
                 }
             %>
-            <a class="forgot" href="#">Forgot your password?</a>
+            <a class="forgot" href="ForgotPassword">Forgot your password?</a>
             <button type="submit">Sign In</button>
         </form>
     </div>

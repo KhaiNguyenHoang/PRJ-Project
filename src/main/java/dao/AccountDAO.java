@@ -39,6 +39,19 @@ public class AccountDAO extends LibraryContext {
         }
     }
 
+    public boolean forgetPassword(String email, String newPassword) {
+        String passwordHash = hashPassword(newPassword);
+        String query = "UPDATE Account SET PasswordHash = ? WHERE Emails = ?";
+        try (PreparedStatement statement = conn.prepareStatement(query)) {
+            statement.setString(1, passwordHash);
+            statement.setString(2, email);
+            statement.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
     public List<Account> getAllAccounts() {
         List<Account> accounts = new ArrayList<>();
         String query = "SELECT * " + "FROM Account";
