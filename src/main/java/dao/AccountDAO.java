@@ -27,6 +27,18 @@ public class AccountDAO extends LibraryContext {
         super();
     }
 
+    public boolean deleteAccountById(int id) {
+        String sql = "DELETE FROM Account WHERE IdAccount = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public List<Account> getAllAccounts() {
         List<Account> accounts = new ArrayList<>();
         String query = "SELECT * " + "FROM Account";

@@ -518,7 +518,6 @@
                 <a class="nav-link" href="AddStaff"><i class="fas fa-plus"></i> <span>Add Staff</span></a>
                 <a class="nav-link" href="ManageStaff"><i class="fas fa-edit"></i> <span>Manage Staff</span></a>
                 <a class="nav-link" href="DeleteStaff"><i class="fas fa-trash-alt"></i> <span>Delete Staff</span></a>
-                <a class="nav-link" href="StaffActivity"><i class="fas fa-history"></i> <span>Staff Activity</span></a>
             </div>
         </li>
         <li class="nav-item dropdown">

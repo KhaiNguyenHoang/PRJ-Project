@@ -8,7 +8,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Staff</title>
+    <title>Delete Staff</title>
     <!-- Bootstrap 5.3 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
@@ -202,6 +202,19 @@
             background: #5a6268;
         }
 
+        .btn-delete {
+            background: #dc3545;
+            color: #fff;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 8px;
+            transition: background 0.3s ease;
+        }
+
+        .btn-delete:hover {
+            background: #b02a37;
+        }
+
         .table-container .table {
             margin-bottom: 0;
         }
@@ -297,7 +310,7 @@
                     <p><strong>Email:</strong> <%= account.getEmails() %>
                     </p>
                     <p>
-                        <strong>Created:</strong> <%= account.getCreatedAt() != null ? new java.text.SimpleDateFormat("dd/MM/yyyy").format(account.getCreatedAt()) : "N/A" %>
+                        <strong>Created:</strong> <%= account.getCreatedAt() != null ? sdf.format(account.getCreatedAt()) : "N/A" %>
                     </p>
                 </li>
                 <li><a class="dropdown-item" href="#">Settings</a></li>
@@ -315,7 +328,7 @@
     <div class="container-fluid">
         <div class="table-container animate__animated animate__fadeIn">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="mb-0">Manage Staff</h2>
+                <h2 class="mb-0">Delete Staff</h2>
                 <a href="HomePage" class="btn btn-back"><i class="fas fa-arrow-left me-2"></i>Back</a>
             </div>
             <% String success = (String) session.getAttribute("success");
@@ -363,9 +376,13 @@
                     <td><%= staff.getCreatedAt() != null ? sdf.format(staff.getCreatedAt()) : "N/A" %>
                     </td>
                     <td>
-                        <a href="ManageStaff?action=edit&id=<%= staff.getIdAccount() %>" class="btn btn-primary btn-sm">
-                            <i class="fas fa-edit"></i> Edit
-                        </a>
+                        <form action="DeleteStaff" method="POST" style="display:inline;"
+                              onsubmit="return confirm('Are you sure you want to delete this staff member?');">
+                            <input type="hidden" name="id" value="<%= staff.getIdAccount() %>">
+                            <button type="submit" class="btn btn-delete btn-sm">
+                                <i class="fas fa-trash-alt"></i> Delete
+                            </button>
+                        </form>
                     </td>
                 </tr>
                 <% }
