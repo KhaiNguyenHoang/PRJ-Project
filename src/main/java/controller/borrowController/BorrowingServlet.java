@@ -35,11 +35,11 @@ public class BorrowingServlet extends HttpServlet {
         Members currentMember = (Members) request.getSession().getAttribute("members");
         if (currentMember == null) {
             LOGGER.log(Level.WARNING, "No member found in session, redirecting to login");
-            response.sendRedirect("/Auth/SignIn-SignUp.jsp");
+            response.sendRedirect("HomePage");
             return null;
         } else if (!"Active".equalsIgnoreCase(currentMember.getStatus())) {
             LOGGER.log(Level.WARNING, "Member {0} is not active, redirecting to login", currentMember.getIdMember());
-            response.sendRedirect("/Auth/SignIn-SignUp.jsp");
+            response.sendRedirect("HomePage");
             return null;
         }
         return currentMember;

@@ -29,11 +29,11 @@ public class ReturningServlet extends HttpServlet {
         Members currentMember = (Members) request.getSession().getAttribute("members");
         if (currentMember == null) {
             LOGGER.log(Level.WARNING, "No member found in session, redirecting to login");
-            response.sendRedirect("/Auth/SignIn-SignUp.jsp");
+            response.sendRedirect("HomePage");
         } else if (!"active".equalsIgnoreCase(currentMember.getStatus())) {
             LOGGER.log(Level.WARNING, "Member {0} is not active, redirecting to login", currentMember.getIdMember());
             request.getSession().invalidate();
-            response.sendRedirect("/Auth/SignIn-SignUp.jsp");
+            response.sendRedirect("HomePage");
         }
         return currentMember;
     }
