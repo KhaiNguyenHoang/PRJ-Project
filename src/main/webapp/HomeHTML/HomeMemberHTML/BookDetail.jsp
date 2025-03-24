@@ -138,18 +138,38 @@
 
         /* PDF Viewer Styles */
         .pdf-viewer {
-            background: #fafafa;
+            position: relative;
+            background: #fff;
             border-radius: 15px;
-            padding: 30px;
+            padding: 20px;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
             margin-top: 40px;
+            transition: all 0.3s ease;
+        }
+
+        .pdf-container {
+            border-radius: 10px;
+            background: #fff;
+            max-height: 700px; /* Tăng chiều cao để hiển thị tốt hơn */
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .pdf-container canvas {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 8px;
+            transition: transform 0.4s ease, opacity 0.4s ease;
         }
 
         .pdf-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .pdf-header h4 {
@@ -161,7 +181,7 @@
 
         .pdf-controls {
             display: flex;
-            gap: 15px;
+            gap: 10px;
             flex-wrap: wrap;
         }
 
@@ -169,44 +189,87 @@
             background: linear-gradient(135deg, #3498db, #2980b9);
             color: white;
             border: none;
-            padding: 12px 25px;
-            border-radius: 25px;
+            padding: 10px 20px;
+            border-radius: 20px;
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
         }
 
         .pdf-controls button:hover {
             transform: translateY(-3px);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            opacity: 0.9;
         }
 
         .pdf-controls .pdf-fullscreen {
             background: linear-gradient(135deg, #e74c3c, #c0392b);
         }
 
-        #pdfContainer {
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            background: #fff;
-            padding: 10px;
-            max-height: 600px;
-            overflow-y: auto;
+        /* Nút điều hướng trong chế độ toàn màn hình */
+        .fullscreen-nav {
+            display: none;
+            position: fixed;
+            top: 50%;
+            width: 100%;
+            left: 0;
+            transform: translateY(-50%);
+            z-index: 1001;
+            pointer-events: none;
         }
 
-        #pdfContainer canvas {
+        .fullscreen-btn {
+            pointer-events: all;
+            position: absolute;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .fullscreen-btn:hover {
+            background: rgba(0, 0, 0, 0.8);
+            transform: scale(1.1);
+            opacity: 1;
+        }
+
+        .prev-btn {
+            left: 30px;
+        }
+
+        .next-btn {
+            right: 30px;
+        }
+
+        /* Khi ở chế độ toàn màn hình */
+        .pdf-viewer:fullscreen .fullscreen-nav {
             display: block;
-            margin: 0 auto;
-            border-radius: 8px;
-            max-width: 100%;
         }
 
-        .pdf-page-info {
-            text-align: center;
-            margin-top: 15px;
-            font-size: 1.1rem;
-            color: #777;
+        .pdf-viewer:fullscreen .pdf-container {
+            max-height: 100vh;
+            width: 100vw;
+            height: 100vh;
+            padding: 0;
+            margin: 0;
+            background: #000; /* Nền đen để tập trung vào nội dung PDF */
+        }
+
+        .pdf-viewer:fullscreen .pdf-header {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1001;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 5px 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
         .action-buttons {
@@ -285,7 +348,7 @@
             }
 
             .pdf-controls {
-                gap: 10px;
+                gap: 8px;
             }
 
             .action-buttons {
@@ -404,9 +467,12 @@
                         </button>
                     </div>
                 </div>
-                <div id="pdfContainer"></div>
-                <div class="pdf-page-info">
-                    Page <span id="currentPage">1</span> of <span id="totalPages">1</span>
+                <div id="pdfContainer" class="pdf-container"></div>
+                <div class="fullscreen-nav">
+                    <button class="fullscreen-btn prev-btn" onclick="prevPage()"><i class="fas fa-arrow-left"></i>
+                    </button>
+                    <button class="fullscreen-btn next-btn" onclick="nextPage()"><i class="fas fa-arrow-right"></i>
+                    </button>
                 </div>
             </div>
             <% } else { %>
@@ -445,13 +511,10 @@
     let pageNum = 1;
     let scale = 1.5;
     const pdfContainer = document.getElementById('pdfContainer');
-    const currentPageSpan = document.getElementById('currentPage');
-    const totalPagesSpan = document.getElementById('totalPages');
 
     <% if (book != null && book.isDigital() && bookDetail.getPdfPath() != null && !bookDetail.getPdfPath().isEmpty()) { %>
     pdfjsLib.getDocument('<%= bookDetail.getPdfPath() %>').promise.then(function (pdf) {
         pdfDoc = pdf;
-        totalPagesSpan.textContent = pdfDoc.numPages;
         renderPage(pageNum);
     }).catch(function (error) {
         console.error('Error loading PDF: ', error);
@@ -468,8 +531,13 @@
             canvas.width = viewport.width;
             pdfContainer.appendChild(canvas);
             const context = canvas.getContext('2d');
-            page.render({canvasContext: context, viewport: viewport});
-            currentPageSpan.textContent = num;
+
+            canvas.style.opacity = 0;
+            page.render({canvasContext: context, viewport: viewport}).promise.then(() => {
+                setTimeout(() => {
+                    canvas.style.opacity = 1;
+                }, 100); // Tăng thời gian để hiệu ứng mượt hơn
+            });
         });
     }
 
@@ -498,11 +566,19 @@
 
     function toggleFullScreen() {
         if (!document.fullscreenElement) {
-            pdfContainer.requestFullscreen().catch(err => console.log(`Error: ${err.message}`));
+            document.querySelector('.pdf-viewer').requestFullscreen().catch(err =>
+                console.log(`Error: ${err.message}`)
+            );
         } else {
             document.exitFullscreen();
         }
     }
+
+    document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement) {
+            pdfContainer.style.maxHeight = '700px';
+        }
+    });
 </script>
 </body>
 </html>
