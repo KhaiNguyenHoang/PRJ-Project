@@ -92,6 +92,11 @@
             font-size: 1.2rem;
             font-weight: 500;
         }
+
+        .btn-detail:hover {
+            color: #3c97bf;
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -201,7 +206,7 @@
                     </td>
                     <td>
                         <!-- Thay đổi href để gửi request tới Servlet -->
-                        <a href="BookDetails?id=<%= book.getIdBook() %>" class="btn">Details</a>
+                        <a href="BookDetails?id=<%= book.getIdBook() %>" class="btn btn-detail">Details</a>
                     </td>
                 </tr>
                 <%
