@@ -30,6 +30,7 @@
             font-family: 'Poppins', sans-serif;
             background: #f5f7fa;
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
         .main-container {
@@ -110,6 +111,8 @@
             font-weight: 600;
             transition: all 0.3s ease;
             border: none;
+            position: relative;
+            overflow: hidden;
         }
 
         .btn-primary-modern {
@@ -139,6 +142,24 @@
 
         .btn-secondary-modern:disabled {
             background: #adb5bd;
+        }
+
+        .btn-modern::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+
+        .btn-modern:hover::after {
+            width: 200%;
+            height: 200%;
         }
 
         .search-container {
@@ -185,10 +206,37 @@
         .table-modern td, .table-modern th {
             vertical-align: middle;
         }
+
+        .toast {
+            position: fixed;
+            top: 25px;
+            right: 25px;
+            z-index: 1050;
+            background: #28a745;
+            color: #fff;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            display: none;
+            opacity: 0;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            transform: translateY(-20px);
+        }
+
+        .toast.show {
+            display: flex;
+            align-items: center;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast i {
+            margin-right: 10px;
+        }
     </style>
 </head>
 <body>
-<!-- Header (Restored Original) -->
+<!-- Header (Unchanged) -->
 <header class="header_section">
     <div class="container-fluid">
         <nav class="navbar navbar-expand-lg custom_nav-container ">
@@ -380,7 +428,15 @@
     <% } %>
 </div>
 
-<!-- Footer (Restored Original) -->
+<!-- Toast Notifications -->
+<div class="toast" id="borrowSuccessToast">
+    <i class="fas fa-check-circle"></i> Mượn sách thành công!
+</div>
+<div class="toast" id="returnSuccessToast">
+    <i class="fas fa-check-circle"></i> Trả sách thành công!
+</div>
+
+<!-- Footer (Unchanged) -->
 <footer class="footer_section">
     <p>© 2024 Group 2 All Rights Reserved | Designed by Group 2</p>
 </footer>
@@ -435,6 +491,26 @@
             });
         });
     });
+
+    // Toast notifications for borrow and return success
+    const borrowMessage = '<%= request.getAttribute("message") %>';
+    const returnMessage = '<%= request.getAttribute("message") %>'; // Assuming "message" is used for both
+
+    if (borrowMessage === 'Book borrowed successfully') {
+        const borrowToast = document.getElementById('borrowSuccessToast');
+        borrowToast.classList.add('show');
+        setTimeout(() => {
+            borrowToast.classList.remove('show');
+        }, 3500);
+    }
+
+    if (returnMessage === 'Book returned successfully') {
+        const returnToast = document.getElementById('returnSuccessToast');
+        returnToast.classList.add('show');
+        setTimeout(() => {
+            returnToast.classList.remove('show');
+        }, 3500);
+    }
 </script>
 </body>
 </html>
