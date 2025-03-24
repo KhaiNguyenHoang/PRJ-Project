@@ -145,24 +145,25 @@
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
             margin-top: 40px;
             transition: all 0.3s ease;
+            overflow: hidden;
         }
 
         .pdf-container {
             border-radius: 10px;
             background: #fff;
-            max-height: 700px; /* Tăng chiều cao để hiển thị tốt hơn */
+            max-height: 700px;
             overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
-            transition: all 0.3s ease;
+            transition: transform 0.3s ease;
         }
 
         .pdf-container canvas {
             max-width: 100%;
             max-height: 100%;
             border-radius: 8px;
-            transition: transform 0.4s ease, opacity 0.4s ease;
+            transition: opacity 0.3s ease;
         }
 
         .pdf-header {
@@ -183,6 +184,7 @@
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
+            align-items: center;
         }
 
         .pdf-controls button {
@@ -207,7 +209,31 @@
             background: linear-gradient(135deg, #e74c3c, #c0392b);
         }
 
-        /* Nút điều hướng trong chế độ toàn màn hình */
+        .page-info {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #1a2a44;
+            margin: 0 10px;
+            align-self: center;
+        }
+
+        .pdf-controls input[type="number"] {
+            background: #f0f2f5;
+            border: 1px solid #ddd;
+            color: #333;
+            font-size: 1rem;
+            text-align: center;
+            width: 60px;
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        .pdf-controls input[type="number"]:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+        }
+
         .fullscreen-nav {
             display: none;
             position: fixed;
@@ -246,7 +272,6 @@
             right: 30px;
         }
 
-        /* Khi ở chế độ toàn màn hình */
         .pdf-viewer:fullscreen .fullscreen-nav {
             display: block;
         }
@@ -257,7 +282,15 @@
             height: 100vh;
             padding: 0;
             margin: 0;
-            background: #000; /* Nền đen để tập trung vào nội dung PDF */
+            background: #000;
+        }
+
+        .pdf-viewer:fullscreen .pdf-container canvas {
+            max-width: none;
+            max-height: none;
+            width: 100vw;
+            height: 100vh;
+            object-fit: contain;
         }
 
         .pdf-viewer:fullscreen .pdf-header {
@@ -310,14 +343,7 @@
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
 
-        .no-pdf {
-            text-align: center;
-            padding: 20px;
-            font-size: 1.2rem;
-            color: #e74c3c;
-        }
-
-        .error-message {
+        .no-pdf, .error-message {
             text-align: center;
             padding: 20px;
             font-size: 1.2rem;
@@ -459,15 +485,19 @@
                 <div class="pdf-header">
                     <h4>PDF Preview</h4>
                     <div class="pdf-controls">
-                        <button onclick="prevPage()"><i class="fas fa-arrow-left"></i> Prev</button>
-                        <button onclick="nextPage()">Next <i class="fas fa-arrow-right"></i></button>
-                        <button onclick="zoomIn()"><i class="fas fa-search-plus"></i></button>
-                        <button onclick="zoomOut()"><i class="fas fa-search-minus"></i></button>
-                        <button onclick="toggleFullScreen()" class="pdf-fullscreen"><i class="fas fa-expand"></i>
-                        </button>
+                        <button onclick="prevPage()" title="Previous Page"><i class="fas fa-arrow-left"></i></button>
+                        <span id="pageInfo" class="page-info"></span>
+                        <input type="number" id="goToPage" min="1" placeholder="Go to" onchange="goToPage(this.value)">
+                        <button onclick="nextPage()" title="Next Page"><i class="fas fa-arrow-right"></i></button>
+                        <button onclick="zoomIn()" title="Zoom In"><i class="fas fa-search-plus"></i></button>
+                        <button onclick="zoomOut()" title="Zoom Out"><i class="fas fa-search-minus"></i></button>
+                        <button onclick="toggleFullScreen()" class="pdf-fullscreen" title="Fullscreen"><i
+                                class="fas fa-expand"></i></button>
                     </div>
                 </div>
-                <div id="pdfContainer" class="pdf-container"></div>
+                <div id="pdfContainer" class="pdf-container">
+                    <canvas id="pdfCanvas"></canvas>
+                </div>
                 <div class="fullscreen-nav">
                     <button class="fullscreen-btn prev-btn" onclick="prevPage()"><i class="fas fa-arrow-left"></i>
                     </button>
@@ -505,16 +535,24 @@
 
 <script src="HomeHTML/HomeMemberHTML/js/jquery-3.4.1.min.js"></script>
 <script src="HomeHTML/HomeMemberHTML/js/bootstrap.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.4.456/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
     let pdfDoc = null;
     let pageNum = 1;
+    let pageCount = 0;
     let scale = 1.5;
+    let rendering = false;
     const pdfContainer = document.getElementById('pdfContainer');
+    const pdfCanvas = document.getElementById('pdfCanvas');
+    const pageInfo = document.getElementById('pageInfo');
+    const context = pdfCanvas ? pdfCanvas.getContext('2d') : null;
 
     <% if (book != null && book.isDigital() && bookDetail.getPdfPath() != null && !bookDetail.getPdfPath().isEmpty()) { %>
     pdfjsLib.getDocument('<%= bookDetail.getPdfPath() %>').promise.then(function (pdf) {
         pdfDoc = pdf;
+        pageCount = pdf.numPages;
+        document.getElementById('goToPage').max = pageCount;
+        updatePageInfo();
         renderPage(pageNum);
     }).catch(function (error) {
         console.error('Error loading PDF: ', error);
@@ -522,63 +560,97 @@
     });
     <% } %>
 
+    function updatePageInfo() {
+        pageInfo.textContent = `Page ${pageNum} of ${pageCount}`;
+    }
+
     function renderPage(num) {
-        pdfContainer.innerHTML = '';
+        if (rendering || !pdfDoc || !context) return;
+        rendering = true;
+
         pdfDoc.getPage(num).then(function (page) {
             const viewport = page.getViewport({scale: scale});
-            const canvas = document.createElement('canvas');
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
-            pdfContainer.appendChild(canvas);
-            const context = canvas.getContext('2d');
+            pdfCanvas.height = viewport.height;
+            pdfCanvas.width = viewport.width;
 
-            canvas.style.opacity = 0;
+            pdfCanvas.style.opacity = 0;
             page.render({canvasContext: context, viewport: viewport}).promise.then(() => {
-                setTimeout(() => {
-                    canvas.style.opacity = 1;
-                }, 100); // Tăng thời gian để hiệu ứng mượt hơn
+                pdfCanvas.style.opacity = 1;
+                rendering = false;
+            }).catch(err => {
+                console.error('Render error:', err);
+                rendering = false;
             });
+
+            updatePageInfo();
+        }).catch(err => {
+            console.error('Page fetch error:', err);
+            rendering = false;
         });
+
+        preloadPage(num - 1);
+        preloadPage(num + 1);
+    }
+
+    function preloadPage(num) {
+        if (num >= 1 && num <= pageCount) {
+            pdfDoc.getPage(num);
+        }
     }
 
     function prevPage() {
-        if (pageNum <= 1) return;
+        if (pageNum <= 1 || rendering) return;
         pageNum--;
         renderPage(pageNum);
     }
 
     function nextPage() {
-        if (pageNum >= pdfDoc.numPages) return;
+        if (pageNum >= pageCount || rendering) return;
         pageNum++;
         renderPage(pageNum);
     }
 
+    function goToPage(page) {
+        const num = parseInt(page);
+        if (num >= 1 && num <= pageCount && !rendering) {
+            pageNum = num;
+            renderPage(pageNum);
+        }
+    }
+
     function zoomIn() {
-        scale += 0.5;
+        if (rendering) return;
+        scale += 0.25;
         renderPage(pageNum);
     }
 
     function zoomOut() {
-        if (scale <= 0.5) return;
-        scale -= 0.5;
+        if (scale <= 0.5 || rendering) return;
+        scale -= 0.25;
         renderPage(pageNum);
     }
 
     function toggleFullScreen() {
+        const viewer = document.querySelector('.pdf-viewer');
         if (!document.fullscreenElement) {
-            document.querySelector('.pdf-viewer').requestFullscreen().catch(err =>
-                console.log(`Error: ${err.message}`)
-            );
+            viewer.requestFullscreen().catch(err => console.log(`Error: ${err.message}`));
         } else {
             document.exitFullscreen();
         }
     }
 
     document.addEventListener('fullscreenchange', () => {
-        if (!document.fullscreenElement) {
-            pdfContainer.style.maxHeight = '700px';
+        if (document.fullscreenElement) {
+            pdfCanvas.style.width = '100vw';
+            pdfCanvas.style.height = '100vh';
+        } else {
+            pdfCanvas.style.width = '';
+            pdfCanvas.style.height = '';
         }
+        renderPage(pageNum);
     });
+
+    pdfContainer?.addEventListener('dblclick', (e) => e.preventDefault());
 </script>
 </body>
 </html>
